@@ -1,15 +1,10 @@
 ---
 title: "Part 1 — Project Setup"
-description: Create your LEX project and run the setup wizard on Windows
 ---
 
-# Part 1 — Project Setup
+In this first part, you'll create a new LEX project, configure your environment, and verify everything works. By the end, you'll have a running (empty) LEX application.
 
-[[Tutorial Overview]] / Part 1
-
----
-
-## Step 1: Create a Project Folder
+## Create a Project Folder
 
 Open **PowerShell** and create your project:
 
@@ -18,7 +13,7 @@ mkdir C:\Projects\TeamBudget
 cd C:\Projects\TeamBudget
 ```
 
-## Step 2: Create a Virtual Environment
+## Create a Virtual Environment
 
 ```powershell
 python -m venv .venv
@@ -28,9 +23,9 @@ python -m venv .venv
 You should see `(.venv)` at the start of your prompt.
 
 > [!tip]
-> **Trouble with `python`?** On some Windows installations, you may need to use `py` instead of `python`.
+> On some Windows installations, you may need to use `py` instead of `python`.
 
-## Step 3: Create `requirements.txt`
+## Create `requirements.txt`
 
 Create a file called `requirements.txt` in your project root:
 
@@ -47,18 +42,16 @@ python -m pip install -r requirements.txt
 ```
 
 > [!important]
-> **Always use `python -m pip`** instead of just `pip` on Windows. This ensures you're using the pip from your virtual environment, not a system-level one.
+> Always use `python -m pip` instead of just `pip` on Windows. This ensures you're using the pip from your virtual environment.
 
-## Step 4: Run the Setup Wizard
-
-The setup wizard must be run from the terminal:
+## Run the Setup Wizard
 
 ```powershell
 python -m lex setup
 ```
 
 > [!important]
-> **Always use `python -m lex`** instead of just `lex` on Windows. The `lex` command may not be on your PATH, but `python -m lex` always works.
+> Always use `python -m lex` instead of just `lex` on Windows. The `lex` command may not be on your PATH.
 
 After the wizard completes, you'll have:
 
@@ -72,12 +65,12 @@ TeamBudget/
 └── migrations/
 ```
 
-The `.run/` folder contains **PyCharm run configurations** — these are pre-configured for you and will be the primary way to interact with your project from now on.
+The `.run/` folder contains PyCharm run configurations — these are pre-configured and will be the primary way to interact with your project.
 
 > [!note]
-> Notice there's no `manage.py` or nested app folder. LEX uses a **flat layout** — the framework handles everything. Your model files will go directly in the project root.
+> Notice there's no `manage.py` or nested app folder. LEX uses a **flat layout** — no Django boilerplate. Your model files can go at the project root or be organized into subfolders.
 
-## Step 5: Open in PyCharm
+## Open in PyCharm
 
 1. Open PyCharm
 2. **File → Open** → select `C:\Projects\TeamBudget`
@@ -91,7 +84,7 @@ You'll see the run configurations appear in the top-right dropdown:
 | **Start** | Runs the development server |
 | **Streamlit** | Starts the Streamlit dashboard server |
 
-## Step 6: Create the Database
+## Create the Database
 
 In PyCharm's terminal (**View → Tool Windows → Terminal**):
 
@@ -99,11 +92,11 @@ In PyCharm's terminal (**View → Tool Windows → Terminal**):
 python -m lex create_db
 ```
 
-## Step 7: Initialize
+## Initialize
 
 Select **"Init"** from the run configuration dropdown in PyCharm → click ▶️.
 
-This runs migrations and sets up Keycloak. You should see in the Run panel:
+This runs migrations and sets up Keycloak. You should see:
 
 ```
 Running migrations...
@@ -114,9 +107,7 @@ Syncing models to Keycloak... OK
 ```
 
 <details>
-<summary>💻 Terminal alternative</summary>
-
-If you prefer the terminal, you'll need to load the `.env` first:
+<summary>Terminal alternative</summary>
 
 ```powershell
 Get-Content .env | ForEach-Object {
@@ -128,20 +119,18 @@ python -m lex Init
 ```
 
 > [!note]
-> PyCharm's run configurations auto-load `.env` for you — this is why using PyCharm is the easier option.
+> PyCharm's run configurations auto-load `.env` for you — this is why using PyCharm is easier.
 
 </details>
 
-## Step 8: Verify It Works
+## Verify It Works
 
 Select **"Start"** from the run configuration dropdown → click ▶️.
 
-Open `http://localhost:8000` in your browser. You should see the LEX interface — empty for now, but working!
-
-Click the 🔴 stop button in PyCharm to stop the server.
+Open `http://localhost:8000` in your browser. You should see the LEX interface — empty for now, but working.
 
 <details>
-<summary>💻 Terminal alternative</summary>
+<summary>Terminal alternative</summary>
 
 ```powershell
 python -m lex start
@@ -151,16 +140,12 @@ Press `Ctrl+C` to stop.
 
 </details>
 
----
-
-## ✅ Checkpoint
+## Checkpoint
 
 At this point you have:
-- [x] A working LEX project with a flat layout
-- [x] PyCharm run configurations ready (Init, Start, Streamlit)
-- [x] Database created and migrations applied
-- [x] Server starts without errors
+- A working LEX project with a flat layout
+- PyCharm run configurations ready (Init, Start, Streamlit)
+- Database created and migrations applied
+- Server starts without errors
 
----
-
-> **Next:** [[Part 2 — Data Models]] — Let's build our models →
+Next up: [[tutorial/Part 2 — Data Models|Part 2 — Data Models]] where you'll define the Team, Employee, and Expense models.

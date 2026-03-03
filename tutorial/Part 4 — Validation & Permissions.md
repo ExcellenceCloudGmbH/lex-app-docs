@@ -1,28 +1,14 @@
 ---
 title: "Part 4 — Validation & Permissions"
-description: Add business rules and role-based access control
 ---
 
-# Part 4 — Validation & Permissions
+In this part, you'll add two things that turn a data entry form into a real business application: **validation** to prevent bad data from being saved, and **permissions** to control who sees what.
 
-[[Tutorial Overview]] / Part 4
+## Add Pre-Validation to Expense
 
----
+Open `Expense.py` and add a `pre_validation` method to your `Expense` class:
 
-## What We're Adding
-
-Two things that turn a data entry form into a **real business application**:
-
-1. **Validation** — Prevent bad data from being saved
-2. **Permissions** — Control who sees what
-
----
-
-## Step 1: Add Pre-Validation to Expense
-
-Open `Expense.py` in PyCharm and add a `pre_validation` method to your `Expense` class:
-
-```python
+```python title="Expense.py"
 class Expense(LexModel):
     # ... existing fields ...
 
@@ -42,15 +28,13 @@ class Expense(LexModel):
 
 1. Select **"Start"** in PyCharm → click ▶️
 2. Navigate to **Expense**
-3. Try to create an expense with amount **-50** → ❌ Blocked!
-4. Try to create an expense with amount **15000** → ❌ Blocked!
-5. Create one with amount **250** → ✅ Saved!
+3. Try to create an expense with amount **-50** → blocked
+4. Try to create an expense with amount **15000** → blocked
+5. Create one with amount **250** → saved
 
-The error message appears directly in the UI. No data is written to the database when validation fails.
+The error message appears directly in the UI. No data is written to the database when validation fails. For more on validation hooks, see [[features/lifecycle hooks]].
 
----
-
-## Step 2: Add Permissions to Expense
+## Add Permissions to Expense
 
 First, update the import at the top of `Expense.py`:
 
@@ -60,7 +44,7 @@ from lex.core.models.LexModel import LexModel, UserContext, PermissionResult
 
 Then add these methods to your `Expense` class:
 
-```python
+```python title="Expense.py"
 class Expense(LexModel):
     # ... existing fields and pre_validation ...
 
@@ -95,29 +79,23 @@ class Expense(LexModel):
         return "manager" in user_context.groups or "cfo" in user_context.groups
 ```
 
----
-
 ## How Permissions Work
 
 | User Role | Can See | Can Delete |
 |---|---|---|
-| **Employee** | Only their own expenses | ❌ No |
-| **Manager** | Their team's expenses | ✅ Yes |
-| **CFO** | All expenses across all teams | ✅ Yes |
-| **Superuser** | Everything | ✅ Yes |
+| **Employee** | Only their own expenses | No |
+| **Manager** | Their team's expenses | Yes |
+| **CFO** | All expenses across all teams | Yes |
+| **Superuser** | Everything | Yes |
 
-The permissions are checked **automatically** by the framework on every API request and frontend interaction. You don't need any middleware or decorators.
+The permissions are checked automatically by the framework on every API request and frontend interaction. You don't need any middleware or decorators. For more on the permission system, see [[features/permissions]].
 
----
+## Sync Permissions
 
-## Step 3: Sync Permissions
-
-Select **"Init"** in PyCharm → click ▶️.
-
-This syncs your model permissions to Keycloak. You can then assign users to groups (`employee`, `manager`, `cfo`) through the admin dashboard.
+Select **"Init"** in PyCharm → click ▶️ to sync your model permissions to Keycloak.
 
 <details>
-<summary>💻 Terminal alternative</summary>
+<summary>Terminal alternative</summary>
 
 ```powershell
 python -m lex Init
@@ -125,11 +103,9 @@ python -m lex Init
 
 </details>
 
----
-
 ## How It Looks
 
-When **Anna** (Role: employee, Design team) logs in, she sees:
+When **Anna** (employee, Design team) logs in, she sees only her expenses:
 
 | Description | Amount | Category |
 |---|---|---|
@@ -137,7 +113,7 @@ When **Anna** (Role: employee, Design team) logs in, she sees:
 | Team lunch with client | €85.00 | Meals |
 | Figma Annual License | €180.00 | Software |
 
-When **Thomas** (Role: manager, Design team) logs in, he sees **all Design expenses**:
+When **Thomas** (manager, Design team) logs in, he sees all Design expenses:
 
 | Description | Amount | Category | Employee |
 |---|---|---|---|
@@ -151,15 +127,11 @@ When the **CFO** logs in, they see everything across all teams.
 
 <!-- 📸 TODO: Screenshots comparing employee view vs manager view -->
 
----
-
-## ✅ Checkpoint
+## Checkpoint
 
 At this point you have:
-- [x] Validation rules that block bad data
-- [x] Role-based permissions (employee, manager, CFO)
-- [x] Keycloak integration for group management
+- Validation rules that block bad data
+- Role-based permissions (employee, manager, CFO)
+- Keycloak integration for group management
 
----
-
-> **Next:** [[Part 5 — Streamlit Dashboards]] — Build interactive visual dashboards →
+Next up: [[tutorial/Part 5 — Streamlit Dashboards|Part 5 — Streamlit Dashboards]].

@@ -1,169 +1,96 @@
 ---
 title: LexLogger API
-description: Complete method reference for the LexLogger class
 ---
 
-# LexLogger API Reference
+`LexLogger` uses a builder pattern — chain methods together and call `.log()` at the end. Every method returns the logger instance, so you can chain as many as you need.
 
-[[Home]] / Reference / LexLogger API
+## Core Methods
 
----
+### `add_text(text: str)`
 
-## Import
+Adds a plain text paragraph.
 
 ```python
-from lex.audit_logging.handlers.LexLogger import LexLogger
+LexLogger().add_text("Processing complete.").log()
 ```
 
----
+### `add_heading(text: str, level: int = 1)`
 
-## Usage Pattern
-
-LexLogger uses a **builder pattern** — chain methods, then call `.log()`:
+Adds a Markdown heading (levels 1–6).
 
 ```python
-LexLogger() \
-    .add_heading("My Report") \
-    .add_text("Everything looks good.") \
-    .log()  # ← REQUIRED — saves to database
-```
-
-> [!warning]
-> **Always end with `.log()`** — without it, nothing is written to the database.
-
----
-
-## Method Reference
-
-### Text Content
-
-| Method | Description | Example |
-|---|---|---|
-| `.add_text(text)` | Add a plain text paragraph | `.add_text("Processing complete")` |
-| `.add_heading(text, level=1)` | Add a heading (h1–h6) | `.add_heading("Summary", level=2)` |
-| `.add_quote(text)` | Add a blockquote | `.add_quote("Important note")` |
-| `.add_raw_markdown(md)` | Add raw markdown string | `.add_raw_markdown("**bold** text")` |
-
-### Data Display
-
-| Method | Description | Example |
-|---|---|---|
-| `.add_table(headers, rows)` | Add a markdown table | See example below |
-| `.add_dataframe(df)` | Add a Pandas DataFrame as a table | `.add_dataframe(my_df)` |
-| `.add_code(code, language="")` | Add a fenced code block | `.add_code(json_str, language="json")` |
-| `.add_list(items, ordered=False)` | Add a bullet or numbered list | `.add_list(["A", "B", "C"])` |
-
-### Media & Links
-
-| Method | Description | Example |
-|---|---|---|
-| `.add_link(text, url)` | Add a hyperlink | `.add_link("Docs", "https://...")` |
-| `.add_image(alt, url)` | Add an image | `.add_image("Chart", "/path/to/img.png")` |
-| `.add_horizontal_rule()` | Add a horizontal separator | `.add_horizontal_rule()` |
-
-### Finalize
-
-| Method | Description |
-|---|---|
-| `.log()` | **Commit everything to the database** — always required |
-
----
-
-## Examples
-
-### Table
-
-```python
-headers = ["Invoice", "Amount", "Status"]
-rows = [
-    ["INV-001", "€500.00", "Paid"],
-    ["INV-002", "€1,200.00", "Pending"],
-    ["INV-003", "€750.00", "Overdue"],
-]
-
-LexLogger().add_heading("Invoice Summary") \
-           .add_table(headers, rows) \
+LexLogger().add_heading("Summary", level=2) \
+           .add_text("All items processed.") \
            .log()
 ```
 
-### DataFrame
+### `add_table(headers: list, rows: list)`
+
+Adds a Markdown table.
+
+```python
+LexLogger().add_table(
+    ["Name", "Amount"],
+    [["Alice", "500"], ["Bob", "750"]]
+).log()
+```
+
+### `add_dataframe(df: pd.DataFrame)`
+
+Renders a Pandas DataFrame as a Markdown table.
 
 ```python
 import pandas as pd
-
-df = pd.DataFrame({
-    'Quarter': ['Q1', 'Q2', 'Q3', 'Q4'],
-    'Revenue': [100000, 120000, 115000, 130000]
-})
-
-LexLogger().add_text("Quarterly Revenue:") \
-           .add_dataframe(df) \
-           .log()
+df = pd.DataFrame({"Q": ["Q1", "Q2"], "Revenue": [100000, 120000]})
+LexLogger().add_dataframe(df).log()
 ```
 
-### JSON / Code Block
+### `add_code(code: str, language: str = "")`
+
+Adds a fenced code block.
 
 ```python
 import json
-
-config = {"tax_rate": 0.19, "currency": "EUR"}
-
-LexLogger().add_text("Config:") \
-           .add_code(json.dumps(config, indent=2), language="json") \
-           .log()
+config = {"rate": 0.19}
+LexLogger().add_code(json.dumps(config, indent=2), language="json").log()
 ```
 
-### Mixed Report
+### `log()`
 
-```python
-LexLogger() \
-    .add_heading("Migration Report", level=1) \
-    .add_text("Migration completed successfully.") \
-    .add_horizontal_rule() \
-    .add_heading("Summary", level=2) \
-    .add_table(
-        ["Model", "Rows", "Status"],
-        [
-            ["Invoice", "1,234", "✅ Migrated"],
-            ["Payment", "567", "✅ Migrated"],
-        ]
-    ) \
-    .add_heading("Notes", level=2) \
-    .add_list(["No errors encountered", "All constraints valid"]) \
-    .log()
-```
+Writes the accumulated content to the database. **Always call this last.**
 
----
+> [!warning]
+> If you forget to call `.log()`, nothing is written. This is the most common mistake.
 
 ## Context-Aware Logging
 
-LexLogger **automatically resolves** execution context:
+LexLogger automatically resolves:
 
-| Context | Resolved Automatically |
+| Context | How |
 |---|---|
-| Calculation ID | Linked to the correct `CalculationLog` entry |
-| Model instance | Identifies which model is executing |
-| Parent/child | Nested calculations linked properly |
+| **Calculation ID** | Links to the current `CalculationLog` entry |
+| **Model Instance** | Identifies which model is executing |
+| **Parent/Child** | Links nested calculations hierarchically |
 
 You never need to pass context manually.
 
-### Nested Calculations
+## Nested Calculations
+
+When a parent calculation triggers a child, wrap the child execution in `model_logging_context` to preserve the log hierarchy:
 
 ```python
 from lex.audit_logging.utils.ModelContext import model_logging_context
 
-# Inside parent model
-def calculate(self):
-    LexLogger().add_text("Starting parent").log()
+class ParentCalculation(CalculationModel):
+    def calculate(self):
+        LexLogger().add_text("Starting parent").log()
 
-    child = ChildModel.objects.filter(quarter=self.quarter).first()
-    with model_logging_context(child):
-        child.is_calculated = "IN_PROGRESS"
-        child.save()
+        child = CalculateNAV.objects.filter(quarter=self.quarter).first()
+        with model_logging_context(child):
+            child.is_calculated = "IN_PROGRESS"
+            child.save()
 
-    LexLogger().add_text("Child done.").log()
+        LexLogger().add_text("Child finished.").log()
 ```
 
----
-
-*See also: [[../guides/Logging|Logging Guide]]*
+See [[features/logging]] for more examples and usage patterns.

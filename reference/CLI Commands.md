@@ -1,69 +1,54 @@
 ---
 title: CLI Commands
-description: All lex CLI commands at a glance
 ---
 
-# CLI Commands Reference
-
-[[Home]] / Reference / CLI Commands
-
----
+LEX ships with a `lex` CLI tool for managing your application. Here's every command at a glance.
 
 ## Everyday Commands
 
-| Command | Purpose | When to Use |
-|---|---|---|
-| `lex setup` | Run setup wizard — generates `.run/`, `.env`, `migrations/` | First-time project setup |
-| `lex Init` | Apply migrations + sync models to Keycloak | After adding models, fields, or permission changes |
-| `lex makemigrations <app>` | Generate new migration files | After changing model definitions |
-| `lex migrate` | Apply all pending migrations | Usually called by `lex Init` |
-| `lex start` | Start the ASGI dev server | Daily development |
-
----
+| Command | What It Does |
+|---|---|
+| `lex setup` | Generate `.run/`, `.env`, and `migrations/` for a new project |
+| `lex Init` | Apply migrations + sync models/permissions to Keycloak |
+| `lex start` | Start the development server |
+| `lex --version` | Print the installed `lex-app` version |
 
 ## Migration Workflow Commands
 
-| Command | Purpose |
-|---|---|
-| `lex full_migration_workflow` | Run the full V1→V2 migration pipeline |
-| `lex capture_db_tables --output <file>` | Snapshot current database tables to JSON |
-| `lex capture_migration_state --output <file>` | Capture migration state for rollback |
-| `lex rollback_migration_state --input <file>` | Restore migrations from a captured state |
-| `lex generate_legacy_freeze_manifest --before <file> --output <file>` | Generate legacy freeze manifest |
-| `lex normalize_is_calculated --chunk-size <N>` | Convert boolean `is_calculated` → enum strings |
-| `lex backfill_bitemporal_history --chunk-size <N> --reason <text>` | Seed V2 bitemporal history |
-| `lex backfill_audit_logging --chunk-size <N> --reason <text>` | Seed audit log entries |
+These are used by the automated [[migration/index|migration pipeline]] for V1 → V2 database migration:
 
----
+| Command | What It Does |
+|---|---|
+| `lex full-migration-workflow` | Run the complete 9-step migration pipeline |
+| `lex makemigrations` | Generate Django migration files |
+| `lex migrate` | Apply Django migrations to the database |
+
+> [!tip]
+> For migration flags and options, see [[migration/invocation modes]].
 
 ## Keycloak Commands
 
-| Command | Purpose |
+| Command | What It Does |
 |---|---|
-| `lex sync_keycloak` | Sync models/permissions to Keycloak |
-| `lex bootstrap_keycloak` | Initial Keycloak realm setup |
-
----
+| `lex Init` | Sync models to Keycloak (also applies migrations) |
+| `lex generate-configs` | Regenerate Keycloak configuration files |
 
 ## Database Commands
 
-| Command                    | Purpose                                          |
-| -------------------------- | ------------------------------------------------ |
-| `lex create_db`            | Create the database                              |
-| `lex detect_model_changes` | Detect model changes without creating migrations |
-
----
+| Command | What It Does |
+|---|---|
+| `lex migrate` | Apply pending Django migrations |
+| `lex makemigrations` | Create new migration files from model changes |
+| `lex sqlflush` | Print SQL statements to flush the database |
 
 ## Usage Pattern
 
 ```bash
-# Always load environment first (terminal only — PyCharm does this automatically)
+# Always load environment variables first (unless using PyCharm)
 set -a; source .env; set +a
 
-# Then run any command
-lex <command> [options]
+# Then run any lex command
+lex Init
+lex start
+lex full-migration-workflow --dry-run
 ```
-
----
-
-*See also: [[../migration-workflow/Invocation Modes|Migration Workflow Flags]] | [[../getting-started/Running Your App|Running Your App]]*

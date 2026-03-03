@@ -1,66 +1,45 @@
 ---
-title: V1 to V2 Import Map
-description: Complete find-and-replace table for updating V1 imports to V2
+title: "V1 to V2 Import Map"
 ---
 
-# V1 → V2 Import Map
+> [!note]
+> This page is for teams migrating from V1 (`generic_app`). If you're starting a new project, just use the current import paths shown throughout the documentation.
 
-[[Home]] / Reference / Import Map
+A complete find-and-replace table for updating your imports.
 
----
+## Core Models
 
-Quick-reference table for updating imports. Use your IDE's **Find and Replace in Files** (`Ctrl+Shift+R`).
-
-## Model Base Classes
-
-| Find (V1) | Replace With (V2) |
-|---|---|
-| `from generic_app.generic_models.upload_model import ConditionalUpdateMixin` | `from lex.core.models.CalculationModel import CalculationModel` |
-| `from generic_app.generic_models.upload_model import UploadModelMixin` | `from lex.core.models.LexModel import LexModel` |
-| `class MyModel(ConditionalUpdateMixin):` | `class MyModel(CalculationModel):` |
-| `class MyModel(UploadModelMixin):` | `class MyModel(LexModel):` |
-
-## Field & Model Imports
-
-| Find (V1) | Replace With (V2) |
+| V1 Import | Current Import |
 |---|---|
 | `from generic_app import models` | `from django.db import models` |
-
-## Logging
-
-| Find (V1) | Replace With (V2) |
-|---|---|
-| `from generic_app.submodels.CalculationLog import CalculationLog` | `from lex.audit_logging.handlers.LexLogger import LexLogger` |
-| `CalculationLog.create(...)` | `LexLogger().add_text(...).log()` |
+| `from generic_app.models import *` | `from lex.core.models.LexModel import LexModel` |
+| `from generic_app.generic_models.upload_model import ConditionalUpdateMixin` | `from lex.core.models.CalculationModel import CalculationModel` |
+| `from generic_app.generic_models.upload_model import UploadModelMixin` | `from lex.core.models.LexModel import LexModel` + `from django_lifecycle import hook, AFTER_CREATE` |
 
 ## Permissions
 
-| Find (V1) | Replace With (V2) |
+| V1 Import | Current Import |
 |---|---|
-| `from generic_app.generic_models.ModelModificationRestriction import ModelModificationRestriction` | *(remove — use permission methods on model)* |
-| `modification_restriction = MyRestriction()` | *(remove — add `permission_*` methods instead)* |
+| `from generic_app.generic_models.ModelModificationRestriction import ModelModificationRestriction` | `from lex.core.models.LexModel import UserContext, PermissionResult` |
 
-## User Context
+## Logging
 
-| Find (V1) | Replace With (V2) |
+| V1 Import | Current Import |
 |---|---|
-| `from generic_app.rest_api.views.model_entries.One import user_name, user_email` | *(remove — automatic in V2)* |
+| `from generic_app.submodels.CalculationLog import CalculationLog` | `from lex.audit_logging.handlers.LexLogger import LexLogger` |
 
-## Method Names
+## Lifecycle Hooks
 
-| Find (V1) | Replace With (V2) |
+| V1 Import | Current Import |
 |---|---|
-| `def update(self):` (on ConditionalUpdateMixin subclass) | `def calculate(self):` |
-| `@ConditionalUpdateMixin.conditional_calculation` | *(remove decorator entirely)* |
-| `def update(self):` (on UploadModelMixin subclass) | `@hook(AFTER_CREATE)` + rename to descriptive name |
+| *(no equivalent — hooks were implicit)* | `from django_lifecycle import hook, AFTER_CREATE, BEFORE_UPDATE, ...` |
+| *(no equivalent)* | `from django_lifecycle.conditions import WhenFieldValueIs, WhenFieldHasChanged` |
 
-## Lifecycle Hooks (New Import)
+## Fields and Utilities
 
-```python
-# Add this import for lifecycle hooks:
-from django_lifecycle import hook, AFTER_CREATE, AFTER_UPDATE, BEFORE_SAVE
-```
+| V1 Import | Current Import |
+|---|---|
+| `from generic_app.generic_models.upload_model import IsCalculatedField` | *(removed — inherited from `CalculationModel`)* |
+| `from generic_app.generic_models.upload_model import CalculateField` | *(removed — inherited from `CalculationModel`)* |
 
----
-
-*See also: [[../guides/Import Migration|Import Migration Guide]]*
+See [[migration/import migration]] for a full walkthrough of how to apply these changes.

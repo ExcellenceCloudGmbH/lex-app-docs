@@ -1,41 +1,28 @@
 ---
 title: "Part 5 — Streamlit Dashboards"
-description: Build interactive visual dashboards
 ---
 
-# Part 5 — Streamlit Dashboards
-
-[[Tutorial Overview]] / Part 5
-
----
-
-## What We're Adding
-
-Two interactive dashboards, both added directly to `BudgetSummary.py`:
+In this part, you'll add two interactive dashboards to `BudgetSummary` — a company-wide overview and a per-team deep-dive. Both are added directly to your model file using [[features/streamlit dashboards|Streamlit]].
 
 | Dashboard | Level | What It Shows |
 |---|---|---|
 | **Company Overview** | Table-level (`streamlit_class_main`) | All teams' budgets side-by-side |
 | **Team Deep-Dive** | Record-level (`streamlit_main`) | One team's expenses in detail |
 
----
+## Add Imports
 
-## Step 1: Add Imports
-
-Open `BudgetSummary.py` in PyCharm and add these imports at the top of the file:
+Open `BudgetSummary.py` and add these imports at the top:
 
 ```python
 import streamlit as st
 import pandas as pd
 ```
 
----
+## Add the Table-Level Dashboard
 
-## Step 2: Add the Table-Level Dashboard
+Add this class method to your `BudgetSummary` class (after `calculate()`):
 
-Add this **class method** to your `BudgetSummary` class (after `calculate()`):
-
-```python
+```python title="BudgetSummary.py"
     @classmethod
     def streamlit_class_main(cls):
         """Company-wide budget overview — all teams at a glance."""
@@ -86,15 +73,13 @@ Add this **class method** to your `BudgetSummary` class (after `calculate()`):
 ```
 
 > [!tip]
-> `streamlit_class_main` is a **`@classmethod`** — it shows when users open the Streamlit page for the BudgetSummary **table** (no specific record selected).
+> `streamlit_class_main` is a `@classmethod` — it shows when users open the Streamlit page for the BudgetSummary table (no specific record selected).
 
----
+## Add the Record-Level Dashboard
 
-## Step 3: Add the Record-Level Dashboard
+Add this instance method below `streamlit_class_main`:
 
-Add this **instance method** below `streamlit_class_main`:
-
-```python
+```python title="BudgetSummary.py"
     def streamlit_main(self, user=None):
         """Single team's budget detail with expense breakdown."""
         st.title(f"📋 {self.team.name} — {self.quarter}")
@@ -146,16 +131,12 @@ Add this **instance method** below `streamlit_class_main`:
             st.info("No expenses recorded for this period.")
 ```
 
----
-
-## Step 4: Try It Out
-
-### Start Streamlit
+## Try It Out
 
 Select **"Streamlit"** from the run configuration dropdown in PyCharm → click ▶️.
 
 <details>
-<summary>💻 Terminal alternative</summary>
+<summary>Terminal alternative</summary>
 
 ```powershell
 python -m lex streamlit
@@ -163,25 +144,15 @@ python -m lex streamlit
 
 </details>
 
-### View the Table-Level Dashboard
-
-In the frontend, navigate to **BudgetSummary** and click the **Streamlit icon** 📊 in the toolbar (not on a specific record). This opens the company-wide overview.
-
-### View the Record-Level Dashboard
-
-Click the **Streamlit icon** 📊 on a **specific BudgetSummary record**. This opens the team deep-dive with per-category breakdowns.
+In the frontend, navigate to **BudgetSummary** and click the Streamlit icon in the toolbar (not on a specific record) to see the company-wide overview. Click the icon on a specific record for the team deep-dive.
 
 <!-- 📸 TODO: Screenshots of both dashboard levels -->
 
----
-
-## ✅ Checkpoint
+## Checkpoint
 
 At this point you have:
-- [x] Company-wide budget dashboard with charts
-- [x] Per-team deep-dive with expense breakdowns
-- [x] Everything interactive — Streamlit updates in real time
+- Company-wide budget dashboard with charts
+- Per-team deep-dive with expense breakdowns
+- Everything interactive — Streamlit updates in real time
 
----
-
-> **Next:** [[Part 6 — History in Action]] — See bitemporal tracking come to life →
+Next up: [[tutorial/Part 6 — History in Action|Part 6 — History in Action]] — the final part, where you'll explore the bitemporal audit trail.

@@ -1,25 +1,14 @@
 ---
 title: "Part 3 — Calculations & Logging"
-description: Add automatic budget calculations with rich logging
 ---
 
-# Part 3 — Calculations & Logging
+In this part, you'll create a `BudgetSummary` model that automatically calculates budget utilization for each team per quarter — and logs the results in a rich, formatted report using [[features/logging|LexLogger]].
 
-[[Tutorial Overview]] / Part 3
-
----
-
-## What We're Adding
-
-A new model called `BudgetSummary` that **automatically calculates** budget utilization for each team per quarter — and logs the results in a rich, formatted report.
-
----
-
-## Step 1: Create `BudgetSummary.py`
+## Create `BudgetSummary.py`
 
 In PyCharm, right-click your project root → **New → Python File** → name it `BudgetSummary`:
 
-```python
+```python title="BudgetSummary.py"
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
 from lex.audit_logging.handlers.LexLogger import LexLogger
@@ -129,19 +118,14 @@ Let's break down what's happening:
 | `.log()` | Saves the report — visible in the calculation logs panel |
 
 > [!important]
-> Notice what you **don't** need to write:
-> - No state management (`is_calculated` is automatic)
-> - No error handling (framework catches exceptions)
-> - No `self.save()` (framework saves after `calculate()` returns)
+> Notice what you **don't** need to write: no state management (`is_calculated` is automatic), no error handling (framework catches exceptions), no `self.save()` (framework saves after `calculate()` returns).
 
----
-
-## Step 2: Apply to the Database
+## Apply to the Database
 
 Select **"Init"** from the run configuration dropdown in PyCharm → click ▶️.
 
 <details>
-<summary>💻 Terminal alternative</summary>
+<summary>Terminal alternative</summary>
 
 ```powershell
 python -m lex Init
@@ -149,9 +133,7 @@ python -m lex Init
 
 </details>
 
----
-
-## Step 3: Try It Out
+## Try It Out
 
 1. Select **"Start"** in PyCharm → click ▶️
 2. Navigate to **BudgetSummary** in the frontend
@@ -159,13 +141,11 @@ python -m lex Init
 4. Click the **Calculate** button ▶️
 
 You should see:
-- The `is_calculated` field transitions: `NOT_CALCULATED` → `IN_PROGRESS` → `SUCCESS ✅`
+- The `is_calculated` field transitions: `NOT_CALCULATED` → `IN_PROGRESS` → `SUCCESS`
 - The calculated fields fill in automatically
 - The **Calculation Log** panel shows your formatted report
 
 <!-- 📸 TODO: Screenshot of calculation log panel -->
-
----
 
 ## How the State Machine Works
 
@@ -179,36 +159,13 @@ stateDiagram-v2
     SUCCESS --> IN_PROGRESS : Recalculate
 ```
 
-If your `calculate()` method throws an exception, the framework:
-1. Sets `is_calculated = ERROR`
-2. Stores the error message
-3. The user can see the error and retry
+If your `calculate()` method throws an exception, the framework sets `is_calculated = ERROR`, stores the error message, and the user can see the error and retry. For more details, see [[features/calculations]].
 
----
-
-## Your Project So Far
-
-```
-TeamBudget/
-├── .env
-├── .run/
-├── migrations/
-├── sample_data/
-├── Team.py
-├── Employee.py
-├── Expense.py
-└── BudgetSummary.py      ← New!
-```
-
----
-
-## ✅ Checkpoint
+## Checkpoint
 
 At this point you have:
-- [x] A `BudgetSummary` model that calculates on demand
-- [x] Rich calculation logs with tables and formatting
-- [x] Automatic state management (no boilerplate!)
+- A `BudgetSummary` model that calculates on demand
+- Rich calculation logs with tables and formatting
+- Automatic state management (no boilerplate)
 
----
-
-> **Next:** [[Part 4 — Validation & Permissions]] — Add business rules and access control →
+Next up: [[tutorial/Part 4 — Validation & Permissions|Part 4 — Validation & Permissions]].

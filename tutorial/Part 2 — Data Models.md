@@ -1,17 +1,10 @@
 ---
 title: "Part 2 — Data Models"
-description: Define Team, Employee, and Expense models — one file per class
 ---
 
-# Part 2 — Data Models
-
-[[Tutorial Overview]] / Part 2
-
----
+In this part, you'll create the three core data models for TeamBudget — `Team`, `Employee`, and `Expense` — plus three upload models for CSV import. By the end, you'll have data flowing into your application.
 
 ## The Plan
-
-We need three data models:
 
 ```mermaid
 erDiagram
@@ -39,15 +32,13 @@ erDiagram
 ```
 
 > [!important]
-> **One file per model class.** LEX follows the convention of separating each model into its own file (e.g., `Team.py`, `Employee.py`), placed directly at the project root. No nested folders needed.
+> **One file per model class.** LEX follows the convention of separating each model into its own file (e.g., `Team.py`, `Employee.py`). For this tutorial, we'll keep them at the project root. Larger projects can organize models into subfolders.
 
----
-
-## Step 1: Create `Team.py`
+## Create `Team.py`
 
 In PyCharm, right-click your project root → **New → Python File** → name it `Team`:
 
-```python
+```python title="Team.py"
 from django.db import models
 from lex.core.models.LexModel import LexModel
 
@@ -69,20 +60,11 @@ class Team(LexModel):
         return self.name
 ```
 
-That's it. By inheriting from `LexModel`, your model automatically gets:
-- ✅ A database table
-- ✅ REST API endpoints
-- ✅ Admin UI in the frontend
-- ✅ `created_by` and `edited_by` tracking
-- ✅ **Full bitemporal history** (Level 1 + Level 2)
+By inheriting from `LexModel`, your model automatically gets a database table, REST API endpoints, admin UI in the frontend, `created_by`/`edited_by` tracking, and full [[features/bitemporal history|bitemporal history]].
 
----
+## Create `Employee.py`
 
-## Step 2: Create `Employee.py`
-
-Right-click project root → **New → Python File** → name it `Employee`:
-
-```python
+```python title="Employee.py"
 from django.db import models
 from lex.core.models.LexModel import LexModel
 
@@ -111,15 +93,11 @@ class Employee(LexModel):
 ```
 
 > [!note]
-> Notice the relative import: `from .Team import Team`. The dot (`.`) means "same package" — since all your model files are in the project root, this is how they reference each other.
+> The relative import `from .Team import Team` works because both files are at the project root. If `Team.py` were in a subfolder like `Core/`, you'd write `from Core.Team import Team` instead.
 
----
+## Create `Expense.py`
 
-## Step 3: Create `Expense.py`
-
-Right-click project root → **New → Python File** → name it `Expense`:
-
-```python
+```python title="Expense.py"
 from django.db import models
 from lex.core.models.LexModel import LexModel
 
@@ -171,17 +149,13 @@ TeamBudget/
 └── Expense.py
 ```
 
----
-
-## Step 4: Create Upload Models
+## Create Upload Models
 
 The main way to import data into LEX is through **upload models**. These are `CalculationModel` subclasses with a `FileField` — the user uploads a CSV, clicks **Calculate**, and the data is processed.
 
 ### `TeamUpload.py`
 
-Right-click project root → **New → Python File** → name it `TeamUpload`:
-
-```python
+```python title="TeamUpload.py"
 import pandas as pd
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
@@ -232,7 +206,7 @@ class TeamUpload(CalculationModel):
 
 ### `EmployeeUpload.py`
 
-```python
+```python title="EmployeeUpload.py"
 import pandas as pd
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
@@ -297,7 +271,7 @@ class EmployeeUpload(CalculationModel):
 
 ### `ExpenseUpload.py`
 
-```python
+```python title="ExpenseUpload.py"
 import pandas as pd
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
@@ -361,15 +335,11 @@ class ExpenseUpload(CalculationModel):
         logger.log()
 ```
 
----
+## Organize the Frontend Navigation
 
-## Step 5: Organize the Frontend Navigation
+By default, all models appear in a flat list in the sidebar. Let's organize them into groups. Create a `model_structure.yaml` file in your project root:
 
-By default, all models appear in a flat list in the sidebar. Let's organize them into groups.
-
-Right-click your project root → **New → File** → name it `model_structure.yaml`:
-
-```yaml
+```yaml title="model_structure.yaml"
 model_structure:
   Teams & People:
     team: null
@@ -395,31 +365,15 @@ untracked_models:
   expenseupload: null
 ```
 
-This creates a structured sidebar and excludes upload models from history tracking (they don't need it):
-
-```
-📁 👥 Teams & People
-   ├── Team
-   └── Employee
-📁 💶 Expenses
-   └── Expense
-📁 📥 Data Import
-   ├── Team Upload
-   ├── Employee Upload
-   └── Expense Upload
-```
-
 > [!tip]
-> See the full [[../guides/Model Structure|Model Structure]] guide for nesting, styling, and untracked models.
+> See [[features/model structure]] for more details on sidebar organization, styling, and hiding models.
 
----
-
-## Step 6: Apply to the Database
+## Apply to the Database
 
 Select **"Init"** from the run configuration dropdown in PyCharm → click ▶️.
 
 <details>
-<summary>💻 Terminal alternative</summary>
+<summary>Terminal alternative</summary>
 
 ```powershell
 python -m lex Init
@@ -427,38 +381,29 @@ python -m lex Init
 
 </details>
 
----
+## Import Sample Data
 
-## Step 7: Import Sample Data
-
-Select **"Start"** from the run configuration dropdown → click ▶️.
-
-Open `http://localhost:8000`. You should see the organized sidebar with **👥 Teams & People**, **💶 Expenses**, and **📥 Data Import**.
+Select **"Start"** → click ▶️. Open `http://localhost:8000`. You should see the organized sidebar.
 
 Now import data using the upload models:
 
-1. Navigate to **📥 Data Import → Team Upload**
+1. Navigate to **Data Import → Team Upload**
 2. Create a new record → upload `sample_data/teams.csv` → click **Calculate** ▶️
 3. Check the log — you should see "3 Teams created"
 4. Repeat for **Employee Upload** with `employees.csv`
 5. Repeat for **Expense Upload** with `expenses.csv`
 
 > [!important]
-> **Import order matters!** Import teams first, then employees (they reference teams), then expenses (they reference employees).
+> Import order matters! Import teams first, then employees (they reference teams), then expenses (they reference employees).
 
 <!-- 📸 TODO: Screenshot of upload log showing results -->
 
----
-
-## ✅ Checkpoint
+## Checkpoint
 
 At this point you have:
-- [x] Three data models (`Team.py`, `Employee.py`, `Expense.py`)
-- [x] Three upload models for CSV import
-- [x] Organized frontend sidebar with named groups
-- [x] Upload models excluded from history tracking
-- [x] Sample data imported via the upload flow
+- Three data models (`Team.py`, `Employee.py`, `Expense.py`)
+- Three upload models for CSV import
+- Organized frontend sidebar with named groups
+- Sample data imported via the upload flow
 
----
-
-> **Next:** [[Part 3 — Calculations & Logging]] — Let's add automatic budget calculations →
+Next up: [[tutorial/Part 3 — Calculations & Logging|Part 3 — Calculations & Logging]] where you'll build `BudgetSummary`.
