@@ -2,7 +2,7 @@
 title: Bitemporal History
 ---
 
-Every `LexModel` automatically tracks changes along two independent time dimensions — *valid time* (when something was true in the real world) and *system time* (when the system recorded the change). This gives you a complete, immutable audit trail with full time-travel support.
+Every `LexModel` automatically tracks changes along two independent time dimensions — *valid time* (when something was true in the real world) and *system time* (when the system recorded the change). Built on [django-simple-history](https://django-simple-history.readthedocs.io/) with LEX-specific extensions, this gives you a complete, immutable audit trail with full time-travel support.
 
 ## The Two Time Dimensions
 

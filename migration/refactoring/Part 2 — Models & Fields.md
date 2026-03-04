@@ -111,8 +111,8 @@ If your V1 models used string references to other models, verify they still reso
 # String reference (always works)
 team = models.ForeignKey('Team', on_delete=models.CASCADE)
 
-# Direct import — model at project root
-from .Team import Team
+# Direct import — input model
+from Input.Team import Team
 team = models.ForeignKey(Team, on_delete=models.CASCADE)
 
 # Direct import — model in a subfolder

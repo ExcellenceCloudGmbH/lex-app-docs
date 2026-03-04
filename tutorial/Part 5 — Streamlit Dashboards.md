@@ -2,7 +2,7 @@
 title: "Part 5 — Streamlit Dashboards"
 ---
 
-In this part, you'll add two interactive dashboards to `BudgetSummary` — a company-wide overview and a per-team deep-dive. Both are added directly to your model file using [[features/streamlit dashboards|Streamlit]].
+In this part, you'll add two interactive dashboards to `BudgetSummary` — a company-wide overview and a per-team deep-dive. Both are added directly to your model file in `Reports/`, using [Streamlit](https://docs.streamlit.io/) — see [[features/access-and-ui/streamlit dashboards]] for the full guide.
 
 | Dashboard | Level | What It Shows |
 |---|---|---|
@@ -11,7 +11,7 @@ In this part, you'll add two interactive dashboards to `BudgetSummary` — a com
 
 ## Add Imports
 
-Open `BudgetSummary.py` and add these imports at the top:
+Open `Reports/BudgetSummary.py` and add these imports at the top:
 
 ```python
 import streamlit as st
@@ -22,7 +22,7 @@ import pandas as pd
 
 Add this class method to your `BudgetSummary` class (after `calculate()`):
 
-```python title="BudgetSummary.py"
+```python title="Reports/BudgetSummary.py"
     @classmethod
     def streamlit_class_main(cls):
         """Company-wide budget overview — all teams at a glance."""
@@ -73,13 +73,13 @@ Add this class method to your `BudgetSummary` class (after `calculate()`):
 ```
 
 > [!tip]
-> `streamlit_class_main` is a `@classmethod` — it shows when users open the Streamlit page for the BudgetSummary table (no specific record selected).
+> `streamlit_class_main` is a `@classmethod` — it shows when users open the [Streamlit](https://docs.streamlit.io/) page for the BudgetSummary table (no specific record selected).
 
 ## Add the Record-Level Dashboard
 
 Add this instance method below `streamlit_class_main`:
 
-```python title="BudgetSummary.py"
+```python title="Reports/BudgetSummary.py"
     def streamlit_main(self, user=None):
         """Single team's budget detail with expense breakdown."""
         st.title(f"📋 {self.team.name} — {self.quarter}")
@@ -144,7 +144,7 @@ python -m lex streamlit
 
 </details>
 
-In the frontend, navigate to **BudgetSummary** and click the Streamlit icon in the toolbar (not on a specific record) to see the company-wide overview. Click the icon on a specific record for the team deep-dive.
+In the frontend, navigate to **Reports → BudgetSummary** and click the [Streamlit](https://docs.streamlit.io/) icon in the toolbar (not on a specific record) to see the company-wide overview. Click the icon on a specific record for the team deep-dive.
 
 <!-- 📸 TODO: Screenshots of both dashboard levels -->
 
@@ -153,6 +153,6 @@ In the frontend, navigate to **BudgetSummary** and click the Streamlit icon in t
 At this point you have:
 - Company-wide budget dashboard with charts
 - Per-team deep-dive with expense breakdowns
-- Everything interactive — Streamlit updates in real time
+- Everything interactive — [Streamlit](https://docs.streamlit.io/) updates in real time
 
 Next up: [[tutorial/Part 6 — History in Action|Part 6 — History in Action]] — the final part, where you'll explore the bitemporal audit trail.

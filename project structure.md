@@ -2,7 +2,7 @@
 title: Project Structure
 ---
 
-LEX uses a flat project structure — no `manage.py`, no nested Django app folders, no `admin.py` or `views.py`. Your model files can live directly at the project root or be organized into subfolders as your project grows.
+LEX uses a flat project structure — no `manage.py`, no nested [Django](https://docs.djangoproject.com/) app folders, no `admin.py` or `views.py`. Your project follows the **ETL pattern**: Upload models for ingestion, Input models for domain logic, and Report models for output.
 
 ```
 YourProject/
@@ -16,36 +16,63 @@ YourProject/
 │   │   └── test_data.json
 │   └── UploadFiles/
 ├── model_structure.yaml        ← frontend sidebar layout (optional)
+├── lex_config.py               ← framework settings (Celery, etc.)
 ├── requirements.txt
 ├── _authentication_settings.py ← test data + group config
-├── Team.py                     ← models at the root
-├── Employee.py
-├── Expense.py
-└── Upload/                     ← or organized into subfolders
+│
+├── Upload/                     ← Extract: data ingestion models
+│   ├── __init__.py
+│   ├── UploadBalanceSheet.py
+│   ├── UploadCashflow.py
+│   └── serializers.py
+│
+├── Input/                      ← Transform: core business entities
+│   ├── __init__.py
+│   ├── Fund.py
+│   ├── Quarter.py
+│   └── Investment.py
+│
+└── Reports/                    ← Load: calculations & analytics
     ├── __init__.py
-    ├── TeamUpload.py
-    └── ExpenseUpload.py
+    ├── CalculateNAV.py
+    └── InvestorTrackRecord.py
 ```
+
+## The ETL Convention
+
+| Folder | Purpose | Base Class | Example |
+|---|---|---|---|
+| `Upload/` | Ingest raw data (CSV, Excel) | `CalculationModel` | `UploadBalanceSheet` |
+| `Input/` | Core business entities and domain logic | `LexModel` | `Fund`, `Investor` |
+| `Reports/` | Compute summaries, analytics | `CalculationModel` | `CalculateNAV` |
+
+This isn't enforced by the framework — you can organize however you like — but following this convention makes projects immediately understandable to anyone familiar with LEX.
+
+> [!tip]
+> Larger projects often create additional subfolders within `Input/` for domain areas, like `Input/InvestmentStructure/`, `Input/Cashflows/`, or `Input/Valuation/`. The key is that imports always follow the folder structure: `from Input.Fund import Fund`.
 
 ## Imports Follow the Folder Structure
 
-Models at the project root are imported with a relative import:
+Each folder is a Python package. Import paths mirror the directory layout:
 
 ```python
-from .Team import Team
+from Input.Fund import Fund
+from Upload.UploadBalanceSheet import UploadBalanceSheet
+from Reports.CalculateNAV import CalculateNAV
 ```
-
-Models inside a subfolder use the folder name as the package:
-
-```python
-from Upload.TeamUpload import TeamUpload
-```
-
-You choose how to organize. Small projects can keep everything at the root. Larger projects benefit from grouping related models into folders.
 
 ## The `.env` File
 
-The `.env` file is the single source of truth for all runtime configuration. It's loaded automatically by the PyCharm run configurations, or you can source it manually in the terminal with `set -a; source .env; set +a`.
+The `.env` file is the single source of truth for all runtime configuration. It's loaded automatically by the PyCharm run configurations, or you can source it manually:
+
+<details>
+<summary>Terminal: loading .env manually</summary>
+
+```bash
+set -a; source .env; set +a
+```
+
+</details>
 
 See [[installation]] for how to configure it.
 
@@ -53,19 +80,19 @@ See [[installation]] for how to configure it.
 
 Each model is a standalone Python file. The framework discovers them automatically — you don't need to register them anywhere.
 
-```python title="Team.py"
+```python title="Input/Fund.py"
 from lex.core.models.LexModel import LexModel
 from django.db import models
 
 
-class Team(LexModel):
+class Fund(LexModel):
     name = models.CharField(max_length=200)
     department = models.CharField(max_length=200)
     budget = models.DecimalField(max_digits=12, decimal_places=2)
 ```
 
 > [!tip]
-> If you need to organize your models in the frontend sidebar, use a `model_structure.yaml` file. See [[features/model structure]] for details.
+> To organize models in the frontend sidebar, use a `model_structure.yaml` file. See [[features/data-pipeline/model structure]] for details.
 
 ## Key Dependencies
 
@@ -76,4 +103,4 @@ LEX brings along a specific set of dependencies. Make sure your `requirements.tx
 - Any additional libraries your project needs
 
 > [!warning]
-> If you're upgrading from an older version, `pandas` and `numpy` are no longer bundled with `lex-app`. Add them explicitly to your `requirements.txt` with the versions your project requires.
+> If you're upgrading from an older version, `pandas` and `numpy` are no longer bundled with `lex-app`. Add them explicitly to your `requirements.txt`.

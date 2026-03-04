@@ -93,4 +93,4 @@ class ParentCalculation(CalculationModel):
         LexLogger().add_text("Child finished.").log()
 ```
 
-See [[features/logging]] for more examples and usage patterns.
+See [[features/processing/logging]] for more examples and usage patterns.

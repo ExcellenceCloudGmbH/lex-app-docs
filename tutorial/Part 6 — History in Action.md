@@ -2,7 +2,7 @@
 title: "Part 6 — History in Action"
 ---
 
-Your app already has full [[features/bitemporal history|bitemporal history]] — you didn't write a single line for it. In this final part, you'll see it in action by making corrections and exploring the timeline.
+Your app already has full [[features/tracking/bitemporal history|bitemporal history]] — you didn't write a single line for it. Powered by [django-simple-history](https://django-simple-history.readthedocs.io/) under the hood, the framework records every change with two time dimensions: *when it happened* (valid time) and *when we learned about it* (system time). In this final part, you'll see it in action.
 
 ## Scenario: Correcting an Expense After Quarter Close
 
@@ -53,7 +53,7 @@ Jan 20
 ├── v2: €380.00 ──────────────────────────────────────────────►
 ```
 
-The v1 entry still exists in the system history (Level 2) — you can always answer: "On February 4th, what did the system think this expense was?" Answer: **€450**, because the backdated correction hadn't been entered yet.
+The v1 entry still exists in the **system history** (Level 2) — you can always answer: "On February 4th, what did the system think this expense was?" Answer: **€450**, because the backdated correction hadn't been entered yet.
 
 ## What the Two Levels Show
 
@@ -83,35 +83,47 @@ System time tells the complete knowledge story:
 
 After correcting the expense:
 
-1. Navigate to **BudgetSummary** → Design team, Q1 2026
+1. Navigate to **Reports → BudgetSummary** → Design team, Q1 2026
 2. Click **Calculate** ▶️
 
 The calculation will reflect the corrected amount (€380 instead of €450). The calculation log shows the updated numbers — and the previous calculation log is still accessible in the history.
 
 ## You're Done!
 
-Congratulations! You've built a complete business application with:
+Congratulations! You've built a complete business application following the ETL pattern:
+
+| Layer | What You Built |
+|---|---|
+| **Extract** (`Upload/`) | Three upload models for CSV ingestion |
+| **Transform** (`Input/`) | Three input models with validation and permissions |
+| **Load** (`Reports/`) | Budget calculations with rich logging and dashboards |
+
+And here's how much code that took:
 
 | Feature | What You Wrote |
 |---|---|
-| **4 data models** | Four short Python files |
-| **Automatic CRUD + API** | Zero lines — the framework handles it |
+| **3 input models** | Three files in `Input/` |
+| **3 upload models** | Three files in `Upload/` |
+| **1 serializer** | One `serializers.py` for API validation |
+| **Automatic CRUD + API** | Zero lines — powered by [Django REST Framework](https://www.django-rest-framework.org/) |
 | **Budget calculations** | One `calculate()` method |
 | **Rich logging** | A few `LexLogger` calls |
 | **Validation** | One `pre_validation()` method |
 | **Role-based permissions** | Two `permission_*()` methods |
-| **Interactive dashboards** | Two Streamlit methods |
-| **Full bitemporal history** | Zero lines — completely automatic |
+| **Interactive dashboards** | Two [Streamlit](https://docs.streamlit.io/) methods |
+| **Full bitemporal history** | Zero lines — powered by [django-simple-history](https://django-simple-history.readthedocs.io/) |
+| **Frontend data grid** | Zero lines — powered by [AG Grid](https://www.ag-grid.com/) |
 | **Timeline editing** | Zero lines — built into the frontend |
 
-**Total code: ~330 lines** (including whitespace, docstrings, and imports). Everything else — the web UI, API, authentication, history, real-time updates — is provided by the framework.
+**Total code: ~400 lines** (including whitespace, docstrings, and imports). Everything else — the web UI, API, authentication, history, real-time updates — is provided by the framework.
 
 ## What's Next?
 
 Now that you've completed the tutorial, explore the rest of the documentation:
 
-- [[features/index|All features]] — everything LEX gives you out of the box
-- [[features/calculations|Calculations]] — deep-dive into the state machine and Celery support
-- [[features/bitemporal history|Bitemporal History]] — understand the two-level architecture
-- [[features/streamlit dashboards|Streamlit Dashboards]] — build more complex visualizations
+- [[features/index|All building blocks]] — everything LEX gives you out of the box
+- [[features/processing/calculations|Calculations]] — deep-dive into the state machine and [Celery](https://docs.celeryq.dev/) support
+- [[features/tracking/bitemporal history|Bitemporal History]] — understand the two-level architecture
+- [[features/access-and-ui/streamlit dashboards|Streamlit Dashboards]] — build more complex visualizations
+- [[features/data-pipeline/serializers|Serializers]] — advanced API validation and multiple views
 - [[reference/CLI Commands|CLI Commands]] — every `lex` command at a glance

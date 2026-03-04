@@ -2,7 +2,7 @@
 title: "Part 2 — Data Models"
 ---
 
-In this part, you'll create the three core data models for TeamBudget — `Team`, `Employee`, and `Expense` — plus three upload models for CSV import. By the end, you'll have data flowing into your application.
+In this part, you'll create the three core input models for TeamBudget — `Team`, `Employee`, and `Expense` — then build upload models that ingest CSV data, and finally add a serializer for API-level validation. By the end, you'll have data flowing through the full ETL pipeline.
 
 ## The Plan
 
@@ -32,13 +32,17 @@ erDiagram
 ```
 
 > [!important]
-> **One file per model class.** LEX follows the convention of separating each model into its own file (e.g., `Team.py`, `Employee.py`). For this tutorial, we'll keep them at the project root. Larger projects can organize models into subfolders.
+> **One file per model class.** Input models go in `Input/`, upload models in `Upload/`, report models in `Reports/`. This follows the [[project structure|ETL convention]].
 
-## Create `Team.py`
+## Create the Input Models
 
-In PyCharm, right-click your project root → **New → Python File** → name it `Team`:
+These are your core business entities — the **Transform** layer of the ETL pipeline. They live in the `Input/` folder.
 
-```python title="Team.py"
+### `Input/Team.py`
+
+In PyCharm, right-click the `Input/` folder → **New → Python File** → name it `Team`:
+
+```python title="Input/Team.py"
 from django.db import models
 from lex.core.models.LexModel import LexModel
 
@@ -60,15 +64,15 @@ class Team(LexModel):
         return self.name
 ```
 
-By inheriting from `LexModel`, your model automatically gets a database table, REST API endpoints, admin UI in the frontend, `created_by`/`edited_by` tracking, and full [[features/bitemporal history|bitemporal history]].
+By inheriting from `LexModel`, your model automatically gets a database table, REST API endpoints, [AG Grid](https://www.ag-grid.com/)-powered frontend, `created_by`/`edited_by` tracking, and full [[features/tracking/bitemporal history|bitemporal history]].
 
-## Create `Employee.py`
+### `Input/Employee.py`
 
-```python title="Employee.py"
+```python title="Input/Employee.py"
 from django.db import models
 from lex.core.models.LexModel import LexModel
 
-from .Team import Team
+from Input.Team import Team
 
 
 class Employee(LexModel):
@@ -93,15 +97,15 @@ class Employee(LexModel):
 ```
 
 > [!note]
-> The relative import `from .Team import Team` works because both files are at the project root. If `Team.py` were in a subfolder like `Core/`, you'd write `from Core.Team import Team` instead.
+> The import `from Input.Team import Team` follows the folder structure: `Input/` is the package, `Team` is the module. All LEX imports work this way.
 
-## Create `Expense.py`
+### `Input/Expense.py`
 
-```python title="Expense.py"
+```python title="Input/Expense.py"
 from django.db import models
 from lex.core.models.LexModel import LexModel
 
-from .Employee import Employee
+from Input.Employee import Employee
 
 
 class Expense(LexModel):
@@ -137,31 +141,19 @@ class Expense(LexModel):
         return f"{self.description} — €{self.amount}"
 ```
 
-Your project root should now look like:
+## Create the Upload Models
 
-```
-TeamBudget/
-├── .env
-├── .run/
-├── migrations/
-├── Team.py
-├── Employee.py
-└── Expense.py
-```
+These are the **Extract** layer — `CalculationModel` subclasses that ingest CSV files. They live in the `Upload/` folder.
 
-## Create Upload Models
+### `Upload/TeamUpload.py`
 
-The main way to import data into LEX is through **upload models**. These are `CalculationModel` subclasses with a `FileField` — the user uploads a CSV, clicks **Calculate**, and the data is processed.
-
-### `TeamUpload.py`
-
-```python title="TeamUpload.py"
+```python title="Upload/TeamUpload.py"
 import pandas as pd
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
 from lex.audit_logging.handlers.LexLogger import LexLogger
 
-from .Team import Team
+from Input.Team import Team
 
 
 class TeamUpload(CalculationModel):
@@ -204,16 +196,16 @@ class TeamUpload(CalculationModel):
         logger.log()
 ```
 
-### `EmployeeUpload.py`
+### `Upload/EmployeeUpload.py`
 
-```python title="EmployeeUpload.py"
+```python title="Upload/EmployeeUpload.py"
 import pandas as pd
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
 from lex.audit_logging.handlers.LexLogger import LexLogger
 
-from .Team import Team
-from .Employee import Employee
+from Input.Team import Team
+from Input.Employee import Employee
 
 
 class EmployeeUpload(CalculationModel):
@@ -269,16 +261,16 @@ class EmployeeUpload(CalculationModel):
         logger.log()
 ```
 
-### `ExpenseUpload.py`
+### `Upload/ExpenseUpload.py`
 
-```python title="ExpenseUpload.py"
+```python title="Upload/ExpenseUpload.py"
 import pandas as pd
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
 from lex.audit_logging.handlers.LexLogger import LexLogger
 
-from .Employee import Employee
-from .Expense import Expense
+from Input.Employee import Employee
+from Input.Expense import Expense
 
 
 class ExpenseUpload(CalculationModel):
@@ -335,9 +327,51 @@ class ExpenseUpload(CalculationModel):
         logger.log()
 ```
 
+## Add a Serializer
+
+By default, LEX generates a basic API serializer for every model. But you can add custom validation by creating a `serializers.py` file in your `Upload/` folder. This uses [Django REST Framework](https://www.django-rest-framework.org/) serializers — see [[features/data-pipeline/serializers]] for the full guide.
+
+```python title="Upload/serializers.py"
+from rest_framework import serializers
+from lex.api.views.model_entries.mixins.PermissionAwareSerializerMixin import add_permission_checks
+
+from Input.Expense import Expense
+
+
+@add_permission_checks
+class ExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = '__all__'
+
+    def validate_amount(self, value):
+        """Amounts must be positive."""
+        if value <= 0:
+            raise serializers.ValidationError("Amount must be positive.")
+        return value
+
+    def validate(self, attrs):
+        """Enforce business rules across fields."""
+        amount = attrs.get('amount')
+        category = attrs.get('category')
+        if amount and amount > 5000 and category == 'meals':
+            raise serializers.ValidationError({
+                'amount': "Meal expenses over €5,000 are not allowed."
+            })
+        return attrs
+
+
+Expense.api_serializers = {
+    'default': ExpenseSerializer,
+}
+```
+
+> [!tip]
+> The `@add_permission_checks` decorator ensures your serializer respects the [[features/access-and-ui/permissions|permission system]]. Validation errors show directly in the frontend UI.
+
 ## Organize the Frontend Navigation
 
-By default, all models appear in a flat list in the sidebar. Let's organize them into groups. Create a `model_structure.yaml` file in your project root:
+The [AG Grid](https://www.ag-grid.com/)-powered frontend shows all models in a sidebar. Organize them into groups with a `model_structure.yaml` file:
 
 ```yaml title="model_structure.yaml"
 model_structure:
@@ -366,7 +400,7 @@ untracked_models:
 ```
 
 > [!tip]
-> See [[features/model structure]] for more details on sidebar organization, styling, and hiding models.
+> See [[features/data-pipeline/model structure]] for more details on sidebar organization, styling, and hiding models.
 
 ## Apply to the Database
 
@@ -401,9 +435,10 @@ Now import data using the upload models:
 ## Checkpoint
 
 At this point you have:
-- Three data models (`Team.py`, `Employee.py`, `Expense.py`)
-- Three upload models for CSV import
+- Three input models in `Input/` (`Team.py`, `Employee.py`, `Expense.py`)
+- Three upload models in `Upload/` for CSV ingestion
+- A serializer in `Upload/serializers.py` for API validation
 - Organized frontend sidebar with named groups
 - Sample data imported via the upload flow
 
-Next up: [[tutorial/Part 3 — Calculations & Logging|Part 3 — Calculations & Logging]] where you'll build `BudgetSummary`.
+Next up: [[tutorial/Part 3 — Calculations & Logging|Part 3 — Calculations & Logging]] where you'll build `BudgetSummary` in the `Reports/` folder.

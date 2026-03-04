@@ -2,7 +2,7 @@
 title: Lifecycle Hooks
 ---
 
-LEX models support lifecycle hooks — methods that run automatically at specific points in a model's lifecycle. Hooks are declared with the `@hook` decorator from `django-lifecycle`, making execution explicit and traceable.
+LEX models support lifecycle hooks — methods that run automatically at specific points in a model's lifecycle. Hooks are declared with the `@hook` decorator from [django-lifecycle](https://rsinger86.github.io/django-lifecycle/), making execution explicit and traceable.
 
 ## Basic Example
 
@@ -159,7 +159,7 @@ Before `pre_validation()` runs, the framework captures a snapshot of all model f
 
 | Use Case | Pattern |
 |---|---|
-| User-initiated, long-running calculation with progress tracking | [[features/calculations\|CalculationModel]] + `calculate()` |
+| User-initiated, long-running calculation with progress tracking | [[features/processing/calculations\|CalculationModel]] + `calculate()` |
 | Automatic processing on create (fire-and-forget) | `LexModel` + `@hook(AFTER_CREATE)` |
 | Block invalid data before save | `LexModel` + `pre_validation()` |
 | Verify constraints after save (with auto-rollback) | `LexModel` + `post_validation()` |

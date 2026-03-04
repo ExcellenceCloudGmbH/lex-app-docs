@@ -13,19 +13,6 @@ LEX ships with a `lex` CLI tool for managing your application. Here's every comm
 | `lex start` | Start the development server |
 | `lex --version` | Print the installed `lex-app` version |
 
-## Migration Workflow Commands
-
-These are used by the automated [[migration/index|migration pipeline]] for V1 → V2 database migration:
-
-| Command | What It Does |
-|---|---|
-| `lex full-migration-workflow` | Run the complete 9-step migration pipeline |
-| `lex makemigrations` | Generate Django migration files |
-| `lex migrate` | Apply Django migrations to the database |
-
-> [!tip]
-> For migration flags and options, see [[migration/invocation modes]].
-
 ## Keycloak Commands
 
 | Command | What It Does |
@@ -50,5 +37,4 @@ set -a; source .env; set +a
 # Then run any lex command
 lex Init
 lex start
-lex full-migration-workflow --dry-run
 ```

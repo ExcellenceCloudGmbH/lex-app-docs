@@ -1,13 +1,29 @@
 ---
-title: Feature List
+title: Building Blocks
 ---
 
-LEX provides a comprehensive set of features for building business applications. Each feature is built into the framework and works out of the box — no extra setup required.
+LEX provides a set of building blocks that you compose to create your application. Each one solves a specific problem — you only use what you need. They're organized into four groups that mirror how data flows through your app.
 
-- [[features/calculations|Calculations]] — define business logic in a `calculate()` method with automatic state tracking, error handling, and optional Celery offloading
-- [[features/lifecycle hooks|Lifecycle Hooks]] — react to creates, updates, and deletes with explicit `@hook` decorators and built-in validation hooks
-- [[features/logging|Logging]] — rich Markdown-formatted logs with the `LexLogger` builder pattern, supporting tables, DataFrames, and code blocks
-- [[features/permissions|Permissions]] — field-level and row-level access control using `UserContext` and `PermissionResult`, integrated with Keycloak
-- [[features/bitemporal history|Bitemporal History]] — automatic time-travel audit trail tracking both *when things happened* and *when the system learned about it*
-- [[features/streamlit dashboards|Streamlit Dashboards]] — attach interactive visualizations directly to your models at the table or record level
-- [[features/model structure|Model Structure]] — organize models in the frontend sidebar with `model_structure.yaml`
+## The ETL Pipeline
+
+Every LEX project follows the Extract → Transform → Load pattern. Your folder structure reflects this:
+
+| Stage | Folder | What Lives Here |
+|---|---|---|
+| **Extract** | `Upload/` | `CalculationModel` subclasses that ingest CSVs, Excel files, API data |
+| **Transform** | `Input/` | Input models — your core business entities and domain logic |
+| **Load** | `Reports/` | `CalculationModel` subclasses that compute summaries and analytics |
+
+## Building Blocks by Category
+
+### [[features/data-pipeline/index|Data Pipeline]]
+How data enters and is structured — [[features/data-pipeline/serializers|serializers]], [[features/data-pipeline/lifecycle hooks|lifecycle hooks]], and [[features/data-pipeline/model structure|model structure]].
+
+### [[features/processing/index|Processing]]
+How business logic runs — [[features/processing/calculations|calculations]], [[features/processing/celery and async calculations|Celery async dispatch]], and [[features/processing/logging|LexLogger]] for rich calculation output.
+
+### [[features/tracking/index|Tracking & Audit]]
+Every action leaves a trail — [[features/tracking/audit logs|audit logs]] for operation tracking and [[features/tracking/bitemporal history|bitemporal history]] for data over time.
+
+### [[features/access-and-ui/index|Access & UI]]
+Who sees what and how it's presented — [[features/access-and-ui/permissions|permissions]] and [[features/access-and-ui/streamlit dashboards|Streamlit dashboards]].

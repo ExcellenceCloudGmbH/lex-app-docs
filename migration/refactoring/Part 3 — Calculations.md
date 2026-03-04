@@ -99,7 +99,7 @@ def calculate(self):
 ```
 
 > [!tip]
-> You can still add custom error handling if you want to log specific messages via [[features/logging|LexLogger]] before the exception propagates.
+> You can still add custom error handling if you want to log specific messages via [[features/processing/logging|LexLogger]] before the exception propagates.
 
 ## Full Before/After Example
 
@@ -184,7 +184,7 @@ stateDiagram-v2
     ABORTED --> IN_PROGRESS : Retry
 ```
 
-This gives you proper progress tracking, retry capability, and clear error states. See [[features/calculations]] for the full details.
+This gives you proper progress tracking, retry capability, and clear error states. See [[features/processing/calculations]] for the full details.
 
 ## Checkpoint
 

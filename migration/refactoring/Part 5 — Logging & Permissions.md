@@ -148,7 +148,7 @@ grep -rn "ModificationRestriction\|modification_restriction" --include="*.py" .
 | `PermissionResult.allow_all_except({'x'})` | Everything except these |
 | `PermissionResult.deny()` | No access |
 
-For more on the permission system, see [[features/permissions]].
+For more on the permission system, see [[features/access-and-ui/permissions]].
 
 ### Sync to Keycloak
 
@@ -172,4 +172,4 @@ grep -rn "ModificationRestriction\|modification_restriction" --include="*.py" .
 - [ ] `permission_*` methods added directly to models
 - [ ] `lex Init` run to sync permissions to Keycloak
 
-Next: [[migration/refactoring/Part 6 — Database Migration & Go-Live|Part 6 — Database Migration & Go-Live]].
+Congratulations — your V1 project code is fully refactored! For ongoing development, explore the [[features/index|building blocks]] and the [[reference/index|reference section]].

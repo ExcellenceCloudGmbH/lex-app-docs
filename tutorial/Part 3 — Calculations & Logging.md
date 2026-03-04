@@ -2,19 +2,19 @@
 title: "Part 3 — Calculations & Logging"
 ---
 
-In this part, you'll create a `BudgetSummary` model that automatically calculates budget utilization for each team per quarter — and logs the results in a rich, formatted report using [[features/logging|LexLogger]].
+In this part, you'll create a `BudgetSummary` model that automatically calculates budget utilization for each team per quarter — and logs the results in a rich, formatted report using [[features/processing/logging|LexLogger]]. This model lives in the `Reports/` folder, the **Load** layer of your ETL pipeline.
 
-## Create `BudgetSummary.py`
+## Create `Reports/BudgetSummary.py`
 
-In PyCharm, right-click your project root → **New → Python File** → name it `BudgetSummary`:
+In PyCharm, right-click the `Reports/` folder → **New → Python File** → name it `BudgetSummary`:
 
-```python title="BudgetSummary.py"
+```python title="Reports/BudgetSummary.py"
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
 from lex.audit_logging.handlers.LexLogger import LexLogger
 
-from .Team import Team
-from .Expense import Expense
+from Input.Team import Team
+from Input.Expense import Expense
 
 
 class BudgetSummary(CalculationModel):
@@ -108,6 +108,8 @@ class BudgetSummary(CalculationModel):
         logger.log()
 ```
 
+Notice how the import paths work: `BudgetSummary` lives in `Reports/`, while `Team` and `Expense` are in `Input/` — so we import them with `from Input.Team import Team`.
+
 Let's break down what's happening:
 
 | Part | What It Does |
@@ -119,6 +121,40 @@ Let's break down what's happening:
 
 > [!important]
 > Notice what you **don't** need to write: no state management (`is_calculated` is automatic), no error handling (framework catches exceptions), no `self.save()` (framework saves after `calculate()` returns).
+
+## Update `model_structure.yaml`
+
+Add the BudgetSummary to your sidebar configuration:
+
+```yaml title="model_structure.yaml"
+model_structure:
+  Teams & People:
+    team: null
+    employee: null
+  Expenses:
+    expense: null
+  Reports:
+    budgetsummary: null
+  Data Import:
+    teamupload: null
+    employeeupload: null
+    expenseupload: null
+
+model_styling:
+  Teams & People:
+    name: "👥 Teams & People"
+  Expenses:
+    name: "💶 Expenses"
+  Reports:
+    name: "📊 Reports"
+  Data Import:
+    name: "📥 Data Import"
+
+untracked_models:
+  teamupload: null
+  employeeupload: null
+  expenseupload: null
+```
 
 ## Apply to the Database
 
@@ -136,7 +172,7 @@ python -m lex Init
 ## Try It Out
 
 1. Select **"Start"** in PyCharm → click ▶️
-2. Navigate to **BudgetSummary** in the frontend
+2. Navigate to **Reports → BudgetSummary** in the frontend
 3. Create a new record: select a team and enter a quarter (e.g., "Q1 2026")
 4. Click the **Calculate** button ▶️
 
@@ -159,13 +195,26 @@ stateDiagram-v2
     SUCCESS --> IN_PROGRESS : Recalculate
 ```
 
-If your `calculate()` method throws an exception, the framework sets `is_calculated = ERROR`, stores the error message, and the user can see the error and retry. For more details, see [[features/calculations]].
+If your `calculate()` method throws an exception, the framework sets `is_calculated = ERROR`, stores the error message, and the user can retry. For more details, see [[features/processing/calculations]].
+
+> [!tip]
+> In production, large calculations can be dispatched to [[features/processing/celery and async calculations|Celery workers]] for parallel processing. During development, everything runs synchronously.
 
 ## Checkpoint
 
 At this point you have:
-- A `BudgetSummary` model that calculates on demand
+- A `BudgetSummary` model in `Reports/` that calculates on demand
 - Rich calculation logs with tables and formatting
 - Automatic state management (no boilerplate)
+- An updated sidebar with a "Reports" group
+
+Your project now follows the full ETL pattern:
+
+```
+TeamBudget/
+├── Upload/            ← Extract
+├── Input/             ← Transform
+└── Reports/           ← Load
+```
 
 Next up: [[tutorial/Part 4 — Validation & Permissions|Part 4 — Validation & Permissions]].

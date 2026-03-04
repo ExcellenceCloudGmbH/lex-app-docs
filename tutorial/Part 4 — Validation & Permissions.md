@@ -2,13 +2,13 @@
 title: "Part 4 — Validation & Permissions"
 ---
 
-In this part, you'll add two things that turn a data entry form into a real business application: **validation** to prevent bad data from being saved, and **permissions** to control who sees what.
+In this part, you'll add two things that turn a data entry form into a real business application: **validation** to prevent bad data from being saved, and **permissions** to control who sees what. These work alongside the [[features/data-pipeline/serializers|serializer validation]] you added in Part 2 — but at the model level, so they apply regardless of how data enters the system.
 
 ## Add Pre-Validation to Expense
 
-Open `Expense.py` and add a `pre_validation` method to your `Expense` class:
+Open `Input/Expense.py` and add a `pre_validation` method to your `Expense` class. This runs before every save — whether the data comes from the API, the frontend, or an upload model:
 
-```python title="Expense.py"
+```python title="Input/Expense.py"
 class Expense(LexModel):
     # ... existing fields ...
 
@@ -24,6 +24,9 @@ class Expense(LexModel):
             )
 ```
 
+> [!note]
+> **Serializer vs. model validation:** Your `serializers.py` validates data at the API layer — great for field formats and cross-field rules. `pre_validation()` validates at the model layer — the last line of defense before the database. Both are useful. See [[features/data-pipeline/lifecycle hooks]] for more on the validation lifecycle.
+
 ### Try It Out
 
 1. Select **"Start"** in PyCharm → click ▶️
@@ -32,11 +35,11 @@ class Expense(LexModel):
 4. Try to create an expense with amount **15000** → blocked
 5. Create one with amount **250** → saved
 
-The error message appears directly in the UI. No data is written to the database when validation fails. For more on validation hooks, see [[features/lifecycle hooks]].
+The error message appears directly in the [AG Grid](https://www.ag-grid.com/)-powered UI. No data is written to the database when validation fails.
 
 ## Add Permissions to Expense
 
-First, update the import at the top of `Expense.py`:
+First, update the import at the top of `Input/Expense.py`:
 
 ```python
 from lex.core.models.LexModel import LexModel, UserContext, PermissionResult
@@ -44,7 +47,7 @@ from lex.core.models.LexModel import LexModel, UserContext, PermissionResult
 
 Then add these methods to your `Expense` class:
 
-```python title="Expense.py"
+```python title="Input/Expense.py"
 class Expense(LexModel):
     # ... existing fields and pre_validation ...
 
@@ -88,11 +91,11 @@ class Expense(LexModel):
 | **CFO** | All expenses across all teams | Yes |
 | **Superuser** | Everything | Yes |
 
-The permissions are checked automatically by the framework on every API request and frontend interaction. You don't need any middleware or decorators. For more on the permission system, see [[features/permissions]].
+The permissions are checked automatically by the framework on every API request and frontend interaction. You don't need any middleware or decorators — and they integrate with the `@add_permission_checks` decorator on your [[features/data-pipeline/serializers|serializers]]. For more on the permission system, see [[features/access-and-ui/permissions]].
 
 ## Sync Permissions
 
-Select **"Init"** in PyCharm → click ▶️ to sync your model permissions to Keycloak.
+Select **"Init"** in PyCharm → click ▶️ to sync your model permissions to [Keycloak](https://www.keycloak.org/documentation).
 
 <details>
 <summary>Terminal alternative</summary>
@@ -130,8 +133,9 @@ When the **CFO** logs in, they see everything across all teams.
 ## Checkpoint
 
 At this point you have:
-- Validation rules that block bad data
+- Model-level validation rules that block bad data
+- API-level serializer validation from Part 2
 - Role-based permissions (employee, manager, CFO)
-- Keycloak integration for group management
+- [Keycloak](https://www.keycloak.org/documentation) integration for group management
 
 Next up: [[tutorial/Part 5 — Streamlit Dashboards|Part 5 — Streamlit Dashboards]].

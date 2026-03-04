@@ -2,11 +2,11 @@
 title: Getting Started
 ---
 
-LEX is a Python/Django framework that gives you calculation models, lifecycle hooks, permissions, logging, bitemporal history, and Streamlit dashboards — all out of the box. You define your models and business logic; LEX handles the rest.
+LEX is a [Python](https://www.python.org/)/[Django](https://docs.djangoproject.com/) framework that gives you calculation models, lifecycle hooks, permissions, logging, bitemporal history, and [Streamlit](https://docs.streamlit.io/) dashboards — all out of the box. You define your models and business logic; LEX handles the rest.
 
 ## Who Is This For?
 
-If you're a **new developer**, start with [[installation]] and then try the [[tutorial/index|TeamBudget Tutorial]] to build a real app. If you're a **business analyst**, you'll want to focus on [[features/calculations|calculations]], [[features/permissions|permissions]], and [[features/streamlit dashboards|dashboards]]. If you're **migrating from V1**, head to [[migration/import migration|Import Migration]] first.
+If you're a **new developer**, start with [[installation]] and then try the [[tutorial/index|TeamBudget Tutorial]] to build a real app. If you're a **business analyst**, you'll want to focus on [[features/processing/calculations|calculations]], [[features/access-and-ui/permissions|permissions]], and [[features/access-and-ui/streamlit dashboards|dashboards]]. If you're **migrating from V1**, head to the [[migration/refactoring/index|Refactoring Series]] first.
 
 ## Quick Start
 

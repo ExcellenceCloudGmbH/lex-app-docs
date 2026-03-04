@@ -2,7 +2,7 @@
 title: Permissions
 ---
 
-LEX provides fine-grained access control through permission methods defined directly on your models. You can control which fields a user can view, edit, or export, which records they can see, and which actions they can perform — all integrated with Keycloak.
+LEX provides fine-grained access control through permission methods defined directly on your models. You can control which fields a user can view, edit, or export, which records they can see, and which actions they can perform — all integrated with [Keycloak](https://www.keycloak.org/documentation).
 
 ## The UserContext Object
 

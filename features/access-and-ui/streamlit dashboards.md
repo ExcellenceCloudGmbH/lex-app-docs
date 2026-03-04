@@ -2,7 +2,7 @@
 title: Streamlit Dashboards
 ---
 
-LEX lets you attach interactive Streamlit dashboards directly to your models. These dashboards appear in the frontend UI and can display charts, tables, forms, or any Streamlit widget.
+LEX lets you attach interactive [Streamlit](https://docs.streamlit.io/) dashboards directly to your models. These dashboards appear in the frontend UI and can display charts, tables, forms, or any [Streamlit](https://docs.streamlit.io/) widget.
 
 There are two levels of dashboards:
 

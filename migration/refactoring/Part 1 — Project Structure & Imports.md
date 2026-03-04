@@ -23,20 +23,25 @@ MyProject/
 └── requirements.txt
 ```
 
-LEX doesn't use Django's app scaffolding. There's no `manage.py`, no `admin.py`, no `views.py`. Your model files can live at the project root or be organized into subfolders:
+LEX doesn't use Django's app scaffolding. There's no `manage.py`, no `admin.py`, no `views.py`. Your models go into three ETL folders:
 
 ```
 MyProject/
 ├── .env
 ├── .run/
 ├── migrations/
-├── Fund.py
-├── Quarter.py
-├── Investment.py
+├── Input/
+│   ├── __init__.py
+│   ├── Fund.py
+│   ├── Quarter.py
+│   └── Investment.py
 ├── Upload/
 │   ├── __init__.py
 │   ├── FundUpload.py
 │   └── InvestmentUpload.py
+└── Reports/
+    ├── __init__.py
+    └── CalculateNAV.py
 └── requirements.txt
 ```
 
@@ -57,7 +62,7 @@ lex setup
 ```
 
 > [!warning]
-> Don't delete your existing `migrations/` folder yet — you'll need it for the database migration in [[migration/refactoring/Part 6 — Database Migration & Go-Live|Part 6]].
+> Don't delete your existing `migrations/` folder — you'll need it to run Django migrations after refactoring.
 
 ## Update All Imports
 
@@ -133,18 +138,14 @@ from lex.core.models.LexModel import UserContext, PermissionResult
 Imports between your own models follow the folder structure:
 
 ```python
-# Model at the project root
-from .Fund import Fund
+# Importing an input model from anywhere
+from Input.Fund import Fund
 
-# Model inside a subfolder
+# Importing an upload model
 from Upload.FundUpload import FundUpload
-```
 
-If you're referencing a model in the same subfolder:
-
-```python
-# Inside Upload/FundUpload.py, importing from root
-from Fund import Fund
+# Importing a report model
+from Reports.CalculateNAV import CalculateNAV
 ```
 
 > [!tip]

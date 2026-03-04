@@ -57,7 +57,7 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Recursion guard** — prevents re-entrant calculation loops
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
 - **Auto-save** — the record is saved automatically after `calculate()` returns
-- **Celery support** — set `CELERY_ACTIVE=true` for background execution
+- **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
 
 <details>
 <summary>How the state machine works internally</summary>

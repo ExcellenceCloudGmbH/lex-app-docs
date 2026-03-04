@@ -125,7 +125,7 @@ class Invoice(LexModel):
         NotificationService.send(f"Invoice status changed to {self.status}")
 ```
 
-For more on hooks, conditions, and the validation system, see [[features/lifecycle hooks]].
+For more on hooks, conditions, and the validation system, see [[features/data-pipeline/lifecycle hooks]].
 
 ## Checkpoint
 
