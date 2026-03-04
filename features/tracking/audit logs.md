@@ -71,3 +71,12 @@ The audit system includes built-in resilience:
 
 > [!note]
 > Audit logs are effectively read-only. They are designed to be an immutable record of operations — only administrators should modify or delete them.
+
+## In the Frontend
+
+Audit logs aren't just a database table — they're surfaced directly in the interface:
+
+- **[[interface/record-detail/audit log tab|Audit Log Tab]]** — every record detail page includes an Audit Log tab showing all operations that affected that specific record
+- **[[interface/record-detail/timeline tab|Timeline Tab]]** — the audit feed view at the bottom of the timeline integrates audit events with the visual change history
+
+See [[interface/record-detail/index|Record Detail]] for the full user-facing documentation.

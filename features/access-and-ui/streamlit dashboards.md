@@ -77,3 +77,24 @@ Streamlit dashboards run as a separate process alongside your LEX application. S
 - Use `st.columns()` for side-by-side layouts
 - Any Streamlit widget works — `st.plotly_chart()`, `st.map()`, `st.selectbox()`, etc.
 - Record-level dashboards have full access to `self` and can query related models
+
+## Federated Authentication
+
+When a dashboard is embedded in the LEX APP frontend, the user's access token is passed securely to Streamlit via URL parameters. This enables:
+
+- **No re-authentication** — the user doesn't need to log in again for Streamlit
+- **Identity traceability** — actions in the dashboard are linked to the user's Keycloak identity
+- **Access control** — the dashboard can use the token to call the LEX APP API with the user's permissions
+
+The token exchange is handled automatically by the `StreamlitIframe` component and the `useStreamlitAuth` hook — no developer configuration needed beyond defining the dashboard methods on your models.
+
+## In the Frontend
+
+Dashboards appear in two places:
+
+- **[[interface/record-detail/analytics tab|Analytics Tab]]** — on the record detail page, showing a dashboard scoped to a specific record
+- **Table-level toggle** — on the grid toolbar, showing a dashboard for the entire model
+
+If the Streamlit server is unavailable, the UI shows a graceful fallback with a "Retry Connection" button. The rest of the application continues to work normally.
+
+See [[interface/record-detail/analytics tab|Analytics Tab]] for the full user-facing documentation.

@@ -89,3 +89,13 @@ Now you can answer:
 - "What salary was *actually* correct on Feb 1?" → €60,000 (query by valid_from ≤ Feb 1, latest sys_from)
 
 This distinction is critical for audit trails, regulatory compliance, and financial reporting.
+
+## In the Frontend
+
+The bitemporal model powers several parts of the user interface:
+
+- **[[interface/record-detail/timeline tab|Timeline Tab]]** — a visual timeline showing changes along both time dimensions, with a version details drawer for inspecting specific snapshots
+- **[[interface/record-detail/history tab|History Tab]]** — a full grid of all historical versions with the **As-Of** control for time-travel queries
+- **As-Of Control** — a date picker in the grid toolbar that lets users view data as it existed at any point in the past
+
+See [[interface/record-detail/index|Record Detail]] for the full user-facing documentation.

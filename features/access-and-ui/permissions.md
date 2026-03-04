@@ -130,3 +130,56 @@ If you're coming from `ModificationRestriction`:
 Remove `ModificationRestriction` class definitions, remove `modification_restriction = MyRestriction()`, and add `permission_*` methods directly to your model. Run `lex Init` to sync to Keycloak.
 
 </details>
+
+## Authentication Architecture
+
+LEX APP uses [Keycloak](https://www.keycloak.org/documentation) as its identity provider. Users authenticate once via OIDC (OpenID Connect), and the session is shared across the entire application — including embedded [[features/access-and-ui/streamlit dashboards|Streamlit dashboards]].
+
+The frontend authentication flow:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App as LEX APP Frontend
+    participant API as LEX APP Backend
+    participant KC as Keycloak
+
+    User->>App: Opens application
+    App->>API: GET /api/me/
+    alt Not authenticated
+        API-->>App: 401 Unauthorized
+        App->>KC: Redirect to OIDC login
+        KC-->>App: Redirect back with session
+        App->>API: GET /api/me/ (with session)
+    end
+    API-->>App: User info + roles + scopes
+    App->>App: Render UI with permissions applied
+```
+
+The `SessionAuthGate` component handles this transparently — including redirect-loop protection, automatic retries, and a clear unauthorized page for users without assigned roles.
+
+### Access Scopes
+
+Permissions are enforced across 6 scopes:
+
+| Scope | What It Controls |
+|---|---|
+| **read** | Which fields a user can view |
+| **edit** | Which fields a user can modify |
+| **export** | Which fields appear in exports |
+| **create** | Whether a user can create new records |
+| **delete** | Whether a user can delete records |
+| **list** | Whether a user can view the model's table |
+
+These scopes are synced to Keycloak when you run `lex Init`, enabling centralized policy management.
+
+## In the Frontend
+
+Permissions are enforced at every layer:
+
+- **Grid cells** — fields the user can't read are hidden; fields they can't edit are read-only
+- **Action buttons** — the Create and Delete buttons are hidden if the user doesn't have those permissions
+- **Inline editing** — attempting to edit a restricted field shows it as disabled
+- **Exports** — restricted fields are excluded from exported files
+
+See [[interface/the-grid/index|The Grid]] for how permissions appear in the user interface.

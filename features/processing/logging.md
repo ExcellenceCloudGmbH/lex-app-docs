@@ -109,3 +109,14 @@ If you're coming from `CalculationLog.create()`:
 Replace all `CalculationLog.create(...)` calls with `LexLogger()`, remove manual context/ID passing, and always end chains with `.log()`.
 
 </details>
+
+## In the Frontend
+
+LexLogger output is rendered in the frontend in real-time:
+
+- **Calculation Log Panel** — a slide-out drawer during calculation showing live Markdown-rendered output as the calculation progresses
+- **Hierarchical Log Tree** — when a parent calculation triggers children, logs are nested in a tree view showing the full execution hierarchy
+- **PDF Export** — the calculation log for any record can be exported as a PDF, useful for compliance documentation and auditing
+- **Rich Rendering** — headings, tables, DataFrames, and code blocks are all rendered with proper formatting and syntax highlighting
+
+See the [[interface/record-detail/index|Record Detail]] page for how logs appear in context.

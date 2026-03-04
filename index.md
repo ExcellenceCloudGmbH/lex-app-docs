@@ -21,6 +21,10 @@ flowchart LR
 3. Work through the [[tutorial/index|TeamBudget Tutorial]] to build a real app
 4. Explore [[features/index|all building blocks]] or dive into the [[reference/index|reference]]
 
+## Explore the Interface
+
+Already using LEX? Explore the [[interface/index|user interface documentation]] — the [[interface/the-grid/index|data grid]], [[interface/record-detail/index|record detail]], [[interface/the-grid/saved views|saved views]], [[interface/themes|themes]], and more.
+
 ## Migrating from V1?
 
 If you're moving an existing project from `generic_app`, follow the [[migration/refactoring/index|step-by-step refactoring series]]. It covers everything from import updates to database migration.
