@@ -8,8 +8,11 @@ At its heart, LEX follows the **ETL pattern** — Extract, Transform, Load — t
 
 ```mermaid
 flowchart LR
-    A["📥 Extract\n(Upload/)"] --> B["⚙️ Transform\n(Input/)"]
-    B --> C["📊 Load\n(Reports/)"]
+    A["📥 Extract
+    (Upload/)"] --> B["⚙️ Transform
+    (Input/)"]
+    B --> C["📊 Load
+    (Reports/)"]
 ```
 
 **Upload models** ingest raw data — CSV files, Excel sheets, API payloads. **Input models** hold your business entities and domain logic. **Report models** compute summaries, run analytics, and surface results through interactive [Streamlit](https://docs.streamlit.io/) dashboards. Every step is tracked with [[features/tracking/bitemporal history|bitemporal history]], every action logged, every permission enforced.

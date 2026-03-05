@@ -10,10 +10,15 @@ Every record detail page has up to five tabs, each offering a different perspect
 
 ```mermaid
 flowchart LR
-    A["📄 Summary\n(fields & values)"] --> B["📊 Analytics\n(Streamlit dashboard)"]
-    B --> C["🕐 Timeline\n(visual history)"]
-    C --> D["📋 History\n(version grid)"]
-    D --> E["📑 Audit Log\n(who did what)"]
+    A["📄 Summary
+    (fields & values)"] --> B["📊 Analytics
+    (Streamlit dashboard)"]
+    B --> C["🕐 Timeline
+    (visual history)"]
+    C --> D["📋 History
+    (version grid)"]
+    D --> E["📑 Audit Log
+    (who did what)"]
 ```
 
 ### [[interface/record-detail/summary tab|Summary]]

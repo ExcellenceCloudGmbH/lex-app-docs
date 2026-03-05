@@ -8,14 +8,20 @@ When a calculation triggers other calculations — say, a parent that kicks off 
 
 ```mermaid
 flowchart LR
-    A["User clicks\nCalculate"] --> B["Django\n(main process)"]
-    B --> C{"Celery\navailable?"}
-    C -- Yes --> D["Redis\n(message broker)"]
+    A["User clicks
+    Calculate"] --> B["Django
+    (main process)"]
+    B --> C{"Celery
+    available?"}
+    C -- Yes --> D["Redis
+    (message broker)"]
     D --> E["Celery Worker 1"]
     D --> F["Celery Worker 2"]
     D --> G["Celery Worker N"]
-    C -- No --> H["Synchronous\nfallback"]
-    E --> I["Results\n(Redis backend)"]
+    C -- No --> H["Synchronous
+    fallback"]
+    E --> I["Results
+    (Redis backend)"]
     F --> I
     G --> I
     H --> I

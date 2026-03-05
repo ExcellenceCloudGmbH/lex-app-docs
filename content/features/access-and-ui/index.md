@@ -6,9 +6,12 @@ Data is only useful if the right people can see it — and only the parts they'r
 
 ```mermaid
 flowchart LR
-    A["User request"] --> B{"Permissions\ncheck"}
-    B -- Allowed --> C["AG Grid\ndata table"]
-    B -- Allowed --> D["Streamlit\ndashboard"]
+    A["User request"] --> B{"Permissions
+    check"}
+    B -- Allowed --> C["AG Grid
+    data table"]
+    B -- Allowed --> D["Streamlit
+    dashboard"]
     B -- Denied --> E["Access denied"]
 ```
 

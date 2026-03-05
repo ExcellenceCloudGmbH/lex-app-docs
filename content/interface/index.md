@@ -8,10 +8,15 @@ Everything is designed so you never lose context. Switch from a high-level portf
 
 ```mermaid
 flowchart LR
-    A["📋 The Grid\n(explore & analyze)"] --> B["📄 Record Detail\n(dive deep)"]
-    B --> C["📊 Analytics Tab\n(Streamlit dashboards)"]
-    B --> D["🕐 Timeline Tab\n(visual history)"]
-    B --> E["📑 Audit Log Tab\n(who did what)"]
+    A["📋 The Grid
+    (explore & analyze)"] --> B["📄 Record Detail
+    (dive deep)"]
+    B --> C["📊 Analytics Tab
+    (Streamlit dashboards)"]
+    B --> D["🕐 Timeline Tab
+    (visual history)"]
+    B --> E["📑 Audit Log Tab
+    (who did what)"]
 ```
 
 ## What You'll Find Here

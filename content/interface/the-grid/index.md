@@ -10,10 +10,14 @@ Every model in your project gets a grid automatically. Open a model, and you'll 
 
 ```mermaid
 flowchart LR
-    A["Raw Data"] --> B["Filter & Sort\n(find what matters)"]
-    B --> C["Group & Pivot\n(reshape the view)"]
-    C --> D["Save as View\n(reuse it tomorrow)"]
-    D --> E["Export\n(share it externally)"]
+    A["Raw Data"] --> B["Filter & Sort
+    (find what matters)"]
+    B --> C["Group & Pivot
+    (reshape the view)"]
+    C --> D["Save as View
+    (reuse it tomorrow)"]
+    D --> E["Export
+    (share it externally)"]
 ```
 
 ### [[interface/the-grid/filtering and sorting|Filtering & Sorting]]

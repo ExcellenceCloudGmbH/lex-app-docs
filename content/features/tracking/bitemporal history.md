@@ -45,8 +45,11 @@ Bitemporal history in LEX is built on three layers:
 
 ```mermaid
 flowchart TB
-    A["Layer 1: Django Simple History\n(System Time tracking)"] --> B["Layer 2: LEX History Extension\n(Valid Time tracking)"]
-    B --> C["Layer 3: Frontend History Panel\n(Timeline visualization)"]
+    A["Layer 1: Django Simple History
+    (System Time tracking)"] --> B["Layer 2: LEX History Extension
+    (Valid Time tracking)"]
+    B --> C["Layer 3: Frontend History Panel
+    (Timeline visualization)"]
 ```
 
 | Layer | What It Does |

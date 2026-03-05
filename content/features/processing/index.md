@@ -6,11 +6,14 @@ Once data is in the system, it needs to be transformed into business insight. LE
 
 ```mermaid
 flowchart LR
-    A["User clicks\nCalculate"] --> B["CalculationModel\nstate machine"]
+    A["User clicks
+    Calculate"] --> B["CalculationModel
+    state machine"]
     B --> C{"Parallel?"}
     C -- Yes --> D["Celery workers"]
     C -- No --> E["Synchronous"]
-    D --> F["Results saved\n+ LexLogger output"]
+    D --> F["Results saved
+    + LexLogger output"]
     E --> F
 ```
 

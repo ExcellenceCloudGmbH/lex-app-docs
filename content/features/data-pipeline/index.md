@@ -6,9 +6,13 @@ Every piece of data in a LEX application passes through a pipeline: it enters th
 
 ```mermaid
 flowchart LR
-    A["Data arrives\n(API, CSV, UI)"] --> B["Serializer\nvalidates fields"]
-    B --> C["Lifecycle Hook\nprocesses on save"]
-    C --> D["Model Structure\norganizes in UI"]
+    A["Data arrives
+    (API, CSV, UI)"] --> B["Serializer
+    validates fields"]
+    B --> C["Lifecycle Hook
+    processes on save"]
+    C --> D["Model Structure
+    organizes in UI"]
 ```
 
 ## Building Blocks

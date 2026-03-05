@@ -6,8 +6,11 @@ In regulated environments — finance, healthcare, compliance — you can't just
 
 ```mermaid
 flowchart TB
-    A["Any API operation\n(create, update, delete)"] --> B["Audit Logs\n(who did what)"]
-    C["Any model change"] --> D["Bitemporal History\n(what changed over time)"]
+    A["Any API operation
+    (create, update, delete)"] --> B["Audit Logs
+    (who did what)"]
+    C["Any model change"] --> D["Bitemporal History
+    (what changed over time)"]
 ```
 
 ## Building Blocks
