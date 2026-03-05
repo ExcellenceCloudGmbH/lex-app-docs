@@ -24,7 +24,11 @@ For example, group your expenses by **Team**:
 
 Each group header shows aggregate values — the count of records and totals for numeric columns. Click to expand or collapse.
 
-<!-- 📹 VIDEO: Dragging the "team" column to the group bar, seeing the grid reorganize into collapsible groups -->
+> [!example]- 🎬 Video — Drag-to-group row grouping
+> <video controls width="100%">
+>   <source src="../../videos/grid-drag-to-group.mp4" type="video/mp4">
+> </video>
+> Drag the "team" column to the group bar, see the grid reorganize into collapsible groups.
 
 ### Multi-Level Grouping
 
@@ -76,7 +80,11 @@ For example, with expenses grouped by **Team** and pivoted by **Quarter**:
 | Marketing | €4,500 | €3,800 | €3,200 | €3,700 | **€15,200** |
 | Finance | €1,800 | €1,500 | €1,200 | €1,800 | **€6,300** |
 
-<!-- 📹 VIDEO: Enabling pivot mode, dragging Quarter to the pivot area, seeing the grid transform into a cross-tabulation -->
+> [!example]- 🎬 Video — Pivot mode cross-tabulation
+> <video controls width="100%">
+>   <source src="../../videos/grid-pivot-mode.mp4" type="video/mp4">
+> </video>
+> Enable pivot mode, drag Quarter to the pivot area, see the grid transform into a cross-tabulation.
 
 > [!tip]
 > When you [[interface/the-grid/exporting data|export]] in pivot mode, the exported file reflects the pivoted layout — rows, columns, and aggregations exactly as you see them on screen.

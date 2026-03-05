@@ -14,7 +14,11 @@ When you open the Analytics tab, the application:
 
 From your perspective, it's one click: grid → record → Analytics tab. No context switching, no new browser tabs, no re-authentication.
 
-<!-- 📹 VIDEO: Clicking from the grid to a record, then switching to the Analytics tab, seeing the dashboard load -->
+> [!example]- 🎬 Video — Grid to record to Analytics tab
+> <video controls width="100%">
+>   <source src="../../videos/record-analytics-tab.mp4" type="video/mp4">
+> </video>
+> Click from the grid to a record, switch to the Analytics tab, see the Streamlit dashboard load.
 
 ## Table-Level vs. Record-Level
 
@@ -39,7 +43,8 @@ Because dashboards are powered by Streamlit, the possibilities are wide. Common 
 
 All of these run live – they compute from the current data, so they're always up to date.
 
-<!-- 📸 SCREENSHOT: Analytics tab showing a chart, KPI cards, and a mini-table for a single record -->
+> [!example]- 📸 Screenshot — Analytics tab with Streamlit dashboard
+> ![Analytics tab showing a record-level Streamlit dashboard](../images/record-detail/analytics-tab.jpeg)
 
 ## When the Analytics Server Is Offline
 

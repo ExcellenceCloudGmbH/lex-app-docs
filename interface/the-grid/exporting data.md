@@ -15,7 +15,11 @@ Click the **Export** button in the toolbar. The system generates a file that mir
 
 The export runs server-side, so even large datasets (tens of thousands of rows) export reliably without browser memory issues.
 
-<!-- 📹 VIDEO: Setting up a grouped, filtered view, clicking Export, opening the resulting file -->
+> [!example]- 🎬 Video — Exporting a grouped, filtered view
+> <video controls width="100%">
+>   <source src="../../videos/grid-export.mp4" type="video/mp4">
+> </video>
+> Set up a grouped and filtered view, click Export, open the resulting Excel file.
 
 ## Export Formats
 

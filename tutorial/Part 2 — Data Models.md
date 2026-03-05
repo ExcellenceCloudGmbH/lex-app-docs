@@ -329,9 +329,9 @@ class ExpenseUpload(CalculationModel):
 
 ## Add a Serializer
 
-By default, LEX generates a basic API serializer for every model. But you can add custom validation by creating a `serializers.py` file in your `Upload/` folder. This uses [Django REST Framework](https://www.django-rest-framework.org/) serializers — see [[features/data-pipeline/serializers]] for the full guide.
+By default, LEX generates a basic API serializer for every model. But you can add custom validation by creating a `serializers.py` file alongside the model it applies to. This uses [Django REST Framework](https://www.django-rest-framework.org/) serializers — see [[features/data-pipeline/serializers]] for the full guide.
 
-```python title="Upload/serializers.py"
+```python title="Input/serializers.py"
 from rest_framework import serializers
 from lex.api.views.model_entries.mixins.PermissionAwareSerializerMixin import add_permission_checks
 
@@ -339,7 +339,7 @@ from Input.Expense import Expense
 
 
 @add_permission_checks
-class ExpenseSerializer(serializers.ModelSerializer):
+class ExpenseDefaultSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = '__all__'
@@ -351,9 +351,21 @@ class ExpenseSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """Enforce business rules across fields."""
+        """Enforce business rules across fields.
+
+        On partial updates (PATCH) attrs only contains the fields that
+        were sent, so fall back to the existing instance values.
+        """
         amount = attrs.get('amount')
         category = attrs.get('category')
+
+        # Fall back to existing values during partial updates
+        if self.instance:
+            if amount is None:
+                amount = self.instance.amount
+            if category is None:
+                category = self.instance.category
+
         if amount and amount > 5000 and category == 'meals':
             raise serializers.ValidationError({
                 'amount': "Meal expenses over €5,000 are not allowed."
@@ -362,12 +374,15 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
 
 Expense.api_serializers = {
-    'default': ExpenseSerializer,
+    'default': ExpenseDefaultSerializer,
 }
 ```
 
 > [!tip]
 > The `@add_permission_checks` decorator ensures your serializer respects the [[features/access-and-ui/permissions|permission system]]. Validation errors show directly in the frontend UI.
+
+> [!warning] Partial updates and cross-field validation
+> Lex uses **PATCH** requests when you edit a cell inline in the grid. A PATCH only sends the changed field — so `attrs` won't contain fields you didn't touch. Always fall back to `self.instance` for the "other" field in cross-field checks, otherwise the rule silently passes.
 
 ## Organize the Frontend Navigation
 
@@ -437,7 +452,7 @@ Now import data using the upload models:
 At this point you have:
 - Three input models in `Input/` (`Team.py`, `Employee.py`, `Expense.py`)
 - Three upload models in `Upload/` for CSV ingestion
-- A serializer in `Upload/serializers.py` for API validation
+- A serializer in `Input/serializers.py` for API validation
 - Organized frontend sidebar with named groups
 - Sample data imported via the upload flow
 

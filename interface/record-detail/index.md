@@ -42,7 +42,8 @@ Above the tabs, a toolbar gives you quick access to:
 | **Edit** | Jump to the edit form for this record |
 | **Export to PDF** | Download the current Summary tab as a PDF document |
 
-<!-- 📸 SCREENSHOT: Record detail toolbar showing preset selector, column toggle, edit button, and PDF export -->
+> [!example]- 📸 Screenshot — Record detail toolbar
+> ![Record detail toolbar showing preset selector, column toggle, edit button, and PDF export](../images/record-detail/record-detail-toolbar.jpeg)
 
 ## Navigating Between Records
 

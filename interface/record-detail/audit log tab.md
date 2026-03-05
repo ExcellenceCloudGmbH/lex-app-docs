@@ -12,14 +12,18 @@ The Audit Log tab displays a grid of all API operations that affected the curren
 
 | Column | What It Shows |
 |---|---|
+| **Id** | Unique audit log entry identifier |
 | **Date** | Exact timestamp of the operation |
 | **Author** | The user who performed the action |
+| **Resource** | The model name (e.g., `budgetsummary`) |
 | **Action** | `create`, `update`, or `delete` |
-| **Resource** | The model name (e.g., `expense`) |
-| **Status** | `pending`, `success`, or `failure` |
-| **Payload** | The full data that was sent or modified |
+| **Payload** | The full data that was sent or modified (expandable JSON) |
+| **Calculation Id** | Link to the calculation log entry (for `CalculationModel` records) |
+| **Calculation Record** | The related record (e.g., "Marketing — 1") |
+| **Actions** | Quick view link to inspect the full entry |
 
-<!-- 📸 SCREENSHOT: Audit log tab showing a list of operations for a single record -->
+> [!example]- 📸 Screenshot — Audit log with expanded JSON payload
+> ![Audit Log tab showing operations grid with expandable JSON payload](../images/record-detail/audit-log-tab.jpeg)
 
 ## The Status Lifecycle
 

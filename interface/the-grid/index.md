@@ -52,4 +52,8 @@ Double-click any editable cell to modify it directly in the grid. Changes are va
 
 Fields you don't have [[features/access-and-ui/permissions|permission]] to edit appear as read-only — the grid respects your access level down to individual cells.
 
-<!-- 📹 VIDEO: Double-clicking a cell, editing a value, seeing inline validation error, then correcting it -->
+> [!example]- 🎬 Video — Inline editing with live validation
+> <video controls width="100%">
+>   <source src="../../videos/grid-inline-editing.mp4" type="video/mp4">
+> </video>
+> Double-click a cell, edit a value, see an inline validation error, then correct it.

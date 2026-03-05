@@ -47,14 +47,14 @@ TeamBudget/
 │   ├── __init__.py
 │   ├── Team.py
 │   ├── Employee.py
-│   └── Expense.py
+│   ├── Expense.py
+│   └── serializers.py
 │
 ├── Upload/                    ← Data ingestion (Extract)
 │   ├── __init__.py
 │   ├── TeamUpload.py
 │   ├── EmployeeUpload.py
-│   ├── ExpenseUpload.py
-│   └── serializers.py
+│   └── ExpenseUpload.py
 │
 └── Reports/                   ← Calculations & output (Load)
     ├── __init__.py

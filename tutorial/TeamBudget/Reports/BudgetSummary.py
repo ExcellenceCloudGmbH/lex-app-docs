@@ -1,22 +1,106 @@
----
-title: "Part 5 — Streamlit Dashboards"
----
+import pandas as pd
+from django.db import models
+from lex.core.models.CalculationModel import CalculationModel
+from lex.audit_logging.handlers.LexLogger import LexLogger
 
-In this part, you'll add two interactive dashboards to `BudgetSummary` — a company-wide overview and a per-team deep-dive. Both are added directly to your model file in `Reports/`, using [Streamlit](https://docs.streamlit.io/) — see [[features/access-and-ui/streamlit dashboards]] for the full guide.
+from Input.Team import Team
+from Input.Expense import Expense
 
-| Dashboard | Level | What It Shows |
-|---|---|---|
-| **Company Overview** | Table-level (`streamlit_class_main`) | All teams' budgets side-by-side |
-| **Team Deep-Dive** | Record-level (`streamlit_main`) | One team's expenses in detail |
 
-## Add the Table-Level Dashboard
+class BudgetSummary(CalculationModel):
+    """Auto-calculated budget utilization per team per quarter."""
 
-Add this class method to your `BudgetSummary` class (after `calculate()`):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    quarter = models.CharField(max_length=10)
 
-> [!important]
-> Import `streamlit` **inside** the Streamlit methods, not at the top of the file. Your model file is loaded by Django at startup — when Streamlit isn't running. A top-level `import streamlit as st` would crash.
+    # Calculated fields (populated by calculate())
+    total_expenses = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0
+    )
+    remaining_budget = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0
+    )
+    utilization_pct = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        help_text="Budget utilization percentage",
+    )
+    expense_count = models.IntegerField(default=0)
+    is_over_budget = models.BooleanField(default=False)
 
-```python title="Reports/BudgetSummary.py"
+    def __str__(self):
+        return f"{self.team.name} — {self.quarter}"
+
+    # ── Calculation ──
+
+    def calculate(self):
+        """
+        Calculate budget utilization for a team in a given quarter.
+        Called when the user clicks "Calculate" in the UI.
+        """
+        logger = LexLogger()
+
+        # Query all expenses for this team and quarter
+        expenses = Expense.objects.filter(
+            employee__team=self.team,
+            quarter=self.quarter,
+        )
+
+        # Compute totals
+        self.total_expenses = expenses.aggregate(
+            total=models.Sum("amount")
+        )["total"] or 0
+        self.expense_count = expenses.count()
+        self.remaining_budget = self.team.budget - self.total_expenses
+        self.utilization_pct = (
+            (self.total_expenses / self.team.budget * 100)
+            if self.team.budget > 0
+            else 0
+        )
+        self.is_over_budget = self.total_expenses > self.team.budget
+
+        # ── Log the results ──
+
+        logger.add_heading(
+            f"Budget Report: {self.team.name} — {self.quarter}"
+        )
+
+        logger.add_table(
+            headers=["Metric", "Value"],
+            rows=[
+                ["Total Expenses", f"€{self.total_expenses:,.2f}"],
+                ["Team Budget", f"€{self.team.budget:,.2f}"],
+                ["Remaining", f"€{self.remaining_budget:,.2f}"],
+                ["Utilization", f"{self.utilization_pct:.1f}%"],
+                ["# of Expenses", str(self.expense_count)],
+            ],
+        )
+
+        # Breakdown by category
+        category_data = (
+            expenses.values("category")
+            .annotate(total=models.Sum("amount"))
+            .order_by("-total")
+        )
+        if category_data:
+            logger.add_heading("Breakdown by Category", level=2)
+            logger.add_table(
+                headers=["Category", "Amount"],
+                rows=[
+                    [row["category"], f"€{row['total']:,.2f}"]
+                    for row in category_data
+                ],
+            )
+
+        # Over-budget warning
+        if self.is_over_budget:
+            logger.add_text(
+                f"⚠️ OVER BUDGET by €{abs(self.remaining_budget):,.2f}!"
+            )
+
+        logger.log()
+
+    # ── Streamlit: Table-level dashboard ──
+
     @classmethod
     def streamlit_class_main(cls):
         """Company-wide budget overview — all teams at a glance."""
@@ -66,16 +150,9 @@ Add this class method to your `BudgetSummary` class (after `calculate()`):
         # Data table
         st.subheader("Detailed Breakdown")
         st.dataframe(df, use_container_width=True)
-```
 
-> [!tip]
-> `streamlit_class_main` is a `@classmethod` — it shows when users open the [Streamlit](https://docs.streamlit.io/) page for the BudgetSummary table (no specific record selected).
+    # ── Streamlit: Record-level dashboard ──
 
-## Add the Record-Level Dashboard
-
-Add this instance method below `streamlit_class_main`:
-
-```python title="Reports/BudgetSummary.py"
     def streamlit_main(self, user=None):
         """Single team's budget detail with expense breakdown."""
         import streamlit as st
@@ -127,30 +204,3 @@ Add this instance method below `streamlit_class_main`:
             st.dataframe(exp_df, use_container_width=True)
         else:
             st.info("No expenses recorded for this period.")
-```
-
-## Try It Out
-
-Select **"Streamlit"** from the run configuration dropdown in PyCharm → click ▶️.
-
-<details>
-<summary>Terminal alternative</summary>
-
-```powershell
-python -m lex streamlit
-```
-
-</details>
-
-In the frontend, navigate to **Reports → BudgetSummary** and click the [Streamlit](https://docs.streamlit.io/) icon in the toolbar (not on a specific record) to see the company-wide overview. Click the icon on a specific record for the team deep-dive.
-
-<!-- 📸 TODO: Screenshots of both dashboard levels -->
-
-## Checkpoint
-
-At this point you have:
-- Company-wide budget dashboard with charts
-- Per-team deep-dive with expense breakdowns
-- Everything interactive — [Streamlit](https://docs.streamlit.io/) updates in real time
-
-Next up: [[tutorial/Part 6 — History in Action|Part 6 — History in Action]] — the final part, where you'll explore the bitemporal audit trail.

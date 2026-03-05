@@ -6,19 +6,21 @@ Data doesn't exist in a vacuum — it has a story. The Timeline tab tells that s
 
 ## The Visual Timeline
 
-The timeline displays a vertical sequence of events — most recent at the top. Each event shows:
+The timeline displays a horizontal bar visualization of all versions of the record — plotted along a time axis. Each version is represented as a colored bar showing its validity period:
 
-- **When** it happened (date and time)
-- **Who** made the change
-- **What** changed (which fields were modified)
-- **What type** of event (creation, update, correction)
+- 🟢 **Green bars** — the record was first created
+- 🔵 **Blue bars** — one or more fields were modified
+- 🔴 **Red markers** — a record was deleted
 
-<!-- 📸 SCREENSHOT: Timeline tab showing a vertical timeline with several change events -->
+Above the visualization, a summary strip shows:
+- **Current Status** (Active / Deleted)
+- **Total Versions** (how many snapshots exist)
+- **Last Change** (date and author)
 
-Events are color-coded by type:
-- 🟢 **Create** — the record was first created
-- 🔵 **Update** — one or more fields were modified
-- 🟣 **Correction** — a past value was retroactively corrected (valid-time adjustment)
+The **As Of** control and **Visible Versions** badge let you adjust which versions are displayed. Use the zoom controls to focus on a specific time range.
+
+> [!example]- 📸 Screenshot — Timeline with version bars
+> ![Timeline tab showing Valid Time Visualization with version bars](../images/record-detail/timeline-tab.jpeg)
 
 ## Two Time Dimensions
 
@@ -32,9 +34,10 @@ This is the default view. It shows events in the order the system recorded them 
 
 Switch to the **Effective Time** view to see when data was *actually valid* in the real world. A salary change recorded today but effective from January 1st would appear at January 1st in this view.
 
-<!-- 📹 VIDEO: Switching between system-time and valid-time views on the same record, showing how events reposition -->
-
 This distinction matters in industries where backdated corrections are common — finance, insurance, regulatory reporting. The timeline shows both "what we recorded" and "what was actually true."
+
+> [!tip]
+> To see the As-Of time-travel in action on a familiar grid view, check the [[interface/record-detail/history tab|History tab]] — it uses the same control over a full AG Grid table.
 
 ## Inspecting a Version
 
@@ -45,7 +48,7 @@ Click any event on the timeline to open the **Version Details Drawer** — a sli
 - The author who made the change
 - The exact system-time and valid-time timestamps
 
-<!-- 📸 SCREENSHOT: Version details drawer open, showing field values with changed fields highlighted -->
+<!-- 📸 TODO: Screenshot of version details drawer showing field values with changed fields highlighted -->
 
 This is invaluable for investigations: "Why does this number look wrong? When did it change? Who changed it?"
 

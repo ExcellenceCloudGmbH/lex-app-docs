@@ -35,7 +35,11 @@ Common examples:
 
 These are views **you** create. Type a name in the view selector search bar and press **Enter** — a new preset is created with your current grid configuration saved to it.
 
-<!-- 📹 VIDEO: Typing "Q1 Travel Expenses" into the view selector, pressing Enter, seeing the new preset appear in "My Presets" -->
+> [!example]- 🎬 Video — Creating a saved view
+> <video controls width="100%">
+>   <source src="../../videos/grid-create-saved-view.mp4" type="video/mp4">
+> </video>
+> Type "Q1 Travel Expenses" into the view selector, press Enter, see the new preset appear in "My Presets".
 
 ## Creating a View
 

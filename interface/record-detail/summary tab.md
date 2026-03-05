@@ -17,7 +17,8 @@ Each field gets its own card with a label and value. Fields are rendered intelli
 | **Foreign Key** | Linked name of the related record, clickable |
 | **JSON** | Formatted, expandable view |
 
-<!-- 📸 SCREENSHOT: Summary tab showing several field cards in a 2-column layout -->
+> [!example]- 📸 Screenshot — Summary tab with field cards
+> ![Summary tab showing field cards in a 2-column layout](../images/record-detail/summary-tab.jpeg)
 
 ## Column Layout
 
@@ -27,7 +28,11 @@ Not all records have the same number of fields. Use the **column toggle** in the
 - **2 columns** — balanced layout; the default, works well for most models
 - **3 columns** — compact layout; best for models with many short fields (IDs, dates, amounts)
 
-<!-- 📹 VIDEO: Clicking the column toggle to switch from 1 to 2 to 3 columns, seeing the layout reflow -->
+> [!example]- 🎬 Video — Column layout toggle
+> <video controls width="100%">
+>   <source src="../../videos/record-column-toggle.mp4" type="video/mp4">
+> </video>
+> Click the column toggle to switch between 1, 2, and 3 columns, see the layout reflow.
 
 The column setting is preserved in the URL, so you can share a link to a record with a specific layout — your colleague sees the same thing you do.
 
@@ -42,7 +47,7 @@ For example:
 
 Your developer defines these presets via [[features/data-pipeline/serializers|serializers]]. As a user, you just pick the view that fits your task.
 
-<!-- 📸 SCREENSHOT: View Preset dropdown showing available serializer options -->
+<!-- 📸 TODO: Screenshot of View Preset dropdown showing available serializer options -->
 
 ## Export to PDF
 

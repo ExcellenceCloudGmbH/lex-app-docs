@@ -11,12 +11,16 @@ Every column header has a built-in filter. Click the menu icon on any column to 
 | Column Type | Filter Style | Example |
 |---|---|---|
 | **Text** | Contains, starts with, equals, not equals | Find expenses where description *contains* "travel" |
-| **Number** | Greater than, less than, between, equals | Show amounts *greater than* €1,000 |
+| **Number** | Contains, equals, not equals, blank | Find amounts matching "5000" |
 | **Date** | Before, after, between, exact date | Expenses *after* January 1, 2026 |
 | **Boolean** | True / False / All | Show only *approved* expenses |
 | **Foreign Key** | Dropdown of related records | Filter by a specific team or employee |
 
-<!-- 📹 VIDEO: Opening a column filter, selecting "Greater than 1000" on the amount column, seeing the grid update -->
+> [!example]- 🎬 Video — Column filtering in action
+> <video controls width="100%">
+>   <source src="../../videos/grid-column-filter.mp4" type="video/mp4">
+> </video>
+> Open a column filter on the Amount column, type a value to filter, see the grid update instantly.
 
 ### Text Filters
 
@@ -63,4 +67,8 @@ Filters stack. Apply a date filter, then a category filter, then sort by amount 
 
 This is especially powerful with [[interface/the-grid/saved views|saved views]]: set up a complex filter combination once, save it, and switch to it instantly whenever you need it.
 
-<!-- 📹 VIDEO: Building up a multi-filter view step by step — date range, then category, then sort by amount -->
+> [!example]- 🎬 Video — Building a multi-filter view
+> <video controls width="100%">
+>   <source src="../../videos/grid-multi-filter.mp4" type="video/mp4">
+> </video>
+> Build up a view step by step: apply a date range, then category filter, then sort by amount.
