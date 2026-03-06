@@ -1,10 +1,10 @@
 ---
-title: Welcome to LEX
+title: Welcome to Lex App
 ---
 
-LEX is a [Python](https://www.python.org/)/[Django](https://docs.djangoproject.com/) framework for building data-driven business applications. You define your models and business logic; LEX gives you the web UI, REST API, authentication, real-time updates, and a full audit trail — out of the box.
+Lex App is an [open-source](https://github.com/ExcellenceCloudGmbH/lex-app) [Python](https://www.python.org/)/[Django](https://docs.djangoproject.com/) framework for building data-driven business applications. You define your models and business logic; Lex App gives you the web UI, REST API, authentication, real-time updates, and a full audit trail — out of the box.
 
-At its heart, LEX follows the **ETL pattern** — Extract, Transform, Load — the same pattern that powers data pipelines everywhere:
+At its heart, Lex App follows the **ETL pattern** — Extract, Transform, Load — the same pattern that powers data pipelines everywhere:
 
 ```mermaid
 flowchart LR
@@ -19,14 +19,14 @@ flowchart LR
 
 ## Get Started
 
-1. [[installation|Install LEX]] and set up your environment
+1. [[installation|Install Lex App]] and set up your environment
 2. [[project structure|Understand the project structure]] and the ETL folder convention
 3. Work through the [[tutorial/index|TeamBudget Tutorial]] to build a real app
 4. Explore [[features/index|all building blocks]] or dive into the [[reference/index|reference]]
 
 ## Explore the Interface
 
-Already using LEX? Explore the [[interface/index|user interface documentation]] — the [[interface/the-grid/index|data grid]], [[interface/record-detail/index|record detail]], [[interface/the-grid/saved views|saved views]], [[interface/themes|themes]], and more.
+Already using Lex App? Explore the [[interface/index|user interface documentation]] — the [[interface/the-grid/index|data grid]], [[interface/record-detail/index|record detail]], [[interface/the-grid/saved views|saved views]], [[interface/themes|themes]], and more.
 
 ## Migrating from V1?
 

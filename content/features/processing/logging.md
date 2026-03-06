@@ -2,7 +2,7 @@
 title: Logging
 ---
 
-LEX provides `LexLogger`, a builder-pattern logging API that produces rich, Markdown-formatted log entries. It supports text, headings, tables, DataFrames, code blocks, and more — all stored in the database and displayed in the frontend.
+Lex App provides `LexLogger`, a builder-pattern logging API that produces rich, Markdown-formatted log entries. It supports text, headings, tables, DataFrames, code blocks, and more — all stored in the database and displayed in the frontend.
 
 LexLogger is context-aware: it automatically links log entries to the correct calculation, model instance, and parent/child hierarchy without any manual ID passing.
 
@@ -94,21 +94,17 @@ This ensures logs from the child appear nested under the parent in the frontend.
 
 For the complete method list, see the [[reference/LexLogger API|LexLogger API reference]].
 
-<details>
-<summary>Migrating from V1?</summary>
-
-If you're coming from `CalculationLog.create()`:
-
-| Aspect | V1 (Old) | Current |
-|---|---|---|
-| API | `CalculationLog.create(...)` | `LexLogger()` builder pattern |
-| Formatting | Plain text only | Rich Markdown |
-| Context | Manual — pass IDs yourself | Automatic |
-| Nested calculations | Not supported | Built-in parent/child hierarchy |
-
-Replace all `CalculationLog.create(...)` calls with `LexLogger()`, remove manual context/ID passing, and always end chains with `.log()`.
-
-</details>
+> [!note]- Migrating from V1?
+> If you're coming from `CalculationLog.create()`:
+>
+> | Aspect | V1 (Old) | Current |
+> |---|---|---|
+> | API | `CalculationLog.create(...)` | `LexLogger()` builder pattern |
+> | Formatting | Plain text only | Rich Markdown |
+> | Context | Manual — pass IDs yourself | Automatic |
+> | Nested calculations | Not supported | Built-in parent/child hierarchy |
+>
+> Replace all `CalculationLog.create(...)` calls with `LexLogger()`, remove manual context/ID passing, and always end chains with `.log()`.
 
 ## In the Frontend
 

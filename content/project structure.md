@@ -2,7 +2,7 @@
 title: Project Structure
 ---
 
-LEX uses a flat project structure — no `manage.py`, no nested [Django](https://docs.djangoproject.com/) app folders, no `admin.py` or `views.py`. Your project follows the **ETL pattern**: Upload models for ingestion, Input models for domain logic, and Report models for output.
+Lex App uses a flat project structure — no `manage.py`, no nested [Django](https://docs.djangoproject.com/) app folders, no `admin.py` or `views.py`. Your project follows the **ETL pattern**: Upload models for ingestion, Input models for domain logic, and Report models for output.
 
 ```
 YourProject/
@@ -11,14 +11,11 @@ YourProject/
 │   ├── Init.run.xml
 │   └── Start.run.xml
 ├── migrations/                 ← Django migrations
-├── Tests/
-│   ├── basic_test/
-│   │   └── test_data.json
-│   └── UploadFiles/
+├── tests/
+│   └── test_suite.py
 ├── model_structure.yaml        ← frontend sidebar layout (optional)
 ├── lex_config.py               ← framework settings (Celery, etc.)
 ├── requirements.txt
-├── _authentication_settings.py ← test data + group config
 │
 ├── Upload/                     ← Extract: data ingestion models
 │   ├── __init__.py
@@ -46,7 +43,7 @@ YourProject/
 | `Input/` | Core business entities and domain logic | `LexModel` | `Fund`, `Investor` |
 | `Reports/` | Compute summaries, analytics | `CalculationModel` | `CalculateNAV` |
 
-This isn't enforced by the framework — you can organize however you like — but following this convention makes projects immediately understandable to anyone familiar with LEX.
+This isn't enforced by the framework — you can organize however you like — but following this convention makes projects immediately understandable to anyone familiar with Lex App.
 
 > [!tip]
 > Larger projects often create additional subfolders within `Input/` for domain areas, like `Input/InvestmentStructure/`, `Input/Cashflows/`, or `Input/Valuation/`. The key is that imports always follow the folder structure: `from Input.Fund import Fund`.
@@ -65,14 +62,10 @@ from Reports.CalculateNAV import CalculateNAV
 
 The `.env` file is the single source of truth for all runtime configuration. It's loaded automatically by the PyCharm run configurations, or you can source it manually:
 
-<details>
-<summary>Terminal: loading .env manually</summary>
-
-```bash
-set -a; source .env; set +a
-```
-
-</details>
+> [!note]- Terminal: loading .env manually
+> ```bash
+> set -a; source .env; set +a
+> ```
 
 See [[installation]] for how to configure it.
 
@@ -96,7 +89,7 @@ class Fund(LexModel):
 
 ## Key Dependencies
 
-LEX brings along a specific set of dependencies. Make sure your `requirements.txt` includes:
+Lex App brings along a specific set of dependencies. Make sure your `requirements.txt` includes:
 
 - `lex-app` — the framework itself
 - `pandas`, `numpy` — you manage these versions yourself (not bundled)

@@ -2,7 +2,7 @@
 title: The Interface
 ---
 
-The LEX APP interface is where data becomes decisions. It's built around two core experiences: **the grid**, where you explore, filter, and shape your data like a spreadsheet — and the **record detail**, where you dive deep into a single entry, its analytics, its history, and its audit trail.
+The Lex App interface is where data becomes decisions. It's built around two core experiences: **the grid**, where you explore, filter, and shape your data like a spreadsheet — and the **record detail**, where you dive deep into a single entry, its analytics, its history, and its audit trail.
 
 Everything is designed so you never lose context. Switch from a high-level portfolio view to a single record's timeline, then jump to an embedded analytics dashboard — all without navigating away or re-authenticating.
 

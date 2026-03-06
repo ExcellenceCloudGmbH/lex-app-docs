@@ -2,9 +2,9 @@
 title: "TeamBudget Tutorial"
 ---
 
-In this tutorial, you'll build a complete LEX application from scratch — a **team budget tracker** called TeamBudget. By the end, you'll have used every major LEX feature: models, calculations, lifecycle hooks, logging, permissions, serializers, [Streamlit](https://docs.streamlit.io/) dashboards, and bitemporal history.
+In this tutorial, you'll build a complete Lex App application from scratch — a **team budget tracker** called TeamBudget. By the end, you'll have used every major Lex App feature: models, calculations, lifecycle hooks, logging, permissions, serializers, [Streamlit](https://docs.streamlit.io/) dashboards, and bitemporal history.
 
-You'll also see how LEX projects follow the **ETL pattern** — Extract, Transform, Load — reflected directly in your folder structure.
+You'll also see how Lex App projects follow the **ETL pattern** — Extract, Transform, Load — reflected directly in your folder structure.
 
 ## What You'll Build
 
@@ -22,13 +22,13 @@ TeamBudget tracks teams, employees, and expenses. It includes:
 
 Before starting, make sure you have:
 
-- LEX installed and configured (see [[installation]])
-- PyCharm (recommended) or any Python-capable editor
-- Access to [excellence-cloud.de](https://excellence-cloud.de) for [Keycloak](https://www.keycloak.org/documentation) setup
+- Lex App installed and configured (see [[installation]]) — [source on GitHub](https://github.com/ExcellenceCloudGmbH/lex-app)
+- [PyCharm](https://www.jetbrains.com/pycharm/) (recommended) or any Python-capable editor
+- Access to [Excellence Cloud](https://excellence-cloud.de) for [Keycloak](https://www.keycloak.org/documentation) setup
 
 ## Project Structure
 
-LEX uses a flat project layout — no `manage.py`, no nested [Django](https://docs.djangoproject.com/) app folders. Your project is organized into three ETL folders:
+Lex App uses a flat project layout — no `manage.py`, no nested [Django](https://docs.djangoproject.com/) app folders. Your project is organized into three ETL folders:
 
 ```
 TeamBudget/
@@ -36,6 +36,7 @@ TeamBudget/
 ├── .run/
 │   ├── Init.run.xml
 │   └── Start.run.xml
+├── lex_config.py
 ├── migrations/
 ├── sample_data/
 │   ├── teams.csv
@@ -56,9 +57,15 @@ TeamBudget/
 │   ├── EmployeeUpload.py
 │   └── ExpenseUpload.py
 │
-└── Reports/                   ← Calculations & output (Load)
-    ├── __init__.py
-    └── BudgetSummary.py
+├── Reports/                   ← Calculations & output (Load)
+│   ├── __init__.py
+│   └── BudgetSummary.py
+│
+└── Tests/                     ← Initial data & integration tests
+    ├── test_data.json
+    ├── 01_create_teams.json
+    ├── 02_create_employees.json
+    └── 03_create_expenses.json
 ```
 
 > [!important]

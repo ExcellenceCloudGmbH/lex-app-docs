@@ -2,7 +2,7 @@
 title: Getting Started
 ---
 
-LEX is a [Python](https://www.python.org/)/[Django](https://docs.djangoproject.com/) framework that gives you calculation models, lifecycle hooks, permissions, logging, bitemporal history, and [Streamlit](https://docs.streamlit.io/) dashboards — all out of the box. You define your models and business logic; LEX handles the rest.
+Lex App is an [open-source](https://github.com/ExcellenceCloudGmbH/lex-app) [Python](https://www.python.org/)/[Django](https://docs.djangoproject.com/) framework that gives you calculation models, lifecycle hooks, permissions, logging, bitemporal history, and [Streamlit](https://docs.streamlit.io/) dashboards — all out of the box. You define your models and business logic; Lex App handles the rest.
 
 ## Who Is This For?
 
@@ -21,7 +21,7 @@ lex setup
 lex Init
 
 # Start the development server
-python -m lex start --reload --loop asyncio lex_app.asgi:application
+lex start --reload --loop asyncio lex_app.asgi:application
 ```
 
 For the full walkthrough, continue to [[installation]].
@@ -32,5 +32,5 @@ Before starting, make sure you have:
 
 - Access to your project's source code repository
 - Python **3.12** installed locally
-- Access to [excellence-cloud.de](https://excellence-cloud.de) for client configuration
+- Access to [Excellence Cloud](https://excellence-cloud.de) for client configuration
 - Familiarity with your project's model structure

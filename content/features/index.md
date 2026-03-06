@@ -2,11 +2,11 @@
 title: Building Blocks
 ---
 
-LEX provides a set of building blocks that you compose to create your application. Each one solves a specific problem — you only use what you need. They're organized into four groups that mirror how data flows through your app.
+Lex App provides a set of building blocks that you compose to create your application. Each one solves a specific problem — you only use what you need. They're organized into four groups that mirror how data flows through your app.
 
 ## The ETL Pipeline
 
-Every LEX project follows the Extract → Transform → Load pattern. Your folder structure reflects this:
+Every Lex App project follows the Extract → Transform → Load pattern. Your folder structure reflects this:
 
 | Stage | Folder | What Lives Here |
 |---|---|---|

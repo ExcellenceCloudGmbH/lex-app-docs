@@ -2,7 +2,7 @@
 title: Themes
 ---
 
-LEX APP supports two carefully crafted visual themes — **Light** and **Dark** — so you can work comfortably in any environment. Switch between them instantly using the toggle in the application header.
+Lex App supports two carefully crafted visual themes — **Light** and **Dark** — so you can work comfortably in any environment. Switch between them instantly using the toggle in the application header.
 
 ## Light Mode
 

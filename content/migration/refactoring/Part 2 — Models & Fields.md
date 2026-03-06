@@ -2,7 +2,7 @@
 title: "Part 2 — Models & Fields"
 ---
 
-Now that your imports are updated, it's time to convert your model base classes and clean up legacy fields. This is where V1 models start to look like current LEX models.
+Now that your imports are updated, it's time to convert your model base classes and clean up legacy fields. This is where V1 models start to look like current Lex App models.
 
 ## Change Base Classes
 

@@ -115,15 +115,18 @@ And here's how much code that took:
 | **Frontend data grid** | Zero lines — powered by [AG Grid](https://www.ag-grid.com/) |
 | **Timeline editing** | Zero lines — built into the frontend |
 
-**Total code: ~400 lines** (including whitespace, docstrings, and imports). Everything else — the web UI, API, authentication, history, real-time updates — is provided by the framework.
+**Total code: ~400 lines** (including whitespace, docstrings, and imports). Everything else — the web UI, API, authentication, history, real-time updates — is provided by the framework. Lex App is [open source](https://github.com/ExcellenceCloudGmbH/lex-app) — we recommend reading the source for deeper understanding.
 
 ## What's Next?
 
 Now that you've completed the tutorial, explore the rest of the documentation:
 
-- [[features/index|All building blocks]] — everything LEX gives you out of the box
+- [[features/index|All building blocks]] — everything Lex App gives you out of the box
 - [[features/processing/calculations|Calculations]] — deep-dive into the state machine and [Celery](https://docs.celeryq.dev/) support
 - [[features/tracking/bitemporal history|Bitemporal History]] — understand the two-level architecture
 - [[features/access-and-ui/streamlit dashboards|Streamlit Dashboards]] — build more complex visualizations
 - [[features/data-pipeline/serializers|Serializers]] — advanced API validation and multiple views
 - [[reference/CLI Commands|CLI Commands]] — every `lex` command at a glance
+
+> [!tip]
+> Lex App is [open source](https://github.com/ExcellenceCloudGmbH/lex-app). We recommend browsing the source code for deeper understanding of how the framework works under the hood.

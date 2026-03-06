@@ -2,7 +2,7 @@
 title: CLI Commands
 ---
 
-LEX ships with a `lex` CLI tool for managing your application. Here's every command at a glance.
+Lex App ships with a `lex` CLI tool for managing your application. Here's every command at a glance.
 
 ## Everyday Commands
 
@@ -30,9 +30,28 @@ LEX ships with a `lex` CLI tool for managing your application. Here's every comm
 
 ## Usage Pattern
 
+We recommend using PyCharm's run configurations (Init, Start, Streamlit) which auto-load `.env` for you. If you prefer the terminal:
+
+**Linux / macOS:**
+
 ```bash
-# Always load environment variables first (unless using PyCharm)
+# Load environment variables first
 set -a; source .env; set +a
+
+# Then run any lex command
+lex Init
+lex start
+```
+
+**Windows PowerShell:**
+
+```powershell
+# Load environment variables first
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^([^=]+)=(.*)$') {
+        [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
+    }
+}
 
 # Then run any lex command
 lex Init

@@ -2,7 +2,7 @@
 title: Permissions
 ---
 
-LEX provides fine-grained access control through permission methods defined directly on your models. You can control which fields a user can view, edit, or export, which records they can see, and which actions they can perform — all integrated with [Keycloak](https://www.keycloak.org/documentation).
+Lex App provides fine-grained access control through permission methods defined directly on your models. You can control which fields a user can view, edit, or export, which records they can see, and which actions they can perform — all integrated with [Keycloak](https://www.keycloak.org/documentation).
 
 ## The UserContext Object
 
@@ -104,7 +104,7 @@ class ExpenseReport(LexModel):
 
 ## Keycloak Integration
 
-By default, permission methods fall back to Keycloak scopes. After running `lex Init`, your models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [excellence-cloud.de](https://excellence-cloud.de).
+By default, permission methods fall back to Keycloak scopes. After running `lex Init`, your models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [Excellence Cloud](https://excellence-cloud.de).
 
 You can also use Keycloak scopes directly in your custom logic:
 
@@ -115,33 +115,29 @@ def permission_read(self, user_context: UserContext) -> PermissionResult:
     return PermissionResult.deny("No read permission in Keycloak")
 ```
 
-<details>
-<summary>Migrating from V1?</summary>
-
-If you're coming from `ModificationRestriction`:
-
-| Aspect | V1 (Old) | Current |
-|---|---|---|
-| Approach | Separate `ModificationRestriction` class | Permission methods on your model |
-| User info | Raw `user` object + `violations` list | Clean `UserContext` dataclass |
-| Granularity | Model-level only | Field-level and row-level |
-| Keycloak | Manual integration | Built-in scope resolution |
-
-Remove `ModificationRestriction` class definitions, remove `modification_restriction = MyRestriction()`, and add `permission_*` methods directly to your model. Run `lex Init` to sync to Keycloak.
-
-</details>
+> [!note]- Migrating from V1?
+> If you're coming from `ModificationRestriction`:
+>
+> | Aspect | V1 (Old) | Current |
+> |---|---|---|
+> | Approach | Separate `ModificationRestriction` class | Permission methods on your model |
+> | User info | Raw `user` object + `violations` list | Clean `UserContext` dataclass |
+> | Granularity | Model-level only | Field-level and row-level |
+> | Keycloak | Manual integration | Built-in scope resolution |
+>
+> Remove `ModificationRestriction` class definitions, remove `modification_restriction = MyRestriction()`, and add `permission_*` methods directly to your model. Run `lex Init` to sync to Keycloak.
 
 ## Authentication Architecture
 
-LEX APP uses [Keycloak](https://www.keycloak.org/documentation) as its identity provider. Users authenticate once via OIDC (OpenID Connect), and the session is shared across the entire application — including embedded [[features/access-and-ui/streamlit dashboards|Streamlit dashboards]].
+Lex App uses [Keycloak](https://www.keycloak.org/documentation) as its identity provider. Users authenticate once via OIDC (OpenID Connect), and the session is shared across the entire application — including embedded [[features/access-and-ui/streamlit dashboards|Streamlit dashboards]].
 
 The frontend authentication flow:
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant App as LEX APP Frontend
-    participant API as LEX APP Backend
+    participant App as Lex App Frontend
+    participant API as Lex App Backend
     participant KC as Keycloak
 
     User->>App: Opens application

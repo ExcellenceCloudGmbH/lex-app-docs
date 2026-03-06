@@ -2,7 +2,7 @@
 title: "Refactoring Guide"
 ---
 
-This is a hands-on, step-by-step guide for migrating a V1 (`generic_app`) project to the current LEX framework. Work through it in order — each part builds on the previous one.
+This is a hands-on, step-by-step guide for migrating a V1 (`generic_app`) project to the current Lex App framework. Work through it in order — each part builds on the previous one.
 
 If you're starting a new project from scratch, skip this entirely and follow the [[tutorial/index|TeamBudget Tutorial]] instead.
 

@@ -2,7 +2,7 @@
 title: Migration Guide
 ---
 
-This section is for teams migrating an existing V1 project to the current LEX framework. If you're starting a new project, you can skip this entirely — head to [[getting started]] instead.
+This section is for teams migrating an existing V1 project to the current Lex App framework. If you're starting a new project, you can skip this entirely — head to [[getting started]] instead.
 
 ## Refactoring Series
 

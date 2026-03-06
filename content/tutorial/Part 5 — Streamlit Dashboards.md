@@ -69,7 +69,7 @@ Add this class method to your `BudgetSummary` class (after `calculate()`):
 ```
 
 > [!tip]
-> `streamlit_class_main` is a `@classmethod` — it shows when users open the [Streamlit](https://docs.streamlit.io/) page for the BudgetSummary table (no specific record selected).
+> `streamlit_class_main` is a `@classmethod` — it shows when users open the [Streamlit](https://docs.streamlit.io/) page for the BudgetSummary table (no specific record selected). We recommend using it for aggregate overviews and `streamlit_main` for per-record detail views.
 
 ## Add the Record-Level Dashboard
 
@@ -133,14 +133,16 @@ Add this instance method below `streamlit_class_main`:
 
 Select **"Streamlit"** from the run configuration dropdown in PyCharm → click ▶️.
 
-<details>
-<summary>Terminal alternative</summary>
-
-```powershell
-python -m lex streamlit
-```
-
-</details>
+> [!note]- Terminal alternative
+> **Linux / macOS:**
+> ```bash
+> set -a; source .env; set +a
+> lex streamlit
+> ```
+> **Windows PowerShell:**
+> ```powershell
+> lex streamlit
+> ```
 
 In the frontend, navigate to **Reports → BudgetSummary** and click the [Streamlit](https://docs.streamlit.io/) icon in the toolbar (not on a specific record) to see the company-wide overview. Click the icon on a specific record for the team deep-dive.
 

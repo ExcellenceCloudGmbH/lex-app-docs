@@ -64,7 +64,7 @@ class Team(LexModel):
         return self.name
 ```
 
-By inheriting from `LexModel`, your model automatically gets a database table, REST API endpoints, [AG Grid](https://www.ag-grid.com/)-powered frontend, `created_by`/`edited_by` tracking, and full [[features/tracking/bitemporal history|bitemporal history]].
+By inheriting from `LexModel`, your model automatically gets a database table, REST API endpoints, [AG Grid](https://www.ag-grid.com/)-powered frontend, `created_by`/`edited_by` tracking, and full [[features/tracking/bitemporal history|bitemporal history]]. We recommend starting every data model from `LexModel` — see [[reference/LexModel Internals]] for a complete list of what it provides.
 
 ### `Input/Employee.py`
 
@@ -97,7 +97,7 @@ class Employee(LexModel):
 ```
 
 > [!note]
-> The import `from Input.Team import Team` follows the folder structure: `Input/` is the package, `Team` is the module. All LEX imports work this way.
+> The import `from Input.Team import Team` follows the folder structure: `Input/` is the package, `Team` is the module. All Lex App imports work this way.
 
 ### `Input/Expense.py`
 
@@ -329,7 +329,13 @@ class ExpenseUpload(CalculationModel):
 
 ## Add a Serializer
 
-By default, LEX generates a basic API serializer for every model. But you can add custom validation by creating a `serializers.py` file alongside the model it applies to. This uses [Django REST Framework](https://www.django-rest-framework.org/) serializers — see [[features/data-pipeline/serializers]] for the full guide.
+By default, Lex App generates a basic API serializer for every model. We recommend adding custom validation for any model where data quality matters. Create a `serializers.py` file alongside the model it applies to — this uses [Django REST Framework](https://www.django-rest-framework.org/) serializers. See [[features/data-pipeline/serializers]] for the full guide.
+
+The serializer below does three things:
+
+1. **Field-level validation** — rejects negative amounts before they hit the database
+2. **Cross-field validation** — enforces a business rule that depends on both `amount` *and* `category`
+3. **PATCH-safe design** — falls back to `self.instance` when only one field is sent (inline grid edits send partial updates)
 
 ```python title="Input/serializers.py"
 from rest_framework import serializers
@@ -386,9 +392,15 @@ Expense.api_serializers = {
 
 ## Organize the Frontend Navigation
 
-The [AG Grid](https://www.ag-grid.com/)-powered frontend shows all models in a sidebar. Organize them into groups with a `model_structure.yaml` file:
+The [AG Grid](https://www.ag-grid.com/)-powered frontend shows all models in a sidebar. We recommend organizing them into logical groups with a `model_structure.yaml` file in your project root. This file controls three things:
 
 ```yaml title="model_structure.yaml"
+# ┌─────────────────────────────────────────────
+# │ 1. model_structure — sidebar navigation tree
+# │    Keys are group names; values are model names
+# │    (lowercase, matching the Python class name).
+# │    Use null as the leaf value.
+# └─────────────────────────────────────────────
 model_structure:
   Teams & People:
     team: null
@@ -400,6 +412,11 @@ model_structure:
     employeeupload: null
     expenseupload: null
 
+# ┌─────────────────────────────────────────────
+# │ 2. model_styling — display names for sidebar groups
+# │    Adds emoji or custom labels. Keys must match
+# │    the group names above.
+# └─────────────────────────────────────────────
 model_styling:
   Teams & People:
     name: "👥 Teams & People"
@@ -408,44 +425,183 @@ model_styling:
   Data Import:
     name: "📥 Data Import"
 
+# ┌─────────────────────────────────────────────
+# │ 3. untracked_models — excluded from history tracking
+# │    Models listed here won't generate historical
+# │    records (saves storage for transient data like
+# │    uploads). They still appear in the sidebar
+# │    if listed in model_structure above.
+# └─────────────────────────────────────────────
 untracked_models:
   teamupload: null
   employeeupload: null
   expenseupload: null
 ```
 
+| YAML Section | Purpose |
+|---|---|
+| `model_structure` | Defines the sidebar navigation tree. Group names are keys; model names (lowercase) are leaves with value `null`. Supports nesting for sub-groups. |
+| `model_styling` | Customizes group display names with emoji or labels. Keys must match the group names in `model_structure`. |
+| `untracked_models` | Excludes models from [django-simple-history](https://django-simple-history.readthedocs.io/) tracking. We recommend untracking upload models and other transient data to save storage. |
+
 > [!tip]
-> See [[features/data-pipeline/model structure]] for more details on sidebar organization, styling, and hiding models.
+> For a production example with nested sub-groups, see the [Armira project’s model_structure.yaml](https://github.com/ExcellenceCloudGmbH/lex-app) in `project_example/`. See [[features/data-pipeline/model structure]] for the full reference.
 
 ## Apply to the Database
 
 Select **"Init"** from the run configuration dropdown in PyCharm → click ▶️.
 
-<details>
-<summary>Terminal alternative</summary>
-
-```powershell
-python -m lex Init
-```
-
-</details>
+> [!note]- Terminal alternative
+> **Linux / macOS:**
+> ```bash
+> set -a; source .env; set +a
+> lex Init
+> ```
+> **Windows PowerShell:**
+> ```powershell
+> lex Init
+> ```
 
 ## Import Sample Data
 
-Select **"Start"** → click ▶️. Open `http://localhost:8000`. You should see the organized sidebar.
+Lex App has a built-in **initial data upload** feature — you write JSON files that describe which objects to create, and the framework loads them **automatically on server start** when the database is empty. No scripts, no manual clicking required.
 
-Now import data using the upload models:
+> [!tip]
+> This section covers just enough to get your tutorial data loaded. For the full reference — including `update` and `delete` actions, file uploads, and advanced patterns — see [[features/data-pipeline/initial data|Initial Data Upload]].
 
-1. Navigate to **Data Import → Team Upload**
-2. Create a new record → upload `sample_data/teams.csv` → click **Calculate** ▶️
-3. Check the log — you should see "3 Teams created"
-4. Repeat for **Employee Upload** with `employees.csv`
-5. Repeat for **Expense Upload** with `expenses.csv`
+### Create the Test Data Files
 
-> [!important]
-> Import order matters! Import teams first, then employees (they reference teams), then expenses (they reference employees).
+Create a `Tests/` folder in your project root with these files:
 
-<!-- 📸 TODO: Screenshot of upload log showing results -->
+```json title="Tests/test_data.json"
+[
+  {"subprocess": "Tests/01_create_teams.json"},
+  {"subprocess": "Tests/02_create_employees.json"},
+  {"subprocess": "Tests/03_create_expenses.json"}
+]
+```
+
+The main `test_data.json` is an ordered list of **subprocesses** — each one is a separate JSON file that gets executed in sequence.
+
+```json title="Tests/01_create_teams.json"
+[
+  {
+    "class": "Team",
+    "action": "create",
+    "tag": "team_design",
+    "parameters": {
+      "name": "Design",
+      "budget": 15000.00,
+      "manager_email": "thomas.mueller@apex-consulting.com"
+    }
+  },
+  {
+    "class": "Team",
+    "action": "create",
+    "tag": "team_engineering",
+    "parameters": {
+      "name": "Engineering",
+      "budget": 25000.00,
+      "manager_email": "sarah.becker@apex-consulting.com"
+    }
+  },
+  {
+    "class": "Team",
+    "action": "create",
+    "tag": "team_marketing",
+    "parameters": {
+      "name": "Marketing",
+      "budget": 10000.00,
+      "manager_email": "lisa.hoffmann@apex-consulting.com"
+    }
+  }
+]
+```
+
+Each object specifies a model **class**, an **action** (`create`, `update`, or `delete`), and the field **parameters**. The **tag** is a label you can reference later — for example, when creating employees that reference a team.
+
+```json title="Tests/02_create_employees.json (excerpt)"
+[
+  {
+    "class": "Employee",
+    "action": "create",
+    "tag": "emp_anna",
+    "parameters": {
+      "first_name": "Anna",
+      "last_name": "Schmidt",
+      "email": "anna.schmidt@apex-consulting.com",
+      "team": "tag:team_design",
+      "role": "employee"
+    }
+  }
+]
+```
+
+Notice `"team": "tag:team_design"` — the `tag:` prefix resolves to the Team object created earlier with that tag. This is how you wire up foreign key relationships without knowing database IDs.
+
+Dates use the `datetime:` prefix: `"date": "datetime:2026-01-15"`.
+
+> [!tip]
+> See the full files in `Tests/01_create_teams.json`, `02_create_employees.json`, and `03_create_expenses.json` for the complete dataset matching the `sample_data/` CSVs.
+
+### Configure `lex_config.py`
+
+Create a file called `lex_config.py` in your project root. This is the **project-level configuration file** that Lex App reads on startup:
+
+```python title="lex_config.py"
+INITIAL_DATA = "Tests/test_data.json"
+```
+
+`INITIAL_DATA` tells the framework where to find your seed data file. The path is relative to your project root.
+
+> [!note]
+> `lex_config.py` is also where you define `PROJECT_GROUPS` for [Keycloak](https://www.keycloak.org/documentation) access control (covered in [[tutorial/Part 4 — Validation & Permissions|Part 4]]). You can add it now if you like:
+> ```python title="lex_config.py"
+> INITIAL_DATA = "Tests/test_data.json"
+> PROJECT_GROUPS = ["team_budget"]
+> ```
+
+### Start the Server
+
+Select **"Start"** from the run configuration dropdown in PyCharm → click ▶️.
+
+> [!note]- Terminal alternative
+> **Linux / macOS:**
+> ```bash
+> set -a; source .env; set +a
+> lex start
+> ```
+> **Windows PowerShell:**
+> ```powershell
+> lex start
+> ```
+
+On startup, Lex App automatically:
+1. Reads `INITIAL_DATA` from `lex_config.py`
+2. Validates the path and checks the JSON structure
+3. Checks whether **all referenced models are empty**
+4. If every check passes, processes the JSON files — creating all objects in order with `tag:` and `datetime:` references resolved
+
+You'll see log messages like:
+
+```
+Loading initial data from Tests/test_data.json...
+```
+
+Open `http://localhost:8000` and navigate to **Teams & People → Team** — you should see your three teams. Check **Employees** and **Expenses** too.
+
+> [!warning]
+> Initial data loads **only once** — when every model referenced in the JSON is empty. If you've already created any Team, Employee, or Expense row (manually or from a previous load), the auto-load is skipped. To re-trigger it, clear all data first (e.g., drop and recreate the database with `lex create_db` followed by **Init**).
+
+> [!note]- Alternative: Manual upload via the UI
+> You can also import data through the frontend upload models:
+>
+> 1. Run **Start** → open `http://localhost:8000`
+> 2. Navigate to **Data Import → Team Upload** → upload `sample_data/teams.csv` → click **Calculate** ▶️
+> 3. Repeat for **Employee Upload** with `employees.csv`
+> 4. Repeat for **Expense Upload** with `expenses.csv`
+>
+> Import order matters: teams first, then employees, then expenses.
 
 ## Checkpoint
 
@@ -454,6 +610,7 @@ At this point you have:
 - Three upload models in `Upload/` for CSV ingestion
 - A serializer in `Input/serializers.py` for API validation
 - Organized frontend sidebar with named groups
-- Sample data imported via the upload flow
+- `lex_config.py` with the initial data path configured
+- Sample data auto-loaded from `Tests/test_data.json` on server start
 
 Next up: [[tutorial/Part 3 — Calculations & Logging|Part 3 — Calculations & Logging]] where you'll build `BudgetSummary` in the `Reports/` folder.

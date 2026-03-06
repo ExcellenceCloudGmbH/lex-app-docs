@@ -2,7 +2,7 @@
 title: Streamlit Dashboards
 ---
 
-LEX lets you attach interactive [Streamlit](https://docs.streamlit.io/) dashboards directly to your models. These dashboards appear in the frontend UI and can display charts, tables, forms, or any [Streamlit](https://docs.streamlit.io/) widget.
+Lex App lets you attach interactive [Streamlit](https://docs.streamlit.io/) dashboards directly to your models. These dashboards appear in the frontend UI and can display charts, tables, forms, or any [Streamlit](https://docs.streamlit.io/) widget.
 
 There are two levels of dashboards:
 
@@ -66,10 +66,10 @@ class Quarter(LexModel):
 
 ## Running Streamlit
 
-Streamlit dashboards run as a separate process alongside your LEX application. See [[running your app]] for how to start the Streamlit server.
+Streamlit dashboards run as a separate process alongside your Lex App application. See [[running your app]] for how to start the Streamlit server.
 
-> [!note]
-> When running Streamlit standalone via the terminal, you must set `PROXY_MODE=true` so Streamlit can connect to your Django backend.
+> [!tip]
+> We recommend running Streamlit from your IDE (e.g. PyCharm) using the `lex streamlit` command, which handles environment configuration automatically.
 
 ## Tips
 
@@ -80,13 +80,13 @@ Streamlit dashboards run as a separate process alongside your LEX application. S
 
 ## Federated Authentication
 
-When a dashboard is embedded in the LEX APP frontend, the user's access token is passed securely to Streamlit via URL parameters. This enables:
+When a dashboard is embedded in the Lex App frontend, the user's access token is passed securely to Streamlit via URL parameters. This enables:
 
 - **No re-authentication** — the user doesn't need to log in again for Streamlit
 - **Identity traceability** — actions in the dashboard are linked to the user's Keycloak identity
-- **Access control** — the dashboard can use the token to call the LEX APP API with the user's permissions
+- **Access control** — the dashboard can use the token to call the Lex App API with the user's permissions
 
-The token exchange is handled automatically by the `StreamlitIframe` component and the `useStreamlitAuth` hook — no developer configuration needed beyond defining the dashboard methods on your models.
+The token exchange is handled automatically by the `StreamlitIframe` component — no developer configuration needed beyond defining the dashboard methods on your models.
 
 ## In the Frontend
 

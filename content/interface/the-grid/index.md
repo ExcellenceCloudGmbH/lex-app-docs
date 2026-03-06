@@ -33,7 +33,7 @@ Once you've set up the perfect combination of filters, sorting, grouping, and co
 Adjust how tightly data is packed. **Compact** shows maximum rows for scanning large datasets. **Comfortable** gives each row breathing room for detailed review. Choose what fits your task.
 
 ### [[interface/the-grid/exporting data|Exporting Data]]
-Take your data out of LEX APP when you need to. Export respects your current view — filters, grouping, pivot state, and selected rows are all preserved. What you see is what you get.
+Take your data out of Lex App when you need to. Export respects your current view — filters, grouping, pivot state, and selected rows are all preserved. What you see is what you get.
 
 ## The Toolbar
 

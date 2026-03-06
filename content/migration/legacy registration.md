@@ -10,40 +10,24 @@ Developers would define explicit Django model classes for each legacy table, wir
 
 ## Why Static Doesn't Work Here
 
-<details>
-<summary>Schema layer problems</summary>
+> [!warning]- Schema layer problems
+> - Static classes assume known schema ahead of time. Legacy tables may have extra columns, different types, or different nullability across environments.
+> - Primary-key edge cases are common. Some legacy tables have no PK or use composite keys — Django ORM assumes a single PK.
+> - Static registration inflates startup coupling. Every static model must be import-safe at startup.
 
-- Static classes assume known schema ahead of time. Legacy tables may have extra columns, different types, or different nullability across environments.
-- Primary-key edge cases are common. Some legacy tables have no PK or use composite keys — Django ORM assumes a single PK.
-- Static registration inflates startup coupling. Every static model must be import-safe at startup.
+> [!warning]- Permissions layer problems
+> - Read-only must be enforced across admin, API, model methods, and ORM save/delete simultaneously. With static per-table code, each table is another chance to forget a layer.
+> - Different developers implement read-only wrappers differently → inconsistent enforcement.
 
-</details>
+> [!warning]- Release layer problems
+> - Static model inventory drifts from actual DB during migration windows.
+> - Each new client with a slightly different legacy footprint requires code changes and redeploys.
+> - Testing matrix explodes with per-project table set variations.
 
-<details>
-<summary>Permissions layer problems</summary>
-
-- Read-only must be enforced across admin, API, model methods, and ORM save/delete simultaneously. With static per-table code, each table is another chance to forget a layer.
-- Different developers implement read-only wrappers differently → inconsistent enforcement.
-
-</details>
-
-<details>
-<summary>Release layer problems</summary>
-
-- Static model inventory drifts from actual DB during migration windows.
-- Each new client with a slightly different legacy footprint requires code changes and redeploys.
-- Testing matrix explodes with per-project table set variations.
-
-</details>
-
-<details>
-<summary>Data integrity problems</summary>
-
-- Legacy databases are not homogeneous across clients.
-- Static mapping can silently misrepresent column types.
-- Teams are tempted to "fix" the DB to match static code — dangerous during migration.
-
-</details>
+> [!warning]- Data integrity problems
+> - Legacy databases are not homogeneous across clients.
+> - Static mapping can silently misrepresent column types.
+> - Teams are tempted to "fix" the DB to match static code — dangerous during migration.
 
 ## Why Dynamic + Freeze Manifest Works
 

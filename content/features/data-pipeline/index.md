@@ -2,7 +2,7 @@
 title: Data Pipeline
 ---
 
-Every piece of data in a LEX application passes through a pipeline: it enters the system, gets validated, and is organized for consumption. The building blocks in this section control how that flow works.
+Every piece of data in a Lex App application passes through a pipeline: it enters the system, gets validated, and is organized for consumption. The building blocks in this section control how that flow works.
 
 ```mermaid
 flowchart LR
@@ -13,9 +13,14 @@ flowchart LR
     processes on save"]
     C --> D["Model Structure
     organizes in UI"]
+    E["Initial Data
+    (JSON seed files)"] --> C
 ```
 
 ## Building Blocks
+
+### [[features/data-pipeline/initial data|Initial Data Upload]]
+Seed your database from structured JSON files on server start. Define create, update, and delete actions with foreign key references — the framework loads them automatically when all referenced models are empty.
 
 ### [[features/data-pipeline/serializers|Serializers]]
 Custom [Django REST Framework](https://www.django-rest-framework.org/) serializers that validate incoming data at the API layer. Define field-level rules, cross-field constraints, and multiple views of the same model.

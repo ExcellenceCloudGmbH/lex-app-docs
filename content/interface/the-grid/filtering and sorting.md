@@ -2,7 +2,7 @@
 title: Filtering & Sorting
 ---
 
-Finding the right data shouldn't require a database query. LEX APP's grid lets you filter and sort visually — click, type, select — and the results update instantly.
+Finding the right data shouldn't require a database query. Lex App's grid lets you filter and sort visually — click, type, select — and the results update instantly.
 
 ## Column Filters
 

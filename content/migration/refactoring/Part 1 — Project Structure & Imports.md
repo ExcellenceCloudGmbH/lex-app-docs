@@ -23,7 +23,7 @@ MyProject/
 └── requirements.txt
 ```
 
-LEX doesn't use Django's app scaffolding. There's no `manage.py`, no `admin.py`, no `views.py`. Your models go into three ETL folders:
+Lex App doesn't use Django's app scaffolding. There's no `manage.py`, no `admin.py`, no `views.py`. Your models go into three ETL folders:
 
 ```
 MyProject/

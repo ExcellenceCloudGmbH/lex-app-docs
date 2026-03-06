@@ -2,7 +2,7 @@
 title: "Part 3 — Calculations & Logging"
 ---
 
-In this part, you'll create a `BudgetSummary` model that automatically calculates budget utilization for each team per quarter — and logs the results in a rich, formatted report using [[features/processing/logging|LexLogger]]. This model lives in the `Reports/` folder, the **Load** layer of your ETL pipeline.
+In this part, you'll create a `BudgetSummary` model that automatically calculates budget utilization for each team per quarter — and logs the results in a rich, formatted report using [[features/processing/logging|LexLogger]]. This model lives in the `Reports/` folder, the **Load** layer of your ETL pipeline. For a deep-dive into how `CalculationModel` works under the hood, see [[reference/CalculationModel Internals]].
 
 ## Create `Reports/BudgetSummary.py`
 
@@ -160,14 +160,16 @@ untracked_models:
 
 Select **"Init"** from the run configuration dropdown in PyCharm → click ▶️.
 
-<details>
-<summary>Terminal alternative</summary>
-
-```powershell
-python -m lex Init
-```
-
-</details>
+> [!note]- Terminal alternative
+> **Linux / macOS:**
+> ```bash
+> set -a; source .env; set +a
+> lex Init
+> ```
+> **Windows PowerShell:**
+> ```powershell
+> lex Init
+> ```
 
 ## Try It Out
 

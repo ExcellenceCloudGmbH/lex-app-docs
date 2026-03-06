@@ -2,7 +2,7 @@
 title: Running Your App
 ---
 
-Once you've [[installation|installed and initialized]] your LEX application, you can run it locally. There are two ways to do this: through PyCharm (recommended) or via the terminal.
+Once you've [[installation|installed and initialized]] your Lex App application, you can run it locally. We recommend using [PyCharm](https://www.jetbrains.com/pycharm/) (the run configurations handle everything automatically), but the terminal works just as well.
 
 ## Using PyCharm
 
@@ -30,7 +30,7 @@ If you're not using PyCharm, you'll need to load environment variables manually 
 set -a; source .env; set +a
 
 # Start the development server
-python -m lex start --reload --loop asyncio lex_app.asgi:application
+lex start --reload --loop asyncio lex_app.asgi:application
 ```
 
 The `--reload` flag enables hot-reloading so the server restarts automatically when you change code.
@@ -47,15 +47,12 @@ Select **"Streamlit"** from the Run Configuration dropdown.
 
 ```bash
 set -a; source .env; set +a
-
-PROXY_MODE=true \
-DJANGO_SETTINGS_MODULE=lex_app.settings \
 streamlit run lex_app/streamlit_entrypoint.py --server.port 8501
 ```
 
-> [!note]
-> `PROXY_MODE=true` is required when running Streamlit standalone. Without it, Streamlit won't be able to connect to your Django backend.
+> [!tip]
+> PyCharm's Streamlit run configuration handles all environment variables automatically. We recommend using it for local development.
 
 ## What's Next?
 
-Now that your app is running, explore the [[features/index|features]] to see what LEX gives you out of the box. If you want a guided walkthrough, try the [[tutorial/index|TeamBudget Tutorial]].
+Now that your app is running, explore the [[features/index|features]] to see what Lex App gives you out of the box. If you want a guided walkthrough, try the [[tutorial/index|TeamBudget Tutorial]].

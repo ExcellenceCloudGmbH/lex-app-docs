@@ -52,7 +52,7 @@ When viewing a historical record, a **Go to Live Data** button appears. Click it
 
 ## How History Is Created
 
-You don't need to do anything to create history — it's automatic. Every `LexModel` in LEX APP tracks its changes via [django-simple-history](https://django-simple-history.readthedocs.io/). Every save, update, or delete creates a new historical version with a complete snapshot of all field values.
+You don't need to do anything to create history — it's automatic. Every `LexModel` in Lex App tracks its changes via [django-simple-history](https://django-simple-history.readthedocs.io/). Every save, update, or delete creates a new historical version with a complete snapshot of all field values.
 
 This means:
 - History cannot be tampered with — it's append-only

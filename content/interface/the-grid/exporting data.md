@@ -2,7 +2,7 @@
 title: Exporting Data
 ---
 
-Data that lives only inside an application isn't fully useful. Stakeholders need spreadsheets. Auditors need files. Reports need attachments. LEX APP's export system is designed around one principle: **what you see is what you get**.
+Data that lives only inside an application isn't fully useful. Stakeholders need spreadsheets. Auditors need files. Reports need attachments. Lex App's export system is designed around one principle: **what you see is what you get**.
 
 ## How Export Works
 

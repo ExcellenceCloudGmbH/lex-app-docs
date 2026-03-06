@@ -2,11 +2,11 @@
 title: Serializers
 ---
 
-LEX automatically generates a REST API for every model. By default, all fields are exposed as-is. When you need custom validation, computed fields, or different views of the same model, you create a `serializers.py` file using [Django REST Framework](https://www.django-rest-framework.org/api-guide/serializers/).
+Lex App automatically generates a REST API for every model. By default, all fields are exposed as-is. When you need custom validation, computed fields, or different views of the same model, you create a `serializers.py` file using [Django REST Framework](https://www.django-rest-framework.org/api-guide/serializers/).
 
 ## How It Works
 
-1. Create a `serializers.py` file in the same folder as your model
+1. Create a `serializers.py` file in the same folder as your models
 2. Define one or more serializer classes
 3. Attach them to your model via `Model.api_serializers`
 
@@ -14,73 +14,113 @@ The framework picks them up automatically — no registration or configuration n
 
 ## Basic Example
 
-```python title="Upload/serializers.py"
+Here's a serializer for an `Expense` model that enforces business rules — positive amounts, a cap on meal expenses, and correct handling of partial updates (PATCH requests from inline grid editing):
+
+```python title="Input/serializers.py"
 from rest_framework import serializers
 from lex.api.views.model_entries.mixins.PermissionAwareSerializerMixin import add_permission_checks
 
-from Upload.Quarter import Quarter
+from Input.Expense import Expense
 
 
 @add_permission_checks
-class QuarterDefaultSerializer(serializers.ModelSerializer):
+class ExpenseDefaultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Quarter
+        model = Expense
         fields = '__all__'
 
+    def validate_amount(self, value):
+        """Amounts must be positive."""
+        if value <= 0:
+            raise serializers.ValidationError("Amount must be positive.")
+        return value
 
-Quarter.api_serializers = {
-    'default': QuarterDefaultSerializer,
+    def validate(self, attrs):
+        """Enforce business rules across fields.
+
+        On partial updates (PATCH) attrs only contains the fields that
+        were sent in the request, so we fall back to the existing
+        instance for any field the user did not touch.
+        """
+        amount = attrs.get('amount')
+        category = attrs.get('category')
+
+        if self.instance:
+            if amount is None:
+                amount = self.instance.amount
+            if category is None:
+                category = self.instance.category
+
+        if amount and amount > 5000 and category == 'meals':
+            raise serializers.ValidationError(
+                {'amount': "Meal expenses over €5,000 are not allowed."}
+            )
+        return attrs
+
+
+Expense.api_serializers = {
+    'default': ExpenseDefaultSerializer,
 }
 ```
 
-> [!tip]
-> The `@add_permission_checks` decorator integrates your serializer with the [[features/access-and-ui/permissions|permission system]]. It ensures that field-level permissions from `permission_read()` and `permission_edit()` are enforced on the API level too.
+This example shows three important patterns:
 
-## Field-Level Validation
+1. **`@add_permission_checks`** — integrates with the [[features/access-and-ui/permissions|permission system]], enforcing `permission_read()` and `permission_edit()` at the API level
+2. **`validate_<field>`** — field-level validation that runs automatically and shows errors inline in the grid
+3. **`validate()` with `self.instance` fallback** — cross-field validation that works correctly for both full saves (POST/PUT) and inline cell edits (PATCH, which only sends the changed field)
 
-Add `validate_<fieldname>` methods to enforce rules on individual fields:
+> [!warning] PATCH and cross-field validation
+> When a user edits a single cell in the grid, the frontend sends a **PATCH** request containing only that field. In `validate()`, `attrs` won't include the fields the user didn't touch. Always fall back to `self.instance` for the "other" field — otherwise the rule silently passes.
 
-```python title="Upload/serializers.py"
-from django.utils import timezone
-from rest_framework import serializers
+## More Validation Patterns
 
+Here are additional patterns you can mix and match in your serializers:
 
-@add_permission_checks
-class QuarterDefaultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Quarter
-        fields = '__all__'
-
-    def validate_name(self, value):
-        """Name must not be blank."""
-        if not value or not value.strip():
-            raise serializers.ValidationError("Name cannot be blank.")
-        return value
-
-    def validate_report_date(self, value):
-        """Report date must not be in the future."""
-        if value > timezone.now():
-            raise serializers.ValidationError("Report date cannot be in the future.")
-        return value
-```
-
-When validation fails, the error message appears directly in the frontend UI.
-
-## Object-Level Validation
-
-Use `validate()` to enforce rules that span multiple fields:
+### Date and temporal checks
 
 ```python
-    def validate(self, attrs):
-        """Locked quarters must have a report date."""
-        locked = attrs.get('locked', False)
-        report_date = attrs.get('report_date')
-        if locked and report_date is None:
-            raise serializers.ValidationError({
-                'report_date': "Locked quarters must have a report date."
-            })
-        return attrs
+from django.utils import timezone
+
+def validate_report_date(self, value):
+    """Report date must not be in the future."""
+    if value > timezone.now():
+        raise serializers.ValidationError("Report date cannot be in the future.")
+    return value
 ```
+
+### Conditional required fields
+
+```python
+def validate(self, attrs):
+    """Locked quarters must have a report date."""
+    locked = attrs.get('locked', getattr(self.instance, 'locked', False))
+    report_date = attrs.get('report_date', getattr(self.instance, 'report_date', None))
+
+    if locked and report_date is None:
+        raise serializers.ValidationError({
+            'report_date': "Locked quarters must have a report date."
+        })
+    return attrs
+```
+
+### Computed read-only fields
+
+```python
+class InvestorCashflowDetailSerializer(serializers.ModelSerializer):
+    amount_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InvestorCashflow
+        fields = ['id', 'investor', 'amount_eur', 'amount_display']
+
+    def get_amount_display(self, obj):
+        return f"€{obj.amount_eur:,.2f}" if obj.amount_eur else None
+```
+
+When validation fails, the error message appears directly in the frontend UI — both for field-level (`validate_<field>`) and object-level (`validate()`) errors.
+
+> [!tip] Serializer validation vs. `pre_validation()`
+> Serializer validation and [[features/data-pipeline/lifecycle hooks#`pre_validation()` — Guard Before Save|pre_validation()]] both block invalid data before it's saved — but they run at different layers. Serializer validation runs in the **API layer** (when data arrives via REST), while `pre_validation()` runs in the **model layer** (on every `save()`, regardless of source). If a rule should apply no matter how the model is saved — API, management command, hook, calculation — put it in `pre_validation()`. If it's specific to the REST API (e.g., formatting, permission-aware checks), use a serializer.
 
 ## Multiple Serializer Views
 
@@ -117,21 +157,27 @@ InvestorCashflow.api_serializers = {
 |---|---|
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
-| `'tree'` | Tree/hierarchical views |
 
-## Where to Put `serializers.py`
+## Where to Put Serializers
 
-Place the file in the same folder as the models it serializes:
+We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
 
 ```
-Upload/
+Input/
 ├── __init__.py
-├── Quarter.py
-├── UploadBalanceSheet.py
-└── serializers.py         ← serializers for Upload models
+├── Team.py
+├── Employee.py
+├── Expense.py
+└── serializers.py         ← serializers for all Input models
+Reports/
+├── __init__.py
+├── BudgetSummary.py
+└── serializers.py         ← serializers for all Report models
 ```
+
+You *could* create a separate file per serializer (e.g., `ExpenseSerializer.py`), but in practice a single file per folder is easier to navigate — you can see all validation rules and field configurations for related models in one place, and the imports stay clean since the models are all in the same folder.
 
 > [!note]
-> You don't *have* to create serializers. Without them, LEX generates a default serializer that exposes all fields. Custom serializers are for when you need validation, computed fields, or restricted views.
+> You don't *have* to create serializers. Without them, Lex App generates a default serializer that exposes all fields. Custom serializers are for when you need validation, computed fields, or restricted views.
 
 For more on the REST API and [Django REST Framework](https://www.django-rest-framework.org/), see the official DRF documentation.

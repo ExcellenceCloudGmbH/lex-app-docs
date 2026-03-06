@@ -2,7 +2,7 @@
 title: Audit Logs
 ---
 
-Every API operation in LEX — create, update, delete — is automatically recorded in an `AuditLog` table. This happens transparently via `AuditLogMixin`, which hooks into the [Django REST Framework](https://www.django-rest-framework.org/) view layer. You don't need to configure or enable anything — audit logging is always active.
+Every API operation in Lex App — create, update, delete — is automatically recorded in an `AuditLog` table. This happens transparently via `AuditLogMixin`, which hooks into the [Django REST Framework](https://www.django-rest-framework.org/) view layer. You don't need to configure or enable anything — audit logging is always active.
 
 ## What Gets Recorded
 

@@ -37,23 +37,22 @@ The `.env` file is the **single source of truth** for runtime configuration.
 
 ### Option A: Automatic (Recommended)
 
-Run `lex setup` and follow the prompts. The wizard will open [excellence-cloud.de](https://excellence-cloud.de) for you, guide you through creating a new Client, and auto-populate your `.env` file.
+Run `lex setup` and follow the prompts. The wizard will open [Excellence Cloud](https://excellence-cloud.de) for you, guide you through creating a new Client, and auto-populate your `.env` file.
 
 ### Option B: Manual
 
-1. Log in to [excellence-cloud.de](https://excellence-cloud.de)
-2. Navigate to your project (or create a new Client)
+1. Log in to [Excellence Cloud](https://excellence-cloud.de)
+2. Go to Clients and Click Create a new Client
 3. Select client type → **development**
 4. Enable **confidential**
 5. Copy the credentials into your `.env`:
 
 ```env
-KEYCLOAK_URL=https://auth.excellence-cloud.de
-KEYCLOAK_REALM=lex
+KEYCLOAK_URL=keycloak_url
+KEYCLOAK_REALM=keycloak_realm
 OIDC_RP_CLIENT_ID=your_client_id
 OIDC_RP_CLIENT_SECRET=your_client_secret
 OIDC_RP_CLIENT_UUID=your_client_uuid
-DATABASE_DEPLOYMENT_TARGET=default
 ```
 
 ## Initialize the Application
@@ -62,7 +61,7 @@ DATABASE_DEPLOYMENT_TARGET=default
 
 1. **Applies migrations** — creates/updates database tables from your models
 2. **Syncs to Keycloak** — registers your models as "Resources" and permissions as "Scopes"
-3. **Enables access management** — you can now manage permissions on [excellence-cloud.de](https://excellence-cloud.de)
+3. **Enables access management** — you can now manage permissions on [Excellence Cloud](https://excellence-cloud.de)
 
 ### Via PyCharm (easiest)
 
@@ -82,22 +81,18 @@ set -a; source .env; set +a
 lex Init
 ```
 
-<details>
-<summary>Windows (PowerShell)</summary>
-
-```powershell
-# Load environment variables
-Get-Content .env | ForEach-Object {
-    if ($_ -match '^([^=]+)=(.*)$') {
-        [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
-    }
-}
-
-# Initialize
-lex Init
-```
-
-</details>
+> [!note]- Windows (PowerShell)
+> ```powershell
+> # Load environment variables
+> Get-Content .env | ForEach-Object {
+>     if ($_ -match '^([^=]+)=(.*)$') {
+>         [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
+>     }
+> }
+>
+> # Initialize
+> lex Init
+> ```
 
 > [!important]
 > **When to run `lex Init` again:** Whenever you add a new model, new field, or change permission methods — any change that creates a new migration file.
@@ -112,37 +107,25 @@ Select **"Start"** from the Run Configuration dropdown → click ▶️.
 
 ```bash
 set -a; source .env; set +a
-python -m lex start --reload --loop asyncio lex_app.asgi:application
+lex start --reload --loop asyncio lex_app.asgi:application
 ```
 
 Your application is now running at `http://localhost:8000`.
 
 ## Troubleshooting
 
-<details>
-<summary>"Environment variable not set" errors</summary>
+> [!warning]- "Environment variable not set" errors
+> - **PyCharm:** Make sure `.env` is in your project root
+> - **Terminal:** Always run `set -a; source .env; set +a` before any `lex` command
 
-- **PyCharm:** Make sure `.env` is in your project root
-- **Terminal:** Always run `set -a; source .env; set +a` before any `lex` command
+> [!warning]- "ModuleNotFoundError: lex" errors
+> - Make sure `lex-app` is installed: `pip install lex-app`
+> - Verify you're using Python 3.12
+> - Check that your virtual environment is activated
 
-</details>
-
-<details>
-<summary>"ModuleNotFoundError: lex" errors</summary>
-
-- Make sure `lex-app` is installed: `pip install lex-app`
-- Verify you're using Python 3.12
-- Check that your virtual environment is activated
-
-</details>
-
-<details>
-<summary>Keycloak connection errors</summary>
-
-- Verify `KEYCLOAK_URL` in your `.env`
-- Check that `OIDC_RP_CLIENT_ID` and `OIDC_RP_CLIENT_SECRET` are correct
-- Confirm your client exists on [excellence-cloud.de](https://excellence-cloud.de)
-
-</details>
+> [!warning]- Keycloak connection errors
+> - Verify `KEYCLOAK_URL` in your `.env`
+> - Check that `OIDC_RP_CLIENT_ID` and `OIDC_RP_CLIENT_SECRET` are correct
+> - Confirm your client exists on [Excellence Cloud](https://excellence-cloud.de)
 
 Got everything set up? Learn about the [[project structure]] or jump straight to [[running your app]].

@@ -2,7 +2,7 @@
 title: Lifecycle Hooks
 ---
 
-LEX models support lifecycle hooks — methods that run automatically at specific points in a model's lifecycle. Hooks are declared with the `@hook` decorator from [django-lifecycle](https://rsinger86.github.io/django-lifecycle/), making execution explicit and traceable.
+Lex App models support lifecycle hooks — methods that run automatically at specific points in a model's lifecycle. Hooks are declared with the `@hook` decorator from [django-lifecycle](https://rsinger86.github.io/django-lifecycle/), making execution explicit and traceable.
 
 ## Basic Example
 
@@ -33,7 +33,7 @@ class UploadBalanceSheet(LexModel):
         self.save(skip_hooks=True)
 ```
 
-The `@hook(AFTER_CREATE)` decorator tells LEX to call `process_file()` immediately after the record is saved for the first time. The method name is yours to choose — what matters is the decorator.
+The `@hook(AFTER_CREATE)` decorator tells the framework to call `process_file()` immediately after the record is saved for the first time. The method name is yours to choose — what matters is the decorator.
 
 ## Available Hooks
 
@@ -86,7 +86,7 @@ def process_and_save(self):
 
 ## Validation Hooks
 
-`LexModel` also provides two built-in validation hooks that run as part of the save lifecycle. These are not Django's standard `clean()` / `full_clean()` — they're LEX-specific hooks with a powerful rollback mechanism.
+`LexModel` also provides two built-in validation hooks that run as part of the save lifecycle. These are not Django's standard `clean()` / `full_clean()` — they're Lex App–specific hooks with a powerful rollback mechanism.
 
 ```mermaid
 flowchart TD
@@ -122,6 +122,9 @@ class Invoice(LexModel):
             raise ValueError("Due date must be in the future for new invoices.")
 ```
 
+> [!tip] `pre_validation()` vs. serializer validation
+> These look similar — both block bad data before save — but they run at different layers. `pre_validation()` runs on **every `save()`**, no matter how it's triggered (API, hook, management command, calculation). [[features/data-pipeline/serializers|Serializer validation]] only runs when data arrives through the **REST API**. Use `pre_validation()` for universal business rules; use serializer validation for API-specific concerns like formatting or permission-aware checks.
+
 ### `post_validation()` — Verify After Save + Auto-Rollback
 
 Use this for checks that need the saved state (e.g., aggregate constraints). If you raise an exception, the framework automatically rolls back the record to its pre-save state.
@@ -143,17 +146,13 @@ class ExpenseReport(LexModel):
             )
 ```
 
-<details>
-<summary>How the rollback works internally</summary>
-
-Before `pre_validation()` runs, the framework captures a snapshot of all model field values. If `post_validation()` raises an exception:
-
-1. Field values are restored from the snapshot
-2. A `save(skip_hooks=True)` is executed to persist the rollback
-3. The operation is wrapped in `transaction.atomic()` with savepoints
-4. A `ValidationError` is raised to the caller
-
-</details>
+> [!info]- How the rollback works internally
+> Before `pre_validation()` runs, the framework captures a snapshot of all model field values. If `post_validation()` raises an exception:
+>
+> 1. Field values are restored from the snapshot
+> 2. A `save(skip_hooks=True)` is executed to persist the rollback
+> 3. The operation is wrapped in `transaction.atomic()` with savepoints
+> 4. A `ValidationError` is raised to the caller
 
 ## Which Pattern Should I Use?
 
@@ -165,23 +164,19 @@ Before `pre_validation()` runs, the framework captures a snapshot of all model f
 | Verify constraints after save (with auto-rollback) | `LexModel` + `post_validation()` |
 | Side effects after save (logging, notifications) | `LexModel` + `@hook(AFTER_SAVE)` |
 
-<details>
-<summary>Migrating from V1?</summary>
-
-If you're coming from `UploadModelMixin`, here's what changes:
-
-| Aspect | V1 (Old) | Current |
-|---|---|---|
-| Base class | `UploadModelMixin` | `LexModel` |
-| Trigger mechanism | Implicit global signals | Explicit `@hook` decorators |
-| Method name | `update()` | Any name you choose |
-| When it runs | Hidden — hard to trace | Clearly declared on the decorator |
-
-### Migration Steps
-
-1. Change base class: `UploadModelMixin` → `LexModel`
-2. Add `from django_lifecycle import hook, AFTER_CREATE`
-3. Replace `def update(self):` with `@hook(AFTER_CREATE)` + a descriptive method name
-4. Add `self.save(skip_hooks=True)` if saving inside the hook
-
-</details>
+> [!note]- Migrating from V1?
+> If you're coming from `UploadModelMixin`, here's what changes:
+>
+> | Aspect | V1 (Old) | Current |
+> |---|---|---|
+> | Base class | `UploadModelMixin` | `LexModel` |
+> | Trigger mechanism | Implicit global signals | Explicit `@hook` decorators |
+> | Method name | `update()` | Any name you choose |
+> | When it runs | Hidden — hard to trace | Clearly declared on the decorator |
+>
+> ### Migration Steps
+>
+> 1. Change base class: `UploadModelMixin` → `LexModel`
+> 2. Add `from django_lifecycle import hook, AFTER_CREATE`
+> 3. Replace `def update(self):` with `@hook(AFTER_CREATE)` + a descriptive method name
+> 4. Add `self.save(skip_hooks=True)` if saving inside the hook

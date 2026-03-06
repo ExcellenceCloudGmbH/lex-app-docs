@@ -91,20 +91,22 @@ class Expense(LexModel):
 | **CFO** | All expenses across all teams | Yes |
 | **Superuser** | Everything | Yes |
 
-The permissions are checked automatically by the framework on every API request and frontend interaction. You don't need any middleware or decorators — and they integrate with the `@add_permission_checks` decorator on your [[features/data-pipeline/serializers|serializers]]. For more on the permission system, see [[features/access-and-ui/permissions]].
+The permissions are checked automatically by the framework on every API request and frontend interaction. You don't need any middleware or decorators — and they integrate with the `@add_permission_checks` decorator on your [[features/data-pipeline/serializers|serializers]]. For the complete list of permission methods and convenience helpers, see [[reference/LexModel Internals]]. For more on the permission system, see [[features/access-and-ui/permissions]].
 
 ## Sync Permissions
 
 Select **"Init"** in PyCharm → click ▶️ to sync your model permissions to [Keycloak](https://www.keycloak.org/documentation).
 
-<details>
-<summary>Terminal alternative</summary>
-
-```powershell
-python -m lex Init
-```
-
-</details>
+> [!note]- Terminal alternative
+> **Linux / macOS:**
+> ```bash
+> set -a; source .env; set +a
+> lex Init
+> ```
+> **Windows PowerShell:**
+> ```powershell
+> lex Init
+> ```
 
 ## How It Looks
 

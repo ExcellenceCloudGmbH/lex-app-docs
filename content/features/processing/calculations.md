@@ -2,7 +2,7 @@
 title: Calculations
 ---
 
-A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, LEX transitions the record to `IN_PROGRESS`, calls your `calculate()` method, and then transitions to `SUCCESS` or `ERROR` depending on the outcome. You only write the business logic — everything else is handled for you.
+A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, calls your `calculate()` method, and then transitions to `SUCCESS` or `ERROR` depending on the outcome. You only write the business logic — everything else is handled for you.
 
 ## Defining a Calculation Model
 
@@ -59,20 +59,19 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Auto-save** — the record is saved automatically after `calculate()` returns
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
 
-<details>
-<summary>How the state machine works internally</summary>
+> [!tip] Need to generate many records at once?
+> If your calculation creates one output per combination (e.g., one liability per award per upload), see [[features/processing/batch calculations|Batch Calculations]] — `CalculatedModelMixin` handles the combination generation, deduplication, and parallel dispatch for you.
 
-The `CalculationModel` base class uses `@hook(AFTER_UPDATE)` on the `is_calculated` field. When it transitions to `IN_PROGRESS`, the framework calls `calculate_hook()` which:
-
-1. Sets `is_calculated = IN_PROGRESS`
-2. Decides whether to run synchronously or via Celery (`should_use_celery()`)
-3. Calls your `calculate()` method
-4. On success: sets `is_calculated = SUCCESS` and saves
-5. On exception: sets `is_calculated = ERROR`, stores the traceback in `calculation_error_message`, and saves
-
-You never need to manage this yourself.
-
-</details>
+> [!info]- How the state machine works internally
+> The `CalculationModel` base class uses `@hook(AFTER_UPDATE)` on the `is_calculated` field. When it transitions to `IN_PROGRESS`, the framework calls `calculate_hook()` which:
+>
+> 1. Sets `is_calculated = IN_PROGRESS`
+> 2. Decides whether to run synchronously or via Celery (`should_use_celery()`)
+> 3. Calls your `calculate()` method
+> 4. On success: sets `is_calculated = SUCCESS` and saves
+> 5. On exception: sets `is_calculated = ERROR`, stores the traceback in `calculation_error_message`, and saves
+>
+> You never need to manage this yourself.
 
 ## Another Example
 
@@ -86,29 +85,25 @@ class CalculateBalanceSheet(CalculationModel):
         self.total_assets = assets.aggregate(Sum('value'))['value__sum']
 ```
 
-<details>
-<summary>Migrating from V1?</summary>
-
-If you're coming from `ConditionalUpdateMixin`, here's what changes:
-
-| Aspect | V1 (Old) | Current |
-|---|---|---|
-| Base class | `ConditionalUpdateMixin` | `CalculationModel` |
-| Method name | `update()` | `calculate()` |
-| Decorator | `@ConditionalUpdateMixin.conditional_calculation` | Not needed |
-| State field | Boolean `is_calculated` | Enum with 5 states |
-| Recursion guard | Manual `dont_update` flag | Automatic |
-| Error handling | Manual `try/catch` | Automatic (stored in `calculation_error_message`) |
-| Save | Manual `self.save()` | Automatic after method returns |
-
-### Migration Checklist
-
-- [ ] Change base class: `ConditionalUpdateMixin` → `CalculationModel`
-- [ ] Remove the `@conditional_calculation` decorator
-- [ ] Rename method: `update()` → `calculate()`
-- [ ] Remove `is_calculated = IsCalculatedField(...)` (inherited automatically)
-- [ ] Remove `calculate = CalculateField(...)` (inherited automatically)
-- [ ] Remove the `dont_update` recursion guard
-- [ ] Remove manual `self.save()` calls
-
-</details>
+> [!note]- Migrating from V1?
+> If you're coming from `ConditionalUpdateMixin`, here's what changes:
+>
+> | Aspect | V1 (Old) | Current |
+> |---|---|---|
+> | Base class | `ConditionalUpdateMixin` | `CalculationModel` |
+> | Method name | `update()` | `calculate()` |
+> | Decorator | `@ConditionalUpdateMixin.conditional_calculation` | Not needed |
+> | State field | Boolean `is_calculated` | Enum with 5 states |
+> | Recursion guard | Manual `dont_update` flag | Automatic |
+> | Error handling | Manual `try/catch` | Automatic (stored in `calculation_error_message`) |
+> | Save | Manual `self.save()` | Automatic after method returns |
+>
+> ### Migration Checklist
+>
+> - [ ] Change base class: `ConditionalUpdateMixin` → `CalculationModel`
+> - [ ] Remove the `@conditional_calculation` decorator
+> - [ ] Rename method: `update()` → `calculate()`
+> - [ ] Remove `is_calculated = IsCalculatedField(...)` (inherited automatically)
+> - [ ] Remove `calculate = CalculateField(...)` (inherited automatically)
+> - [ ] Remove the `dont_update` recursion guard
+> - [ ] Remove manual `self.save()` calls

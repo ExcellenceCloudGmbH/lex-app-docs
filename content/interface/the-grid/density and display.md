@@ -2,7 +2,7 @@
 title: Density & Display
 ---
 
-Not all tasks need the same amount of visual space. When you're scanning a thousand records, you want rows tight and data-dense. When you're reviewing individual entries in detail, you want room to breathe. LEX APP gives you both.
+Not all tasks need the same amount of visual space. When you're scanning a thousand records, you want rows tight and data-dense. When you're reviewing individual entries in detail, you want room to breathe. Lex App gives you both.
 
 ## Density Modes
 

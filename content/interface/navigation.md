@@ -2,7 +2,7 @@
 title: Navigation
 ---
 
-LEX APP uses a stable, professional navigation system designed for daily use. The sidebar organizes your models into logical groups, breadcrumbs track where you are, and global search gets you anywhere instantly.
+Lex App uses a stable, professional navigation system designed for daily use. The sidebar organizes your models into logical groups, breadcrumbs track where you are, and global search gets you anywhere instantly.
 
 ## The Sidebar
 

@@ -22,7 +22,7 @@ From your perspective, it's one click: grid → record → Analytics tab. No con
 
 ## Table-Level vs. Record-Level
 
-LEX APP supports two kinds of dashboards, and the Analytics tab handles both:
+Lex App supports two kinds of dashboards, and the Analytics tab handles both:
 
 | Dashboard Type | What It Shows | Where It Appears |
 |---|---|---|
@@ -58,7 +58,7 @@ Click **Retry Connection** to check again. This ensures you're never stuck — t
 
 ## Seamless Authentication
 
-The connection between LEX APP and the Streamlit dashboard uses **federated authentication**. Your Keycloak access token is passed securely to Streamlit — the dashboard inherits your identity and access level.
+The connection between Lex App and the Streamlit dashboard uses **federated authentication**. Your Keycloak access token is passed securely to Streamlit — the dashboard inherits your identity and access level.
 
 This means:
 - **No re-login** — you're already authenticated
@@ -66,4 +66,4 @@ This means:
 - **Access control respected** — the dashboard sees only the data you're allowed to see
 
 > [!note]
-> For developers: the integration is powered by the `StreamlitIframe` component and the `useStreamlitAuth` hook. See [[features/access-and-ui/streamlit dashboards]] for implementation details.
+> For developers: the integration is powered by the `StreamlitIframe` component. See [[features/access-and-ui/streamlit dashboards]] for implementation details.

@@ -2,7 +2,7 @@
 title: Access & UI
 ---
 
-Data is only useful if the right people can see it — and only the parts they're allowed to. LEX gives you fine-grained access control and interactive dashboards, both defined directly on your models.
+Data is only useful if the right people can see it — and only the parts they're allowed to. Lex App gives you fine-grained access control and interactive dashboards, both defined directly on your models.
 
 ```mermaid
 flowchart LR

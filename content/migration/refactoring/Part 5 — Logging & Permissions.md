@@ -152,7 +152,7 @@ For more on the permission system, see [[features/access-and-ui/permissions]].
 
 ### Sync to Keycloak
 
-After adding permission methods, run `lex Init` to sync your models to Keycloak. You can then manage group assignments at [excellence-cloud.de](https://excellence-cloud.de).
+After adding permission methods, run `lex Init` to sync your models to Keycloak. You can then manage group assignments at [Excellence Cloud](https://excellence-cloud.de).
 
 ## Verify
 

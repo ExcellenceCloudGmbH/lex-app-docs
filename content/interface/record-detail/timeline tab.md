@@ -24,7 +24,7 @@ The **As Of** control and **Visible Versions** badge let you adjust which versio
 
 ## Two Time Dimensions
 
-This is where LEX APP's [[features/tracking/bitemporal history|bitemporal model]] comes to life. The timeline can show changes along two independent dimensions:
+This is where Lex App's [[features/tracking/bitemporal history|bitemporal model]] comes to life. The timeline can show changes along two independent dimensions:
 
 ### System Time (When We Learned It)
 
