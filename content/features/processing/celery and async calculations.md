@@ -76,7 +76,7 @@ class HeavyReport(CalculationModel):
 
 `@lex_shared_task` wraps your method into an enhanced Celery task with:
 
-- **Context-aware dispatch** — respects `RunInCelery` and `UnblockCelery` context managers
+- **Context-aware dispatch** — respects `WaitForTasks` and `FireAndForget` context managers
 - **Automatic status callbacks** — the `CallbackTask` base class updates `is_calculated` to `SUCCESS` or `ERROR` on completion
 - **Context propagation** — calculation IDs and audit logging context are forwarded to workers
 
@@ -94,7 +94,7 @@ If **both** are true, the calculation is dispatched to a Celery worker via `calc
 For batch calculations (a parent triggering children), the framework uses `CeleryTaskDispatcher` to:
 
 1. **Group** the child models into batches (clustered by calculation order)
-2. **Dispatch** each group as a separate `calc_and_save` Celery task inside a `RunInCelery` context
+2. **Dispatch** each group as a separate `calc_and_save` Celery task inside a `WaitForTasks` context
 3. **Monitor** task completion (blocks until all groups finish)
 4. **Retry** failed groups synchronously as a fallback
 
@@ -150,56 +150,114 @@ Start Celery workers in a **separate terminal** alongside your running app:
 
 For development, you can skip running workers entirely — everything runs synchronously by default when `CELERY_ACTIVE` is not set or `false`.
 
-## `RunInCelery` and `UnblockCelery`
+## `WaitForTasks` and `FireAndForget`
 
 The framework provides two context managers for advanced dispatch control. You typically don't need these — the framework uses them internally — but they're available for custom task orchestration.
 
-### `RunInCelery`
+> **Legacy names:** `RunInCelery`, `AwaitDispatch` and `UnblockCelery` still work as aliases.
 
-Forces `@lex_shared_task`-decorated functions to dispatch to Celery workers instead of running synchronously:
+### `WaitForTasks`
+
+Dispatches `@lex_shared_task`-decorated calls to Celery workers and **blocks on exit** until every dispatched task has finished. Without this context, tasks run synchronously in the current thread.
 
 ```python
-from lex.lex_app.celery_tasks import RunInCelery
+from lex.lex_app.celery_tasks import WaitForTasks
 
-with RunInCelery():
-    # All @lex_shared_task calls inside this block are dispatched to Celery
-    my_task(data)
+with WaitForTasks():
+    my_task(data)       # dispatched to a Celery worker
+    other_task(data)    # dispatched to a Celery worker (runs in parallel)
 
-# On exit, RunInCelery waits for all dispatched tasks to complete
+# Execution reaches here only after BOTH tasks have completed
 ```
 
-You can be selective about which tasks to dispatch:
+#### Selective dispatch
+
+You can control which tasks get dispatched and which stay synchronous:
 
 ```python
-# Only dispatch specific tasks
-with RunInCelery(include_tasks={"calc_and_save"}):
+# Only dispatch calc_and_save — everything else runs synchronously
+with WaitForTasks(include_tasks={"calc_and_save"}):
     ...
 
-# Dispatch all EXCEPT specific tasks
-with RunInCelery(exclude_tasks={"initial_data_upload"}):
+# Dispatch everything EXCEPT initial_data_upload
+with WaitForTasks(exclude_tasks={"initial_data_upload"}):
     ...
 ```
 
-### `UnblockCelery`
+#### Nesting
 
-The reverse of `RunInCelery` — when nested inside a `RunInCelery` block, it overrides the blocking behavior and forces async execution:
+`WaitForTasks` blocks can be nested. Each scope independently tracks and waits for only the tasks dispatched within it:
 
 ```python
-from lex.lex_app.celery_tasks import RunInCelery, UnblockCelery
+with WaitForTasks():                    # outer scope
+    compute_portfolio.delay(fund_a)     # dispatched, tracked by outer
+    compute_portfolio.delay(fund_b)     # dispatched, tracked by outer
 
-with RunInCelery():
-    my_task(data)  # Dispatched to Celery, RunInCelery waits on exit
+    with WaitForTasks():                # inner scope
+        compute_nav.delay(q1)           # dispatched, tracked by inner
+        compute_nav.delay(q2)           # dispatched, tracked by inner
+    # ← blocks here until q1 and q2 finish
 
-    with UnblockCelery():
-        my_task(data)  # Also dispatched, but won't be waited on
+    generate_report.delay(fund_a)       # dispatched, tracked by outer
 
-    my_task(data)  # Back to RunInCelery behavior
+# ← blocks here until fund_a, fund_b, and the report finish
 ```
 
-**Priority hierarchy** (highest first):
-1. `UnblockCelery` — forces async dispatch
-2. `RunInCelery` — forces dispatch, waits on exit
-3. No context — runs synchronously (default)
+All four portfolio/NAV tasks run in parallel on Celery workers, but the calling thread waits at each scope boundary for the tasks it owns.
+
+### `FireAndForget`
+
+Dispatches tasks to Celery **without waiting** for them. Use this for side-effects that don't affect the caller's correctness — notifications, cache warming, analytics, etc.
+
+On its own, `FireAndForget` simply dispatches and moves on:
+
+```python
+from lex.lex_app.celery_tasks import FireAndForget
+
+with FireAndForget():
+    send_report_email(report)       # dispatched, nobody waits
+    notify_slack_channel(report)    # dispatched, nobody waits
+
+# Execution continues immediately — emails may still be sending
+```
+
+When nested inside a `WaitForTasks` block, it **overrides** the blocking behaviour for specific calls:
+
+```python
+from lex.lex_app.celery_tasks import WaitForTasks, FireAndForget
+
+with WaitForTasks():
+    compute_nav.delay(q1)               # dispatched, parent WILL wait
+
+    with FireAndForget():
+        send_report_email(report)       # dispatched, parent WON'T wait
+        notify_slack_channel(report)    # dispatched, parent WON'T wait
+
+    compute_nav.delay(q2)               # dispatched, parent WILL wait
+
+# Blocks until q1 and q2 finish. Emails/Slack may still be in flight.
+```
+
+#### When to use `FireAndForget`
+
+| Use case | Why fire-and-forget |
+|---|---|
+| Email / Slack / webhook notifications | Caller doesn't need the result |
+| Audit-log enrichment (async) | Nice-to-have, not on the critical path |
+| Cache warming / precomputation | Optimisation, not required for correctness |
+| Analytics / telemetry events | Tracking shouldn't slow calculations |
+
+The key question: *"If this task fails or is delayed, does the caller break?"* If **no** → `FireAndForget`. If **yes** → let `WaitForTasks` handle it.
+
+### Priority hierarchy
+
+When contexts are nested, the **innermost** matching context wins:
+
+| Priority | Context | Behaviour |
+|---|---|---|
+| 1 (highest) | `FireAndForget` | Dispatch to Celery, don't wait |
+| 2 | `WaitForTasks` | Dispatch to Celery, block on exit |
+| 3 (default) | No context | Run synchronously in-process |
 
 ## Failure Handling
 

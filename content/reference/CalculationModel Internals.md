@@ -104,7 +104,7 @@ class HeavyReport(CalculationModel):
 > [!note]
 > Set `CELERY_ACTIVE=true` in your project's `.env` file to enable Celery dispatch. You also need a running Redis instance (or [Memurai](https://www.memurai.com/get-memurai) on Windows) as the message broker.
 
-See [[features/processing/celery and async calculations]] for the full setup guide — environment variables, running workers, and the `RunInCelery` / `UnblockCelery` context managers.
+See [[features/processing/celery and async calculations]] for the full setup guide — environment variables, running workers, and the `WaitForTasks` / `FireAndForget` context managers.
 
 ## Nested Calculations
 
