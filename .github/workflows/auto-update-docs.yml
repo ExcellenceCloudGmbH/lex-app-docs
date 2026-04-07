@@ -1,0 +1,322 @@
+# ──────────────────────────────────────────────────────────────────────
+#  THIS FILE GOES IN: lex-app-docs/.github/workflows/auto-update-docs.yml
+#
+#  Copy this file to the lex-app-docs repository.
+#
+#  Auto-update documentation when lex-app publishes a new release.
+#
+#  This workflow:
+#   1. Is triggered by a `repository_dispatch` event from lex-app.
+#   2. Checks out both repos (lex-app for diff, lex-app-docs for docs).
+#   3. Sends the diff + current docs to GitHub Copilot (Models API).
+#   4. Creates a PR in THIS repo for human review.
+#
+#  Because this runs inside lex-app-docs, it uses its own GITHUB_TOKEN
+#  for push + PR — no cross-repo auth needed for the heavy lifting.
+#
+#  The only external dependency is the dispatch event, which is fired
+#  by lex-app's update_docs.yml workflow using a GitHub App token.
+#
+#  Required secrets (on lex-app-docs):
+#   - MODELS_API_TOKEN  (GitHub PAT with `models:read` scope, OR
+#                         re-use the App token if Models perms are set)
+#
+#  Optional: If you want lex-app-docs to also use the GitHub App for
+#  the Models API, install the App on this repo too and add the secrets.
+# ──────────────────────────────────────────────────────────────────────
+
+name: Auto-Update Documentation
+
+on:
+  repository_dispatch:
+    types: [release-published]
+
+  # Manual trigger for testing / re-running
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: "Base ref (previous release tag, e.g. v2.3.0)"
+        required: false
+        type: string
+      head_tag:
+        description: "Head ref (current release tag, e.g. v2.4.0)"
+        required: false
+        type: string
+
+jobs:
+  update-docs:
+    name: "Copilot Documentation Update"
+    runs-on: ubuntu-latest
+
+    # Grant the default GITHUB_TOKEN write access for push + PR
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      # ── 1. Parse the dispatch payload ──────────────────────────
+      - name: Parse event payload
+        id: tags
+        run: |
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            HEAD_TAG="${{ github.event.client_payload.head_tag }}"
+            BASE_TAG="${{ github.event.client_payload.base_tag }}"
+            SOURCE="${{ github.event.client_payload.source_repo }}"
+          else
+            HEAD_TAG="${{ inputs.head_tag }}"
+            BASE_TAG="${{ inputs.base_tag }}"
+            SOURCE="ExcellenceCloudGmbH/lex-app"
+          fi
+
+          echo "head_tag=${HEAD_TAG}" >> "$GITHUB_OUTPUT"
+          echo "base_tag=${BASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "source_repo=${SOURCE}" >> "$GITHUB_OUTPUT"
+          echo "Release diff: ${BASE_TAG:-'(initial)'}..${HEAD_TAG}"
+
+      # ── 2. Checkout lex-app-docs (this repo) ───────────────────
+      - name: Checkout lex-app-docs
+        uses: actions/checkout@v4
+        with:
+          path: lex-app-docs
+
+      # ── 3. Checkout lex-app (source code, read-only) ───────────
+      - name: Checkout lex-app
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.tags.outputs.source_repo }}
+          fetch-depth: 0
+          path: lex-app
+
+      # ── 4. Generate the code diff between releases ─────────────
+      - name: Generate release diff
+        working-directory: lex-app
+        run: |
+          HEAD_TAG="${{ steps.tags.outputs.head_tag }}"
+          BASE_TAG="${{ steps.tags.outputs.base_tag }}"
+
+          if [[ -n "${BASE_TAG}" ]]; then
+            git log --oneline "${BASE_TAG}..${HEAD_TAG}" -- \
+              lex/ ':(exclude)lex/react' | head -100 > /tmp/commits.txt
+
+            git diff "${BASE_TAG}..${HEAD_TAG}" --stat -- \
+              lex/ ':(exclude)lex/react' > /tmp/diffstat.txt
+
+            git diff "${BASE_TAG}..${HEAD_TAG}" -- \
+              lex/ ':(exclude)lex/react' ':(exclude)*.pyc' \
+              | head -4000 > /tmp/code_diff.txt
+          else
+            git log --oneline HEAD~20..HEAD -- lex/ | head -100 > /tmp/commits.txt
+            git diff --stat HEAD~20..HEAD -- lex/ > /tmp/diffstat.txt
+            git diff HEAD~20..HEAD -- lex/ | head -4000 > /tmp/code_diff.txt
+          fi
+
+          echo "Commits: $(wc -l < /tmp/commits.txt) lines"
+          echo "Diff stat: $(wc -l < /tmp/diffstat.txt) lines"
+          echo "Code diff: $(wc -l < /tmp/code_diff.txt) lines"
+
+      # ── 5. Bundle current docs as LLM context ──────────────────
+      - name: Collect current documentation
+        run: |
+          echo "=== DOCUMENTATION FILES ===" > /tmp/current_docs.txt
+          find lex-app-docs/content -name '*.md' \
+            -not -path '*/quartz_style_docs/*' | sort | while read f; do
+            REL_PATH="${f#lex-app-docs/}"
+            echo "" >> /tmp/current_docs.txt
+            echo "========== FILE: ${REL_PATH} ==========" >> /tmp/current_docs.txt
+            head -200 "$f" >> /tmp/current_docs.txt
+          done
+
+          DOC_COUNT=$(find lex-app-docs/content -name '*.md' \
+            -not -path '*/quartz_style_docs/*' | wc -l)
+          echo "Collected ${DOC_COUNT} doc files"
+
+      # ── 6. Set up Python ───────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      # ── 7. Call GitHub Copilot via GitHub Models API ────────────
+      - name: Generate documentation updates via GitHub Copilot
+        env:
+          # Use a dedicated Models API token if available,
+          # otherwise fall back to the default GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.MODELS_API_TOKEN || github.token }}
+          HEAD_TAG: ${{ steps.tags.outputs.head_tag }}
+          BASE_TAG: ${{ steps.tags.outputs.base_tag }}
+        run: |
+          python3 - << 'PYTHON_SCRIPT'
+          import json
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          import requests
+
+          token = os.environ["GITHUB_TOKEN"]
+          head_tag = os.environ["HEAD_TAG"]
+          base_tag = os.environ.get("BASE_TAG", "(initial)")
+
+          commits = Path("/tmp/commits.txt").read_text()
+          diffstat = Path("/tmp/diffstat.txt").read_text()
+          code_diff = Path("/tmp/code_diff.txt").read_text()
+          current_docs = Path("/tmp/current_docs.txt").read_text()
+
+          # ── Build the prompt ───────────────────────────────────
+          prompt = f"""You are a technical writer for the LEX App framework (Python/Django).
+
+          A new release ({base_tag} → {head_tag}) has been published. Below are
+          the code changes and the current documentation. Your task:
+
+          1. Identify which documentation files need updates based on the code changes.
+          2. For each file, produce the FULL updated content.
+          3. If a new feature has no doc page, create one.
+          4. Do NOT touch files unaffected by the changes.
+          5. Keep existing Quartz/Obsidian frontmatter (---title:---) intact.
+          6. Be precise — only document what actually changed.
+
+          === COMMITS ===
+          {commits}
+
+          === DIFF STAT ===
+          {diffstat}
+
+          === CODE DIFF (truncated) ===
+          {code_diff}
+
+          === CURRENT DOCUMENTATION ===
+          {current_docs}
+
+          Respond with a JSON array of objects:
+          - "path": file path relative to the docs repo (e.g. "content/features/tracking/bitemporal history.md")
+          - "content": the full updated file content
+          - "summary": one sentence explaining what changed
+
+          If no updates needed, respond with: []
+          Return ONLY the JSON array."""
+
+          # ── Call GitHub Models API ─────────────────────────────
+          url = "https://models.github.ai/inference/chat/completions"
+          headers = {
+              "Authorization": f"Bearer {token}",
+              "Content-Type": "application/json",
+          }
+          payload = {
+              "model": "openai/gpt-4.1",
+              "messages": [
+                  {
+                      "role": "system",
+                      "content": (
+                          "You are a precise technical documentation updater. "
+                          "Return only valid JSON arrays."
+                      ),
+                  },
+                  {"role": "user", "content": prompt},
+              ],
+              "max_tokens": 16000,
+              "temperature": 0.2,
+          }
+
+          print(f"Calling GitHub Models API ({len(prompt)} chars)...", file=sys.stderr)
+          resp = requests.post(url, headers=headers, json=payload, timeout=180)
+
+          if resp.status_code != 200:
+              print(f"Models API error {resp.status_code}: {resp.text[:500]}", file=sys.stderr)
+              print("Ensure token has 'models:read' scope and Copilot is enabled.", file=sys.stderr)
+              Path("/tmp/updates.json").write_text("[]")
+              sys.exit(0)
+
+          result_text = resp.json()["choices"][0]["message"]["content"].strip()
+
+          # Parse JSON (handle markdown fences if model wraps it)
+          try:
+              updates = json.loads(result_text)
+          except json.JSONDecodeError:
+              match = re.search(r"\[.*\]", result_text, re.DOTALL)
+              if match:
+                  updates = json.loads(match.group())
+              else:
+                  print("Could not parse LLM response as JSON", file=sys.stderr)
+                  print(result_text[:500], file=sys.stderr)
+                  Path("/tmp/updates.json").write_text("[]")
+                  sys.exit(0)
+
+          if not updates:
+              print("No documentation updates needed for this release.")
+          else:
+              print(f"{len(updates)} file(s) to update:")
+              for u in updates:
+                  print(f"   - {u['path']}: {u['summary']}")
+
+          Path("/tmp/updates.json").write_text(
+              json.dumps(updates, indent=2, ensure_ascii=False)
+          )
+          PYTHON_SCRIPT
+
+      # ── 8. Apply updates to the docs repo checkout ─────────────
+      - name: Apply documentation updates
+        id: apply
+        run: |
+          UPDATES=$(cat /tmp/updates.json)
+          COUNT=$(echo "${UPDATES}" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
+
+          if [[ "${COUNT}" == "0" ]]; then
+            echo "No updates to apply."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "${UPDATES}" | python3 -c "
+          import sys, json
+          from pathlib import Path
+          updates = json.load(sys.stdin)
+          for u in updates:
+              p = Path('lex-app-docs') / u['path']
+              p.parent.mkdir(parents=True, exist_ok=True)
+              p.write_text(u['content'], encoding='utf-8')
+              print(f'  Updated: {u[\"path\"]}: {u[\"summary\"]}')
+          "
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+      # ── 9. Create PR (uses own GITHUB_TOKEN — no cross-repo auth)
+      - name: Create Pull Request
+        if: steps.apply.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          # Default GITHUB_TOKEN — works because we're in our own repo
+          path: lex-app-docs
+          commit-message: "docs: auto-update for lex-app ${{ steps.tags.outputs.head_tag }}"
+          branch: "docs/auto-update-${{ steps.tags.outputs.head_tag }}"
+          title: "Documentation update for lex-app ${{ steps.tags.outputs.head_tag }}"
+          body: |
+            ## Automated Documentation Update
+
+            This PR was generated by **GitHub Copilot** after the successful
+            release of **lex-app ${{ steps.tags.outputs.head_tag }}**.
+
+            ### Release range
+            ```
+            ${{ steps.tags.outputs.base_tag }} → ${{ steps.tags.outputs.head_tag }}
+            ```
+
+            ### How this was generated
+            1. `lex-app` published a new version via `pip_publish.yml`.
+            2. `lex-app` fired a `repository_dispatch` event to this repo.
+            3. This workflow computed the code diff between release tags.
+            4. GitHub Copilot (via Models API) analyzed the changes and
+               produced documentation updates.
+
+            ### What to do
+            - **Review the diff** — each changed file corresponds to a code change.
+            - **Edit** any sections that need correction.
+            - **Merge** when satisfied — the docs site deploys automatically on push to `main`.
+
+            ---
+            > **Machine-generated PR.** Always review before merging.
+          base: main
+          labels: documentation, automated
