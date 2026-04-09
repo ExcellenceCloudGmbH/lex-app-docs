@@ -14,6 +14,16 @@ Verify it worked:
 lex --version
 ```
 
+You can also check the installed version programmatically:
+
+```python
+from lex._version import __version__
+print(__version__)
+```
+
+> [!note]
+> In local development (without a CI build), `__version__` falls back to `"0.0.0.dev0"`. The real version is injected at build time from the GitHub release tag.
+
 > [!tip]
 > Make sure you're using **Python 3.12**. Check with `python3.12 --version`.
 
