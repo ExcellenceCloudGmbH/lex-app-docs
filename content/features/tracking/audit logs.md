@@ -65,7 +65,7 @@ Bulk updates and deletes are also tracked via `BulkAuditLogMixin`. Each individu
 
 The audit system includes built-in resilience:
 
-- **Deadlock retries** — database operations are automatically retried on transient errors (deadlocks, serialization failures)
+- **Deadlock retries** — database operations are automatically retried on transient PostgreSQL errors. Retryable conditions are identified by both `pgcode` values (e.g. `40P01` deadlock, `40001` serialization failure) and by matching common error message substrings such as `"deadlock detected"` and `"could not serialize access"`. The retry constants `RETRYABLE_SQLSTATE_CODES` and `MAX_UPDATE_RETRIES` are importable from `lex.audit_logging.mixins.AuditLogMixin` if you need to reference them in custom tooling.
 - **ContentType cache healing** — if Django's ContentType cache goes stale (e.g., after a migration), the system detects and auto-corrects it
 - **Error preservation** — failed operations store the full traceback for debugging
 

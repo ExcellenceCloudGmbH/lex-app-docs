@@ -70,6 +70,29 @@ LexLogger().add_text("Current Configuration:") \
 
 LexLogger automatically resolves the current execution context. You don't need to pass IDs manually — it figures out which calculation is running and which model instance is executing.
 
+Every `.log()` call links the entry to:
+
+- the **calculation ID** (from the active operation context)
+- the **current model instance** being processed
+- the **parent model** that triggered the child calculation
+- the **root model** at the top of the calculation tree
+
+### Real-Time Fan-Out to Root and Current Records
+
+When a log message is written inside a nested calculation, the real-time cache and WebSocket update is sent to **both** the current record's channel **and** the root record's channel. This means if you're watching the log panel of the top-level (root) calculation, you will see all child log messages arrive in real-time without navigating to each child record individually.
+
+### Fallback Routing via ModelContext
+
+Context resolution uses three collaborating components:
+
+| Component | Role |
+|---|---|
+| `ModelContext` | A LIFO stack of model instances, pushed/popped by `model_logging_context` |
+| `ContextResolver` | Combines `ModelContext` with the active operation context to build a full `ContextInfo` |
+| `ContextInfo` | A data object carrying the resolved calculation ID, model references, and content types |
+
+If context resolution cannot be completed (e.g. when `LexLogger` is called outside a running calculation), a `ContextResolutionError` is raised internally and the system **falls back to `ModelContext`** for WebSocket routing. This ensures log messages still reach the correct channels even in edge-case scenarios. A `"Context resolution incomplete"` debug message is emitted in these cases.
+
 ## Nested Calculations
 
 When a parent calculation triggers a child, use `model_logging_context` to maintain the log hierarchy:
@@ -90,7 +113,7 @@ class ParentCalculation(CalculationModel):
         LexLogger().add_text("Child finished.").log()
 ```
 
-This ensures logs from the child appear nested under the parent in the frontend.
+This ensures logs from the child appear nested under the parent in the frontend, and that real-time updates are propagated up to the root record's log panel.
 
 For the complete method list, see the [[reference/LexLogger API|LexLogger API reference]].
 
