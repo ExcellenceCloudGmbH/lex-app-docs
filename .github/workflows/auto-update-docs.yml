@@ -147,15 +147,25 @@ jobs:
 
             **Context:** A new version of \`lex-app\` has been released. The code changes below need to be reflected in the documentation in this repository.
 
+            ### Writing style
+
+            **Read the existing docs first** to match their tone. The docs are written for developers who use the framework — not for contributors to the framework internals. Follow these rules:
+
+            - **Keep it practical and conversational.** Write like you're explaining to a colleague. Example of good tone: "You don't need to pass IDs manually — it figures out which calculation is running."
+            - **Don't expose internals.** Don't mention internal class names, error classes, or implementation patterns (like "LIFO stack", "ContextResolver pipeline") unless they're part of the public API the user calls directly.
+            - **Feature docs (\`content/features/\`) should explain what things do and how to use them.** Save class names, constants, and pgcodes for reference docs (\`content/reference/\`).
+            - **Keep changes minimal.** If the code diff is mostly test files or internal refactoring, the docs probably don't need updating. Say so and make no changes.
+            - **One-liners are fine.** Not every change needs a paragraph. A short addition to an existing bullet point is often better than a new section.
+
             ### Instructions
 
-            1. Read through the code diff below to understand what changed in \`lex-app\`.
-            2. Find documentation files under \`content/\` that are affected by these changes.
-            3. Update existing documentation pages to reflect the new behavior, parameters, or features.
-            4. If a completely new feature was added and has no documentation page, create one following the existing file structure and frontmatter format.
+            1. Read the existing documentation files under \`content/\` to understand the current writing style and structure.
+            2. Identify which pages are affected by the code changes below.
+            3. Update existing pages to reflect new behavior, parameters, or features — matching the existing tone.
+            4. If a completely new user-facing feature was added and has no doc page, create one following the existing structure and frontmatter format.
             5. Do **not** modify pages unrelated to the code changes.
-            6. Keep all existing Quartz/Obsidian frontmatter (\`---title:---\`) intact.
-            7. Be precise — only document what actually changed in the code.
+            6. Do **not** create docs for test files, internal refactors, or CI/CD changes.
+            7. Keep all existing Quartz/Obsidian frontmatter (\`---title:---\`) intact.
 
             ### Commits (${commitCount})
 
