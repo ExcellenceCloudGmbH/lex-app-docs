@@ -86,20 +86,32 @@ jobs:
           HEAD_TAG="${{ steps.tags.outputs.head_tag }}"
           BASE_TAG="${{ steps.tags.outputs.base_tag }}"
 
-          if [[ -n "${BASE_TAG}" ]]; then
+          # If no head tag from dispatch, resolve from git
+          if [[ -z "${HEAD_TAG}" ]]; then
+            HEAD_TAG=$(git describe --tags --abbrev=0 HEAD 2>/dev/null || echo "")
+          fi
+          if [[ -z "${BASE_TAG}" && -n "${HEAD_TAG}" ]]; then
+            BASE_TAG=$(git describe --tags --abbrev=0 "${HEAD_TAG}^" 2>/dev/null || echo "")
+          fi
+
+          # Re-export resolved tags
+          echo "head_tag=${HEAD_TAG}" >> "$GITHUB_OUTPUT"
+          echo "base_tag=${BASE_TAG}" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "${BASE_TAG}" && -n "${HEAD_TAG}" ]]; then
             git log --oneline "${BASE_TAG}..${HEAD_TAG}" -- \
-              lex/ ':(exclude)lex/react' | head -80 > /tmp/commits.txt
+              lex/ ':(exclude)lex/react' | head -50 > /tmp/commits.txt
 
             git diff "${BASE_TAG}..${HEAD_TAG}" --stat -- \
               lex/ ':(exclude)lex/react' > /tmp/diffstat.txt
 
             git diff "${BASE_TAG}..${HEAD_TAG}" -- \
               lex/ ':(exclude)lex/react' ':(exclude)*.pyc' \
-              | head -3000 > /tmp/code_diff.txt
+              | head -800 > /tmp/code_diff.txt
           else
-            git log --oneline HEAD~20..HEAD -- lex/ | head -80 > /tmp/commits.txt
-            git diff --stat HEAD~20..HEAD -- lex/ > /tmp/diffstat.txt
-            git diff HEAD~20..HEAD -- lex/ | head -3000 > /tmp/code_diff.txt
+            git log --oneline HEAD~10..HEAD -- lex/ | head -50 > /tmp/commits.txt
+            git diff --stat HEAD~10..HEAD -- lex/ > /tmp/diffstat.txt
+            git diff HEAD~10..HEAD -- lex/ | head -800 > /tmp/code_diff.txt
           fi
 
           # Store diff size for the summary
@@ -116,14 +128,20 @@ jobs:
           script: |
             const fs = require('fs');
 
-            const headTag = '${{ steps.tags.outputs.head_tag }}';
-            const baseTag = '${{ steps.tags.outputs.base_tag }}' || '(initial)';
+            const headTag = '${{ steps.diff.outputs.head_tag }}' || '${{ steps.tags.outputs.head_tag }}';
+            const baseTag = '${{ steps.diff.outputs.base_tag }}' || '${{ steps.tags.outputs.base_tag }}' || '(initial)';
             const commitCount = '${{ steps.diff.outputs.commit_count }}';
             const diffLines = '${{ steps.diff.outputs.diff_lines }}';
 
             const commits = fs.readFileSync('/tmp/commits.txt', 'utf8').trim();
             const diffstat = fs.readFileSync('/tmp/diffstat.txt', 'utf8').trim();
-            const codeDiff = fs.readFileSync('/tmp/code_diff.txt', 'utf8').trim();
+            let codeDiff = fs.readFileSync('/tmp/code_diff.txt', 'utf8').trim();
+
+            // GitHub issue body limit is 65536 chars. Reserve space for the template.
+            const MAX_DIFF = 45000;
+            if (codeDiff.length > MAX_DIFF) {
+              codeDiff = codeDiff.substring(0, MAX_DIFF) + '\n\n... (truncated — see full diff on GitHub)';
+            }
 
             const body = `## Update documentation for lex-app ${baseTag} → ${headTag}
 
@@ -186,4 +204,4 @@ jobs:
               issue_number: ${{ steps.create-issue.outputs.issue_number }},
               assignees: ['copilot-swe-agent[bot]']
             });
-            core.info(`Assigned Copilot to issue #${{ steps.create-issue.outputs.issue_number }}`);
+            core.info('Assigned Copilot to issue #${{ steps.create-issue.outputs.issue_number }}');
