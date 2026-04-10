@@ -28,6 +28,18 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | `lex makemigrations` | Create new migration files from model changes |
 | `lex sqlflush` | Print SQL statements to flush the database |
 
+## AI Commands
+
+| Command | What It Does |
+|---|---|
+| `lex setup-with-ai` | Configure LEX AI integration (GitHub Copilot MCP, remote MCP server) |
+| `lex ai-update` | Apply incremental updates to an existing LEX AI setup (e.g. remove stale config keys) |
+| `lex ai-faq` | Open the LEX AI FAQ page in your browser |
+
+`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`.
+
+`lex ai-update` is safe to run at any time — it only removes keys that are no longer needed and reports exactly what it changed.
+
 ## Usage Pattern
 
 We recommend using PyCharm's run configurations (Init, Start, Streamlit) which auto-load `.env` for you. If you prefer the terminal:
