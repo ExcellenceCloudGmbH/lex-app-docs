@@ -45,7 +45,7 @@ Each history row contains all of your model's fields, plus these tracking fields
 
 | Field | Type | Description |
 |---|---|---|
-| `history_id` | `AutoField` | Primary key of the history row (not the same as your model's PK) |
+| `history_id` | `AutoField` | Primary key of the history row (not the same as your model's PK). In API responses the original record's `id` is preserved as-is; use the `id_field` property when you need the history-row PK. |
 | `valid_from` | `DateTimeField` | When this version was recorded (replaces django-simple-history's `history_date`) |
 | `valid_to` | `DateTimeField` (nullable) | When this version was superseded. `NULL` = still current |
 | `history_type` | `CharField(1)` | `+` Created · `~` Changed · `-` Deleted |

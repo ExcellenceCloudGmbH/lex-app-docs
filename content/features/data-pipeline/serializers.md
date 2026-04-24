@@ -158,6 +158,9 @@ InvestorCashflow.api_serializers = {
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
 
+> [!note] History tables pick up your alias automatically
+> If your project configures a `DEFAULT_SERIALIZER_NAME` (e.g. `"lex"`) and you override `api_serializers["default"]` on a model, the framework also registers the auto-generated serializer under that alias for the model's history and meta-history tables — you don't need to set `api_serializers` on `HistoricalEmployee` or `MetaHistoricalEmployee` separately.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
