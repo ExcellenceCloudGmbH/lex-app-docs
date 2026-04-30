@@ -158,6 +158,9 @@ InvestorCashflow.api_serializers = {
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
 
+> [!note] History tables follow the same alias
+> When you override `api_serializers["default"]`, the history and meta-history tables for that model automatically get the same alias registered. You don't need to configure `api_serializers` on history tables separately — they inherit the decision from their source model.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
