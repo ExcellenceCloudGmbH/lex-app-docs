@@ -158,6 +158,8 @@ InvestorCashflow.api_serializers = {
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
 
+When you override `'default'`, the framework automatically extends that behaviour to the model's history and meta-history tables too. So if `InvestorCashflow` has a custom `'default'` serializer, the auto-generated serializers for `HistoricalInvestorCashflow` and its MetaHistory counterpart are also registered alongside it — keeping history-snapshot and detail-view lookups consistent without any extra `api_serializers` setup on the history models.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
