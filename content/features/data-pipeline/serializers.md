@@ -158,6 +158,9 @@ InvestorCashflow.api_serializers = {
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
 
+> [!note] History tables inherit your override automatically
+> If your model uses [[features/tracking/bitemporal history|bitemporal history]], overriding `api_serializers["default"]` on the main model is enough — the framework propagates the same alias to the history and meta-history tables automatically. You don't need to configure serializers separately for `HistoricalEmployee` or `MetaHistoricalEmployee`.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
