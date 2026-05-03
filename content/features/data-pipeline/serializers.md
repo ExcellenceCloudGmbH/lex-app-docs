@@ -177,6 +177,9 @@ With this setting, the framework-generated serializer is additionally registered
 
 `SerializerMethodField` fields — and any other computed property with no underlying database column — are automatically marked as non-groupable. The grid will disable **row group** and **pivot** for those columns. Only real database-backed columns support server-side grouping.
 
+> [!tip] History tables pick up your default override automatically
+> When you override `api_serializers["default"]`, the framework also registers the auto-generated serializer under the same alias on the model's history and meta-history tables. You don't need to configure anything on `HistoricalInvestorCashflow` or `MetaHistoricalInvestorCashflow`—history-endpoint and snapshot lookups stay consistent for free.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
