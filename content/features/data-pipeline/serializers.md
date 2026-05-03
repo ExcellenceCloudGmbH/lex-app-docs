@@ -158,6 +158,9 @@ InvestorCashflow.api_serializers = {
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
 
+> [!note] History tables inherit your serializer alias automatically
+> When you override `'default'` with a custom serializer, the framework-generated serializer for the model's history and meta-history tables is also exposed under the same configured alias. This keeps serializer lookups consistent across a model and its [[features/tracking/bitemporal history|bitemporal history tables]] — you don't need to declare anything extra on the history side.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
