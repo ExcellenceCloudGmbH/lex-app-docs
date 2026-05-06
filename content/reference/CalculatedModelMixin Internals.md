@@ -89,7 +89,7 @@ If `parallelizable_fields` is empty, all models go into a single group.
 Checks `CELERY_ACTIVE` environment variable and whether `calculate()` has a `.delay()` attribute:
 
 - **Celery path:** `CeleryTaskDispatcher.dispatch_calculation_groups()` sends each group as a `calc_and_save.delay()` call inside a `WaitForTasks` context, then waits for completion.
-- **Sync path:** `calc_and_save_sync()` processes all models sequentially — calls `lex_func()` then `save()` on each.
+- **Sync path:** `calc_and_save_sync()` processes all models sequentially — calls `lex_func()` then `save()` on each. `None` models are skipped. Individual failures are logged and collected; an error is only raised if every model in the batch fails.
 
 Failed Celery groups are automatically retried synchronously.
 
