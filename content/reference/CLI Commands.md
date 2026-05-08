@@ -34,11 +34,17 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 |---|---|
 | `lex setup-with-ai` | Configure LEX AI integration (GitHub Copilot MCP, remote MCP server) |
 | `lex ai-update` | Apply incremental updates to an existing LEX AI setup (e.g. remove stale config keys) |
+| `lex ai-dashboard` | Open a local web dashboard to switch MCP mode, update credentials, and inspect server status |
+| `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser |
 
 `lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`.
 
 `lex ai-update` is safe to run at any time — it only removes keys that are no longer needed and reports exactly what it changed.
+
+`lex ai-dashboard` opens a browser page where you can switch between forward and backward MCP mode, update your GitHub token and remote MCP API key, and see the current server status. With lex-mcp-local ≥ 0.2.3, mode changes are instant — the server restarts itself and the IDE picks up the new tool surface automatically.
+
+`lex ai-verify` checks the AI asset files for the active MCP mode and restores any that are missing or out of date. It resolves the active mode from the CLI `--mode` flag, then the override file, then your `.env`, then `mcp.json`, defaulting to `forward`. Pass `--silent` to suppress all output on success — useful in automated or MCP pre-flight contexts.
 
 ## Usage Pattern
 
