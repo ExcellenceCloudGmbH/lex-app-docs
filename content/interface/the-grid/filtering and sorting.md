@@ -11,8 +11,8 @@ Every column header has a built-in filter. Click the menu icon on any column to 
 | Column Type | Filter Style | Example |
 |---|---|---|
 | **Text** | Contains, starts with, equals, not equals | Find expenses where description *contains* "travel" |
-| **Number** | Contains, equals, not equals, blank | Find amounts matching "5000" |
-| **Date** | Before, after, between, exact date | Expenses *after* January 1, 2026 |
+| **Number** | Contains, equals, not equals, blank, not blank | Find amounts matching "5000" |
+| **Date** | Before, after, between, exact date, blank, not blank | Expenses *after* January 1, 2026 |
 | **Boolean** | True / False / All | Show only *approved* expenses |
 | **Foreign Key** | Dropdown of related records | Filter by a specific team or employee |
 

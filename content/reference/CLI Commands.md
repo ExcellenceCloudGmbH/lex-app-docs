@@ -36,7 +36,7 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | `lex ai-update` | Apply incremental updates to an existing LEX AI setup (e.g. remove stale config keys) |
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser |
 
-`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`.
+`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`. It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing.
 
 `lex ai-update` is safe to run at any time — it only removes keys that are no longer needed and reports exactly what it changed.
 
