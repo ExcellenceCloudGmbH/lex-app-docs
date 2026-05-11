@@ -107,7 +107,7 @@ class ExpenseReport(LexModel):
 
 ## Keycloak Integration
 
-By default, permission methods fall back to Keycloak scopes. After running `lex Init`, your models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [Excellence Cloud](https://excellence-cloud.de).
+By default, permission methods fall back to Keycloak scopes. After running `lex Init`, your project models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [Excellence Cloud](https://excellence-cloud.de).
 
 Only models defined in your project are synced — Django built-ins (`auth`, `admin`, etc.), Lex framework models, and any third-party package models are automatically excluded.
 
