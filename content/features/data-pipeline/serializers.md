@@ -119,6 +119,9 @@ class InvestorCashflowDetailSerializer(serializers.ModelSerializer):
 
 When validation fails, the error message appears directly in the frontend UI — both for field-level (`validate_<field>`) and object-level (`validate()`) errors.
 
+> [!note]
+> Computed serializer-only fields work well for display, exports, and detail views. But if a field only exists in the serializer — for example via `SerializerMethodField()` — you can't use it as a row-group or pivot column in the grid. If you need grouping or pivoting, use a real model field.
+
 > [!tip] Serializer validation vs. `pre_validation()`
 > Serializer validation and [[features/data-pipeline/lifecycle hooks#`pre_validation()` — Guard Before Save|pre_validation()]] both block invalid data before it's saved — but they run at different layers. Serializer validation runs in the **API layer** (when data arrives via REST), while `pre_validation()` runs in the **model layer** (on every `save()`, regardless of source). If a rule should apply no matter how the model is saved — API, management command, hook, calculation — put it in `pre_validation()`. If it's specific to the REST API (e.g., formatting, permission-aware checks), use a serializer.
 
@@ -153,10 +156,10 @@ InvestorCashflow.api_serializers = {
 }
 ```
 
-| Key | When It's Used |
-|---|---|
-| `'default'` | List view and standard API calls |
-| `'detail'` | Detail view when a specific record is opened |
+| Key         | When It's Used                               |
+| ----------- | -------------------------------------------- |
+| `'default'` | List view and standard API calls             |
+| `'detail'`  | Detail view when a specific record is opened |
 
 > [!note] The `id` field is always present
 > When you override `api_serializers["default"]`, the framework always includes the model's primary key as `id` in the serialized output — even if your `Meta.fields` omits it. Row navigation, edit URLs, and the CRUD loading overlay all depend on this field.
@@ -197,9 +200,9 @@ Reports/
 └── serializers.py         ← serializers for all Report models
 ```
 
-You *could* create a separate file per serializer (e.g., `ExpenseSerializer.py`), but in practice a single file per folder is easier to navigate — you can see all validation rules and field configurations for related models in one place, and the imports stay clean since the models are all in the same folder.
+You _could_ create a separate file per serializer (e.g., `ExpenseSerializer.py`), but in practice a single file per folder is easier to navigate — you can see all validation rules and field configurations for related models in one place, and the imports stay clean since the models are all in the same folder.
 
 > [!note]
-> You don't *have* to create serializers. Without them, Lex App generates a default serializer that exposes all fields. Custom serializers are for when you need validation, computed fields, or restricted views.
+> You don't _have_ to create serializers. Without them, Lex App generates a default serializer that exposes all fields. Custom serializers are for when you need validation, computed fields, or restricted views.
 
 For more on the REST API and [Django REST Framework](https://www.django-rest-framework.org/), see the official DRF documentation.

@@ -13,6 +13,11 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | `lex start`     | Start the development server                                  |
 | `lex --version` | Print the installed `lex-app` version                         |
 
+`lex Init` also has two setup-focused flags worth knowing:
+
+- `--bootstrap` — open the browser bootstrap flow if Keycloak credentials are missing
+- `--skip-client-preflight` — bypass the local Keycloak client safety check when you're intentionally managing that setup yourself
+
 ## Testing Commands
 
 | Command | What It Does |
