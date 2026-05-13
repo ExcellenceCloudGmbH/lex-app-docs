@@ -62,6 +62,7 @@ class BudgetSummary(CalculationModel):
 | State transitions | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow |
 | Logging context | [[reference/LexLogger API|LexLogger]] automatically links to the current calculation |
 | Concurrency | Runs inside `transaction.atomic()` by default |
+| `edited_by` / `edited_at` on related saves | Suppressed for any records saved during `calculate()` — the framework treats those saves as system-triggered, not user edits |
 
 > [!note]
 > The legacy method name `update()` is also supported — if you override `update()` instead of `calculate()`, the framework will call it. We recommend using `calculate()` for new code.

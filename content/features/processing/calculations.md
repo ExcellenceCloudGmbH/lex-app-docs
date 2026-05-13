@@ -57,6 +57,7 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Recursion guard** — prevents re-entrant calculation loops
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
 - **Auto-save** — the record is saved automatically after `calculate()` returns
+- **`edited_by` / `edited_at` suppression** — any records you save inside `calculate()` won't have their `edited_by` or `edited_at` fields updated; the framework knows these saves are system-triggered, not direct user edits
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
 
 > [!tip] Need to generate many records at once?
