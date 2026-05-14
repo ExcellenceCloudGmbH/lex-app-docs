@@ -58,6 +58,7 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
 - **Auto-save** — the record is saved automatically after `calculate()` returns
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
+- **System-save attribution** — any records you save inside `calculate()` won't have their `edited_by` / `edited_at` stamped with the triggering user; those saves are treated as system-triggered, not direct user edits
 
 > [!tip] Need to generate many records at once?
 > If your calculation creates one output per combination (e.g., one liability per award per upload), see [[features/processing/batch calculations|Batch Calculations]] — `CalculatedModelMixin` handles the combination generation, deduplication, and parallel dispatch for you.
