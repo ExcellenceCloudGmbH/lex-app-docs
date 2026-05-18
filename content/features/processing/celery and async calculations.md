@@ -78,7 +78,7 @@ class HeavyReport(CalculationModel):
 
 - **Context-aware dispatch** — respects `WaitForTasks` and `FireAndForget` context managers
 - **Automatic status callbacks** — the `CallbackTask` base class updates `is_calculated` to `SUCCESS` or `ERROR` on completion
-- **Context propagation** — calculation IDs and audit logging context are forwarded to workers
+- **Context propagation** — calculation IDs and audit logging context are forwarded to workers, including the active child model during batch dispatch
 
 Without the decorator, `calculate()` always runs synchronously — even when `CELERY_ACTIVE=true`.
 
