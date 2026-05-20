@@ -40,7 +40,7 @@ def get_selected_key_list(self, key: str) -> list:
 
 ### `calculate()`
 
-Business logic for one combination. Same contract as `CalculationModel.calculate()` — don't call `self.save()`, the framework handles it.
+Business logic for one combination. Same contract as `CalculationModel.calculate()` — don't call `self.save()`, the framework handles it (without bumping `edited_by` / `edited_at` during calculation-triggered saves).
 
 ## The `create()` Classmethod
 
