@@ -154,6 +154,8 @@ sequenceDiagram
 
 The `SessionAuthGate` component handles this transparently — including redirect-loop protection, automatic retries, and a clear unauthorized page for users without assigned roles.
 
+For non-browser clients (for example scripts, integrations, or dashboards calling the API directly), you can authenticate with an `Authorization: Bearer <token>` header. Lex App will resolve roles and scopes from that token even when there is no browser session.
+
 ### Access Scopes
 
 Permissions are enforced across 6 scopes:
