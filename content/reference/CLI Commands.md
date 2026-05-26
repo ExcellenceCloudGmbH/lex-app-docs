@@ -37,6 +37,9 @@ lex pytest -m "not slow"                 # exclude a group
 
 Test groups, recipients, and the tests entry point are configured in `lex_test_config.yaml` at your project root. Use `lex pytest-groups` to inspect what groups are registered and which tests belong to each.
 
+> [!note]
+> `--report` (and `--report-and-email`) require coverage data. If coverage cannot be collected, the command stops with an error instead of producing a report with missing coverage.
+
 ## Keycloak Commands
 
 | Command                | What It Does                                      |
@@ -63,6 +66,8 @@ Test groups, recipients, and the tests entry point are configured in `lex_test_c
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser |
 
 `lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder). It also refreshes the AI docs folder in your project (`docs/`) from the version shipped with your installed `lex-app` package.
+
+`lex setup-with-ai` and `lex ai-verify` use the directory you pass via `--project-root` (or your current directory) directly — they don't walk up to a parent folder automatically.
 
 `lex ai-update` is safe to run at any time — it only removes keys that are no longer needed, restores missing AI asset folders, and reports exactly what it changed.
 
