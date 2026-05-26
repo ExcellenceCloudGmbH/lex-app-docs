@@ -58,6 +58,9 @@ class MyModel(LexModel):
 | `permission_delete(user_context)` | Can this user delete this instance? |
 | `permission_list(user_context)` | Can this user list instances of this model? |
 
+> [!note]
+> When `permission_create` returns `False`, the API responds with **401 Unauthorized** for unauthenticated requests and **403 Forbidden** for authenticated-but-denied requests — not a generic 400. Frontends and API clients can use these status codes to redirect to login (401) or show a "permission denied" message (403).
+
 ### `PermissionResult` Factory Methods
 
 | Method | Behavior |

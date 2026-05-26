@@ -50,6 +50,26 @@ Above the tabs, a toolbar gives you quick access to:
 > [!example]- 📸 Screenshot — Record detail toolbar
 > ![Record detail toolbar showing preset selector, column toggle, edit button, and PDF export](../images/record-detail/record-detail-toolbar.jpeg)
 
+## Customizing Tab Labels
+
+By default the **History** and **Audit Log** tabs use their built-in names. You can rename them per model — or across all models at once — in `lex_config.py`:
+
+```python title="lex_config.py"
+TAB_DISPLAY_NAMES = {
+    # Override for every model that doesn't have its own entry
+    "__default__": {
+        "history_tab": "Versions",
+        "audit_log_tab": "Activity",
+    },
+    # Override for a specific model (takes precedence over __default__)
+    "expensereport": {
+        "history_tab": "Expense History",
+    },
+}
+```
+
+Both keys are optional — omit one to keep the built-in label for that tab. Model names must be lowercase (the lowercased Python class name). The `__default__` entry applies to all models that don't have their own explicit override.
+
 ## Navigating Between Records
 
 Use the breadcrumbs at the top to navigate back to the grid. The breadcrumb trail always shows your full path:

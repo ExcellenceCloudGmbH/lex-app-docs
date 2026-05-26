@@ -13,6 +13,30 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | `lex start` | Start the development server |
 | `lex --version` | Print the installed `lex-app` version |
 
+## Testing Commands
+
+| Command | What It Does |
+|---|---|
+| `lex pytest` | Run your project's test suite with Django bootstrapped |
+| `lex pytest-groups` | List configured test groups and the tests they contain (no tests run) |
+
+`lex pytest` behaves like plain `pytest` — any flags you pass are forwarded directly. Two extra flags are intercepted:
+
+| Flag | What It Does |
+|---|---|
+| `--report` | Generate a branded PDF test report after the run |
+| `--report-and-email` | Generate the PDF report and send it to configured recipients |
+
+Use `-m` marker expressions to run only a subset of tests:
+
+```bash
+lex pytest -m creation                   # only tests in the "creation" group
+lex pytest -m "creation or validation"   # union of two groups
+lex pytest -m "not slow"                 # exclude a group
+```
+
+Test groups, recipients, and the tests entry point are configured in `lex_test_config.yaml` at your project root. Use `lex pytest-groups` to inspect what groups are registered and which tests belong to each.
+
 ## Keycloak Commands
 
 | Command | What It Does |
