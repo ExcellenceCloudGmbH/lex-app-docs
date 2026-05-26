@@ -62,7 +62,7 @@ Test groups, recipients, and the tests entry point are configured in `lex_test_c
 | `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser |
 
-`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`.
+`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`. It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing.
 
 `lex ai-update` is safe to run at any time — it only removes keys that are no longer needed and reports exactly what it changed.
 
