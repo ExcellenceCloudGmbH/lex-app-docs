@@ -99,3 +99,6 @@ For example, with expenses grouped by **Team** and pivoted by **Quarter**:
 | "Find the highest single expense per department" | **Group** by Team, aggregate with **Max** |
 
 Both grouping and pivoting are preserved when you [[interface/the-grid/saved views|save a view]], so you can build complex analytical layouts once and revisit them instantly.
+
+> [!note]
+> Columns backed by computed values (such as a `SerializerMethodField` in a custom serializer) cannot be grouped or pivoted — they have no underlying database column for the server to query against. These columns are automatically disabled in the group and pivot panel.

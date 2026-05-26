@@ -158,6 +158,25 @@ InvestorCashflow.api_serializers = {
 | `'default'` | List view and standard API calls |
 | `'detail'` | Detail view when a specific record is opened |
 
+> [!note] The `id` field is always present
+> When you override `api_serializers["default"]`, the framework always includes the model's primary key as `id` in the serialized output — even if your `Meta.fields` omits it. Row navigation, edit URLs, and the CRUD loading overlay all depend on this field.
+
+### Renaming the framework serializer
+
+When you override `api_serializers["default"]` with a custom serializer, the framework's auto-generated serializer is replaced in the map — your serializer becomes `"default"`. For most models this is exactly what you want.
+
+If you also need the framework-generated serializer to remain accessible (for example, so users can switch back to it in the View Preset dropdown, or if internal features like history snapshots rely on it), set `DEFAULT_SERIALIZER_NAME` in `lex_config.py`:
+
+```python title="lex_config.py"
+DEFAULT_SERIALIZER_NAME = "framework_default"
+```
+
+With this setting, the framework-generated serializer is additionally registered under `"framework_default"`. Both keys appear in the **View Preset** dropdown. Without this setting, the framework serializer is only available while no `"default"` override exists — once you add one, the framework serializer is no longer in the map.
+
+### Computed fields and row grouping
+
+`SerializerMethodField` fields — and any other computed property with no underlying database column — are automatically marked as non-groupable. The grid will disable **row group** and **pivot** for those columns. Only real database-backed columns support server-side grouping.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
