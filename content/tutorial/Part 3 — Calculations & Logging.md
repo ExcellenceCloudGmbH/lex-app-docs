@@ -112,12 +112,12 @@ Notice how the import paths work: `BudgetSummary` lives in `Reports/`, while `Te
 
 Let's break down what's happening:
 
-| Part | What It Does |
-|---|---|
-| `class BudgetSummary(CalculationModel)` | Inherits the calculate button and state machine |
-| `def calculate(self)` | Your business logic — just compute and assign |
-| `LexLogger().add_heading(...)` | Builds a rich Markdown report |
-| `.log()` | Saves the report — visible in the calculation logs panel |
+| Part                                    | What It Does                                             |
+| --------------------------------------- | -------------------------------------------------------- |
+| `class BudgetSummary(CalculationModel)` | Inherits the calculate button and state machine          |
+| `def calculate(self)`                   | Your business logic — just compute and assign            |
+| `LexLogger().add_heading(...)`          | Builds a rich Markdown report                            |
+| `.log()`                                | Saves the report — visible in the calculation logs panel |
 
 > [!important]
 > Notice what you **don't** need to write: no state management (`is_calculated` is automatic), no error handling (framework catches exceptions), no `self.save()` (framework saves after `calculate()` returns).
@@ -162,11 +162,14 @@ Select **"Init"** from the run configuration dropdown in PyCharm → click ▶�
 
 > [!note]- Terminal alternative
 > **Linux / macOS:**
+>
 > ```bash
 > set -a; source .env; set +a
 > lex Init
 > ```
+>
 > **Windows PowerShell:**
+>
 > ```powershell
 > lex Init
 > ```
@@ -179,6 +182,7 @@ Select **"Init"** from the run configuration dropdown in PyCharm → click ▶�
 4. Click the **Calculate** button ▶️
 
 You should see:
+
 - The `is_calculated` field transitions: `NOT_CALCULATED` → `IN_PROGRESS` → `SUCCESS`
 - The calculated fields fill in automatically
 - The **Calculation Log** panel shows your formatted report
@@ -200,11 +204,12 @@ stateDiagram-v2
 If your `calculate()` method throws an exception, the framework sets `is_calculated = ERROR`, stores the error message, and the user can retry. For more details, see [[features/processing/calculations]].
 
 > [!tip]
-> In production, large calculations can be dispatched to [[features/processing/celery and async calculations|Celery workers]] for parallel processing. During development, everything runs synchronously.
+> In production, large calculations can be dispatched to [[features/processing/celery and async calculations|Celery workers]] for parallel processing. During development, they stay in-process in your app, so you can work without separate workers.
 
 ## Checkpoint
 
 At this point you have:
+
 - A `BudgetSummary` model in `Reports/` that calculates on demand
 - Rich calculation logs with tables and formatting
 - Automatic state management (no boilerplate)

@@ -27,13 +27,13 @@ stateDiagram-v2
     ABORTED --> IN_PROGRESS : Retry
 ```
 
-| State | Constant | Meaning |
-|---|---|---|
-| `NOT_CALCULATED` | `CalculationModel.NOT_CALCULATED` | Default — record exists but hasn't been processed |
-| `IN_PROGRESS` | `CalculationModel.IN_PROGRESS` | Calculation is running (triggers `calculate()` via lifecycle hook) |
-| `SUCCESS` | `CalculationModel.SUCCESS` | Calculation completed without error |
-| `ERROR` | `CalculationModel.ERROR` | An exception was raised — error details are stored on the record |
-| `ABORTED` | `CalculationModel.ABORTED` | Calculation was manually cancelled |
+| State            | Constant                          | Meaning                                                            |
+| ---------------- | --------------------------------- | ------------------------------------------------------------------ |
+| `NOT_CALCULATED` | `CalculationModel.NOT_CALCULATED` | Default — record exists but hasn't been processed                  |
+| `IN_PROGRESS`    | `CalculationModel.IN_PROGRESS`    | Calculation is running (triggers `calculate()` via lifecycle hook) |
+| `SUCCESS`        | `CalculationModel.SUCCESS`        | Calculation completed without error                                |
+| `ERROR`          | `CalculationModel.ERROR`          | An exception was raised — error details are stored on the record   |
+| `ABORTED`        | `CalculationModel.ABORTED`        | Calculation was manually cancelled                                 |
 
 The `is_calculated` field is **not editable** in the UI — it's managed entirely by the framework. When a user clicks **Calculate ▶️** in the frontend, the framework sets `is_calculated = IN_PROGRESS`, which triggers the `calculate_hook`.
 
@@ -55,13 +55,13 @@ class BudgetSummary(CalculationModel):
 
 **What you don't need to write:**
 
-| Concern | Handled By |
-|---|---|
-| `self.save()` | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`) |
-| Error handling | Framework catches exceptions and sets `is_calculated = ERROR` |
-| State transitions | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow |
-| Logging context | [[reference/LexLogger API|LexLogger]] automatically links to the current calculation |
-| Concurrency | Runs inside `transaction.atomic()` by default |
+| Concern                                  | Handled By                                                                                                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `self.save()`                            | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`)                                                           |
+| Error handling                           | Framework catches exceptions and sets `is_calculated = ERROR`                                                                                                   |
+| State transitions                        | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow                                                                                                   |
+| Logging context                          | [[reference/LexLogger API                                                                                                                                       | LexLogger]] automatically links to the current calculation |
+| Concurrency                              | Runs inside `transaction.atomic()` by default                                                                                                                   |
 | `edited_by` / `edited_at` on child saves | Any records you save inside `calculate()` are treated as system-triggered — their `edited_by` / `edited_at` are not stamped with the user who clicked Calculate |
 
 > [!note]
@@ -87,7 +87,7 @@ In production, calculations can be dispatched to [Celery](https://docs.celeryq.d
 1. Is the `CELERY_ACTIVE` environment variable set to `true`?
 2. Does the `calculate()` method have a `.delay()` attribute (i.e., is it decorated with `@lex_shared_task`)?
 
-If both are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs synchronously in the request thread.
+If both are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. Either way, the record is first saved in `IN_PROGRESS` and then updated again when the calculation finishes.
 
 To make a calculation Celery-capable, decorate it with `@lex_shared_task`:
 
@@ -100,7 +100,7 @@ class HeavyReport(CalculationModel):
         ...
 ```
 
-`@lex_shared_task` wraps your method with context-aware dispatch, automatic status callbacks (`SUCCESS` / `ERROR`), and audit logging context propagation to worker processes. Without the decorator, `calculate()` always runs synchronously — even when `CELERY_ACTIVE=true`.
+`@lex_shared_task` wraps your method with context-aware dispatch, automatic status callbacks (`SUCCESS` / `ERROR`), and audit logging context propagation to worker processes. Without the decorator, `calculate()` stays in-process in the app — even when `CELERY_ACTIVE=true`.
 
 > [!note]
 > Set `CELERY_ACTIVE=true` in your project's `.env` file to enable Celery dispatch. You also need a running Redis instance (or [Memurai](https://www.memurai.com/get-memurai) on Windows) as the message broker.
