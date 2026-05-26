@@ -120,8 +120,31 @@ jobs:
           echo "commit_count=${COMMIT_COUNT}" >> "$GITHUB_OUTPUT"
           echo "diff_lines=${DIFF_LINES}" >> "$GITHUB_OUTPUT"
 
-      # ── 4. Create issue ─────────────────────────────────────────
+          # Decide whether the release contains anything user-facing.
+          # We skip creating an issue when the diff is empty or touches
+          # only internal-looking paths (tests, CI, migrations, deps,
+          # build metadata). This stops no-op PRs from being created in
+          # the first place.
+          SKIP="false"
+          if [[ "${DIFF_LINES}" -eq 0 ]]; then
+            SKIP="true"
+            echo "Empty diff — skipping issue creation."
+          else
+            # Count files in the diff that look user-facing (anything
+            # under lex/ that isn't tests/CI/migrations/build metadata).
+            USER_FACING=$(awk '/^ .* \|/{print $1}' /tmp/diffstat.txt \
+              | grep -vE '(^lex/tests/|/tests/|/migrations/|\.github/|/ci/|conftest\.py$|setup\.cfg$|pyproject\.toml$|MANIFEST\.in$|\.pyc$|__pycache__)' \
+              | wc -l)
+            if [[ "${USER_FACING}" -eq 0 ]]; then
+              SKIP="true"
+              echo "Diff only contains internal/test/CI files — skipping issue creation."
+            fi
+          fi
+          echo "skip=${SKIP}" >> "$GITHUB_OUTPUT"
+
+      # ── 4. Create issue (only if the release has user-facing changes) ──
       - name: Create documentation update issue
+        if: steps.diff.outputs.skip != 'true'
         id: create-issue
         uses: actions/github-script@v7
         with:
@@ -204,6 +227,7 @@ jobs:
 
       # ── 5. Assign Copilot coding agent to the issue ────────────
       - name: Assign Copilot to issue
+        if: steps.diff.outputs.skip != 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.COPILOT_PAT }}

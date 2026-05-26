@@ -1,0 +1,216 @@
+# ──────────────────────────────────────────────────────────────────────
+#  Auto-close no-op documentation PRs from the Copilot coding agent.
+#
+#  Background:
+#   When a new lex-app release ships, `auto-update-docs.yml` creates an
+#   issue with the release diff and assigns Copilot. Copilot then opens
+#   a PR. Sometimes the release contains only internal refactors / test
+#   changes / CI tweaks — nothing user-facing — so Copilot legitimately
+#   has nothing to change. It still opens a PR (often with a "no changes
+#   needed" title and 0 modified files) which then lingers indefinitely.
+#
+#  This workflow watches for those no-op PRs, closes them, deletes the
+#  branch, and closes the originating issue with a short note.
+#
+#  Trigger conditions (ALL must hold):
+#   - PR is authored by `copilot-swe-agent[bot]` (or has a `copilot/…`
+#     head branch)
+#   - PR is labelled `automated` OR head branch starts with `copilot/`
+#   - PR has 0 changed files (an empty PR) OR the title matches the
+#     "no changes" / "no-op" / "empty diff" patterns Copilot uses
+#
+#  No secrets are required — the default GITHUB_TOKEN can close PRs
+#  and issues, delete branches, and read PR metadata.
+# ──────────────────────────────────────────────────────────────────────
+
+name: Auto-Close No-Op Docs PRs
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+  # Manual sweep — closes any currently-open no-op PRs in one go.
+  workflow_dispatch:
+
+jobs:
+  close-if-noop:
+    name: "Close no-op Copilot PR"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # delete branches
+      pull-requests: write  # close PRs, comment
+      issues: write         # close linked issues
+
+    steps:
+      # ── 1. Single PR mode (triggered by pull_request) ─────────────
+      - name: Evaluate this PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const author = pr.user.login;
+            const head = pr.head.ref;
+            const title = pr.title || '';
+            const changed = pr.changed_files;
+
+            const isCopilot = author === 'copilot-swe-agent[bot]'
+                              || head.startsWith('copilot/');
+            if (!isCopilot) {
+              core.info(`Skip: PR #${pr.number} is not from Copilot (author=${author}, head=${head}).`);
+              return;
+            }
+
+            const noopTitle = /no\s*[-_]?\s*op|no changes needed|empty diff|no user[-\s]?facing/i.test(title);
+            const noopFiles = changed === 0;
+            if (!noopTitle && !noopFiles) {
+              core.info(`Skip: PR #${pr.number} has ${changed} changed file(s) and a non-noop title.`);
+              return;
+            }
+
+            core.info(`Closing no-op PR #${pr.number} (files=${changed}, title="${title}")`);
+
+            // Find linked issues via the PR's closingIssuesReferences
+            const linked = await github.graphql(`
+              query($owner:String!,$repo:String!,$num:Int!){
+                repository(owner:$owner,name:$repo){
+                  pullRequest(number:$num){
+                    closingIssuesReferences(first:10){ nodes{ number } }
+                  }
+                }
+              }`, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                num: pr.number
+              });
+            const issues = (linked.repository.pullRequest.closingIssuesReferences.nodes || [])
+                             .map(n => n.number);
+
+            // Close the PR
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              state: 'closed'
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body: `Auto-closed by \`auto-close-noop-docs-pr.yml\`: this PR has no documentation changes (${changed} changed file(s)). The associated lex-app release didn't require user-facing doc updates.`
+            });
+
+            // Close linked issues
+            for (const num of issues) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: num,
+                state: 'closed',
+                state_reason: 'not_planned'
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: num,
+                body: `Auto-closed: PR #${pr.number} resolved this as a no-op (no documentation changes needed).`
+              });
+              core.info(`Closed linked issue #${num}`);
+            }
+
+            // Delete the head branch (best-effort)
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${head}`
+              });
+              core.info(`Deleted branch ${head}`);
+            } catch (e) {
+              core.warning(`Could not delete branch ${head}: ${e.message}`);
+            }
+
+      # ── 2. Sweep mode (manual dispatch) ───────────────────────────
+      - name: Sweep all open no-op Copilot PRs
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const noopTitleRe = /no\s*[-_]?\s*op|no changes needed|empty diff|no user[-\s]?facing/i;
+
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+
+            for (const pr of prs) {
+              const author = pr.user.login;
+              const head = pr.head.ref;
+              const isCopilot = author === 'copilot-swe-agent[bot]'
+                                || head.startsWith('copilot/');
+              if (!isCopilot) continue;
+
+              // Fetch full PR to read changed_files
+              const { data: full } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number
+              });
+
+              const noopTitle = noopTitleRe.test(full.title || '');
+              const noopFiles = full.changed_files === 0;
+              if (!noopTitle && !noopFiles) continue;
+
+              core.info(`Sweeping no-op PR #${pr.number} (files=${full.changed_files})`);
+
+              const linked = await github.graphql(`
+                query($owner:String!,$repo:String!,$num:Int!){
+                  repository(owner:$owner,name:$repo){
+                    pullRequest(number:$num){
+                      closingIssuesReferences(first:10){ nodes{ number } }
+                    }
+                  }
+                }`, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  num: pr.number
+                });
+              const issues = (linked.repository.pullRequest.closingIssuesReferences.nodes || [])
+                               .map(n => n.number);
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: 'closed'
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: `Auto-closed by the no-op sweep: ${full.changed_files} changed file(s), title looked like a no-op.`
+              });
+
+              for (const num of issues) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: num,
+                  state: 'closed',
+                  state_reason: 'not_planned'
+                });
+              }
+
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${head}`
+                });
+              } catch (e) {
+                core.warning(`Could not delete branch ${head}: ${e.message}`);
+              }
+            }
+
