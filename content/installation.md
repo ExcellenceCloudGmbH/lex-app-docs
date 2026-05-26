@@ -60,7 +60,7 @@ OIDC_RP_CLIENT_UUID=your_client_uuid
 `lex Init` is the primary initialization command. It does three things:
 
 1. **Applies migrations** — creates/updates database tables from your models
-2. **Syncs to Keycloak** — registers your models as "Resources" and permissions as "Scopes"
+2. **Syncs to Keycloak** — registers your project models as "Resources" and permissions as "Scopes"
 3. **Enables access management** — you can now manage permissions on [Excellence Cloud](https://excellence-cloud.de)
 
 ### Via PyCharm (easiest)
