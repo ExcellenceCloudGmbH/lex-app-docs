@@ -44,31 +44,31 @@ class MyModel(LexModel):
 
 ### Field-Level (return `PermissionResult`)
 
-| Method | Purpose |
-|---|---|
-| `permission_read(user_context)` | Which fields the user can view |
-| `permission_edit(user_context)` | Which fields the user can modify |
+| Method                            | Purpose                          |
+| --------------------------------- | -------------------------------- |
+| `permission_read(user_context)`   | Which fields the user can view   |
+| `permission_edit(user_context)`   | Which fields the user can modify |
 | `permission_export(user_context)` | Which fields the user can export |
 
 ### Action-Level (return `bool`)
 
-| Method | Purpose |
-|---|---|
-| `permission_create(user_context)` | Can this user create new instances? |
-| `permission_delete(user_context)` | Can this user delete this instance? |
-| `permission_list(user_context)` | Can this user list instances of this model? |
+| Method                            | Purpose                                     |
+| --------------------------------- | ------------------------------------------- |
+| `permission_create(user_context)` | Can this user create new instances?         |
+| `permission_delete(user_context)` | Can this user delete this instance?         |
+| `permission_list(user_context)`   | Can this user list instances of this model? |
 
 > [!note]
 > When `permission_create` returns `False`, the API responds with **401 Unauthorized** for unauthenticated requests and **403 Forbidden** for authenticated-but-denied requests — not a generic 400. Frontends and API clients can use these status codes to redirect to login (401) or show a "permission denied" message (403).
 
 ### `PermissionResult` Factory Methods
 
-| Method | Behavior |
-|---|---|
-| `PermissionResult.allow_all()` | Allow access to all fields |
-| `PermissionResult.allow_fields({'a', 'b'})` | Allow only specific fields |
-| `PermissionResult.allow_all_except({'x'})` | Allow all except specified fields |
-| `PermissionResult.deny()` | Deny access entirely |
+| Method                                      | Behavior                          |
+| ------------------------------------------- | --------------------------------- |
+| `PermissionResult.allow_all()`              | Allow access to all fields        |
+| `PermissionResult.allow_fields({'a', 'b'})` | Allow only specific fields        |
+| `PermissionResult.allow_all_except({'x'})`  | Allow all except specified fields |
+| `PermissionResult.deny()`                   | Deny access entirely              |
 
 ## Real-World Examples
 
@@ -123,12 +123,12 @@ def permission_read(self, user_context: UserContext) -> PermissionResult:
 > [!note]- Migrating from V1?
 > If you're coming from `ModificationRestriction`:
 >
-> | Aspect | V1 (Old) | Current |
-> |---|---|---|
-> | Approach | Separate `ModificationRestriction` class | Permission methods on your model |
-> | User info | Raw `user` object + `violations` list | Clean `UserContext` dataclass |
-> | Granularity | Model-level only | Field-level and row-level |
-> | Keycloak | Manual integration | Built-in scope resolution |
+> | Aspect      | V1 (Old)                                 | Current                          |
+> | ----------- | ---------------------------------------- | -------------------------------- |
+> | Approach    | Separate `ModificationRestriction` class | Permission methods on your model |
+> | User info   | Raw `user` object + `violations` list    | Clean `UserContext` dataclass    |
+> | Granularity | Model-level only                         | Field-level and row-level        |
+> | Keycloak    | Manual integration                       | Built-in scope resolution        |
 >
 > Remove `ModificationRestriction` class definitions, remove `modification_restriction = MyRestriction()`, and add `permission_*` methods directly to your model. Run `lex Init` to sync to Keycloak.
 
@@ -146,12 +146,12 @@ sequenceDiagram
     participant KC as Keycloak
 
     User->>App: Opens application
-    App->>API: GET /api/me/
+    App->>API: GET /api/user/
     alt Not authenticated
         API-->>App: 401 Unauthorized
         App->>KC: Redirect to OIDC login
         KC-->>App: Redirect back with session
-        App->>API: GET /api/me/ (with session)
+        App->>API: GET /api/user/ (with session)
     end
     API-->>App: User info + roles + scopes
     App->>App: Render UI with permissions applied
@@ -165,14 +165,14 @@ For non-browser clients (for example scripts, integrations, or dashboards callin
 
 Permissions are enforced across 6 scopes:
 
-| Scope | What It Controls |
-|---|---|
-| **read** | Which fields a user can view |
-| **edit** | Which fields a user can modify |
-| **export** | Which fields appear in exports |
-| **create** | Whether a user can create new records |
-| **delete** | Whether a user can delete records |
-| **list** | Whether a user can view the model's table |
+| Scope      | What It Controls                          |
+| ---------- | ----------------------------------------- |
+| **read**   | Which fields a user can view              |
+| **edit**   | Which fields a user can modify            |
+| **export** | Which fields appear in exports            |
+| **create** | Whether a user can create new records     |
+| **delete** | Whether a user can delete records         |
+| **list**   | Whether a user can view the model's table |
 
 These scopes are synced to Keycloak when you run `lex Init`, enabling centralized policy management.
 

@@ -81,7 +81,11 @@ set -a; source .env; set +a
 lex Init
 ```
 
+> [!tip]
+> If your Keycloak credentials are still missing, run `lex Init --bootstrap` instead. It opens the browser-based setup flow and then continues with the normal init steps.
+
 > [!note]- Windows (PowerShell)
+>
 > ```powershell
 > # Load environment variables
 > Get-Content .env | ForEach-Object {
@@ -115,17 +119,25 @@ Your application is now running at `http://localhost:8000`.
 ## Troubleshooting
 
 > [!warning]- "Environment variable not set" errors
+>
 > - **PyCharm:** Make sure `.env` is in your project root
 > - **Terminal:** Always run `set -a; source .env; set +a` before any `lex` command
 
 > [!warning]- "ModuleNotFoundError: lex" errors
+>
 > - Make sure `lex-app` is installed: `pip install lex-app`
 > - Verify you're using Python 3.12
 > - Check that your virtual environment is activated
 
 > [!warning]- Keycloak connection errors
+>
 > - Verify `KEYCLOAK_URL` in your `.env`
 > - Check that `OIDC_RP_CLIENT_ID` and `OIDC_RP_CLIENT_SECRET` are correct
 > - Confirm your client exists on [Excellence Cloud](https://excellence-cloud.de)
+
+> [!warning]- "`lex Init` refuses to sync this client"
+>
+> - In local development, `lex Init` expects a **confidential** Keycloak client with a `localhost` redirect URI
+> - If you're intentionally using a different setup, rerun with `lex Init --skip-client-preflight`
 
 Got everything set up? Learn about the [[project structure]] or jump straight to [[running your app]].
