@@ -57,7 +57,7 @@ class BudgetSummary(CalculationModel):
 
 | Concern | Handled By |
 |---|---|
-| `self.save()` | Framework saves automatically after `calculate()` returns |
+| `self.save()` | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`) |
 | Error handling | Framework catches exceptions and sets `is_calculated = ERROR` |
 | State transitions | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow |
 | Logging context | [[reference/LexLogger API|LexLogger]] automatically links to the current calculation |

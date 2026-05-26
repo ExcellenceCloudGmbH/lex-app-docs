@@ -19,7 +19,7 @@ Every `LexModel` subclass automatically gets these fields — you never need to 
 |---|---|---|
 | `id` | `AutoField` | Primary key (inherited from [Django](https://docs.djangoproject.com/)) |
 | `created_by` | `TextField` | Username of the creator (set automatically) |
-| `edited_by` | `TextField` | Username of the last editor (set automatically) |
+| `edited_by` | `TextField` | Username of the last editor (set automatically for normal user edits; calculation-triggered framework saves don't overwrite it) |
 
 History fields (via [django-simple-history](https://django-simple-history.readthedocs.io/)) are added transparently — you don't interact with them directly.
 
