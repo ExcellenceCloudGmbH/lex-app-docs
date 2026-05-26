@@ -6,12 +6,12 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 
 ## Everyday Commands
 
-| Command | What It Does |
-|---|---|
-| `lex setup` | Generate `.run/`, `.env`, and `migrations/` for a new project |
-| `lex Init` | Apply migrations + sync models/permissions to Keycloak |
-| `lex start` | Start the development server |
-| `lex --version` | Print the installed `lex-app` version |
+| Command         | What It Does                                                  |
+| --------------- | ------------------------------------------------------------- |
+| `lex setup`     | Generate `.run/`, `.env`, and `migrations/` for a new project |
+| `lex Init`      | Apply migrations + sync models/permissions to Keycloak        |
+| `lex start`     | Start the development server                                  |
+| `lex --version` | Print the installed `lex-app` version                         |
 
 ## Testing Commands
 
@@ -39,18 +39,18 @@ Test groups, recipients, and the tests entry point are configured in `lex_test_c
 
 ## Keycloak Commands
 
-| Command | What It Does |
-|---|---|
-| `lex Init` | Sync models to Keycloak (also applies migrations) |
-| `lex generate-configs` | Regenerate Keycloak configuration files |
+| Command                | What It Does                                      |
+| ---------------------- | ------------------------------------------------- |
+| `lex Init`             | Sync models to Keycloak (also applies migrations) |
+| `lex generate-configs` | Regenerate Keycloak configuration files           |
 
 ## Database Commands
 
-| Command | What It Does |
-|---|---|
-| `lex migrate` | Apply pending Django migrations |
+| Command              | What It Does                                  |
+| -------------------- | --------------------------------------------- |
+| `lex migrate`        | Apply pending Django migrations               |
 | `lex makemigrations` | Create new migration files from model changes |
-| `lex sqlflush` | Print SQL statements to flush the database |
+| `lex sqlflush`       | Print SQL statements to flush the database    |
 
 ## AI Commands
 
@@ -62,7 +62,7 @@ Test groups, recipients, and the tests entry point are configured in `lex_test_c
 | `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser |
 
-`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`. It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing.
+`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json`. It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder).
 
 `lex ai-update` is safe to run at any time — it only removes keys that are no longer needed and reports exactly what it changed.
 
