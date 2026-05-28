@@ -20,16 +20,18 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 
 ## Testing Commands
 
-| Command | What It Does |
-|---|---|
-| `lex pytest` | Run your project's test suite with Django bootstrapped |
+| Command             | What It Does                                                          |
+| ------------------- | --------------------------------------------------------------------- |
+| `lex pytest`        | Run your project's test suite with Django bootstrapped                |
 | `lex pytest-groups` | List configured test groups and the tests they contain (no tests run) |
 
 `lex pytest` behaves like plain `pytest` — any flags you pass are forwarded directly. Two extra flags are intercepted:
 
-| Flag | What It Does |
-|---|---|
-| `--report` | Generate a branded PDF test report after the run |
+It also prepares Django's test environment and test database before running tests, so your normal development database isn't used by accident. If that setup step fails, `lex pytest` stops early and shows the setup error instead of continuing with a partial run.
+
+| Flag                 | What It Does                                                 |
+| -------------------- | ------------------------------------------------------------ |
+| `--report`           | Generate a branded PDF test report after the run             |
 | `--report-and-email` | Generate the PDF report and send it to configured recipients |
 
 Use `-m` marker expressions to run only a subset of tests:
@@ -62,13 +64,13 @@ Test groups, recipients, and the tests entry point are configured in `lex_test_c
 
 ## AI Commands
 
-| Command | What It Does |
-|---|---|
-| `lex setup-with-ai` | Configure LEX AI integration (GitHub Copilot MCP, remote MCP server) |
-| `lex ai-update` | Apply incremental updates to an existing LEX AI setup (e.g. remove stale config keys) |
-| `lex ai-dashboard` | Open a local web dashboard to switch MCP mode, update credentials, and inspect server status |
-| `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
-| `lex ai-faq` | Open the LEX AI FAQ page in your browser |
+| Command             | What It Does                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| `lex setup-with-ai` | Configure LEX AI integration (GitHub Copilot MCP, remote MCP server)                             |
+| `lex ai-update`     | Apply incremental updates to an existing LEX AI setup (e.g. remove stale config keys)            |
+| `lex ai-dashboard`  | Open a local web dashboard to switch MCP mode, update credentials, and inspect server status     |
+| `lex ai-verify`     | Verify that required AI asset files are present and restore any that are missing or have drifted |
+| `lex ai-faq`        | Open the LEX AI FAQ page in your browser                                                         |
 
 `lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder). It also refreshes the AI docs folder in your project (`docs/`) from the version shipped with your installed `lex-app` package.
 
