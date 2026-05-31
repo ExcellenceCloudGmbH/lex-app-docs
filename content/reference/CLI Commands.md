@@ -122,26 +122,6 @@ The file is a small YAML document at your project root. The most useful keys:
 
 `lex ai-verify` checks the AI asset files for the active MCP mode and restores any that are missing or out of date. It resolves the active mode from the CLI `--mode` flag, then the override file, then your `.env`, then `mcp.json`, defaulting to `forward`. Pass `--silent` to suppress all output on success — useful in automated or MCP pre-flight contexts.
 
-## Migration Tooling (advanced)
-
-These commands exist for moving a project from the V1 framework to V2 and for one-off data backfills. Most projects will never need them directly — the [[migration/index|migration guide]] tells you which to run and when.
-
-| Command | What It Does |
-|---|---|
-| `lex lex_migrate` | Run the framework-managed migration pipeline (wraps `lex migrate` with extra safety) |
-| `lex backfill_audit_logging` | Generate audit-log entries for rows that pre-date the audit-log feature |
-| `lex backfill_bitemporal_history` | Generate bitemporal history rows for legacy data |
-| `lex detect_model_changes` | Diff your current models against the captured baseline |
-| `lex normalize_is_calculated` | Migrate legacy `is_calculated` values to the V2 state-machine vocabulary |
-| `lex capture_db_tables` | Snapshot the current table list (used by the migration workflow) |
-| `lex capture_migration_state` | Snapshot the current migration graph |
-| `lex rollback_migration_state` | Restore a previously captured migration state |
-| `lex full_migration_workflow` | End-to-end migration runner that chains the steps above |
-| `lex generate_legacy_freeze_manifest` | Produce the V1 freeze manifest required to start a V2 migration |
-
-> [!warning]
-> Run these only when the [[migration/index|migration guide]] tells you to. They can make destructive changes to your migration history.
-
 ## Usage Pattern
 
 We recommend using PyCharm's run configurations (Init, Start, Streamlit) which auto-load `.env` for you. If you prefer the terminal:
@@ -171,5 +151,6 @@ Get-Content .env | ForEach-Object {
 lex Init
 lex start
 ```
+
 
 
