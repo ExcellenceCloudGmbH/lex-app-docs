@@ -38,18 +38,16 @@ class Expense(LexModel):
         st.dataframe(df)
 ```
 
-<!-- 📸 TODO: Add screenshot of Streamlit icon in the frontend table view -->
-
 ## Record-Level Dashboard
 
-An instance method that receives `self`. Use it for record-specific visualizations — history charts, related data, drill-downs.
+An instance method that receives `self` and the current `user` (optional). Use it for record-specific visualizations — history charts, related data, drill-downs.
 
 ```python title="Quarter.py"
 class Quarter(LexModel):
     name = models.CharField(max_length=50)
     budget = models.DecimalField(max_digits=12, decimal_places=2)
 
-    def streamlit_main(self):
+    def streamlit_main(self, user=None):
         st.header(f"Dashboard: {self.name}")
 
         expenses = Expense.objects.filter(quarter=self).values('category', 'amount')

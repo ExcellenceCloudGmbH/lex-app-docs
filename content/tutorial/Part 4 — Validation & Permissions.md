@@ -130,7 +130,6 @@ When **Thomas** (manager, Design team) logs in, he sees all Design expenses:
 
 When the **CFO** logs in, they see everything across all teams.
 
-<!-- 📸 TODO: Screenshots comparing employee view vs manager view -->
 
 ## Checkpoint
 

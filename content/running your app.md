@@ -19,7 +19,6 @@ Select **"Start"** and click the green ▶️ button. Your app is now running at
 > [!tip]
 > PyCharm run configurations automatically load your `.env` file. No manual sourcing needed.
 
-<!-- 📸 TODO: Add screenshot of PyCharm run configuration dropdown -->
 
 ## Using the Terminal
 
@@ -47,7 +46,7 @@ Select **"Streamlit"** from the Run Configuration dropdown.
 
 ```bash
 set -a; source .env; set +a
-streamlit run lex_app/streamlit_entrypoint.py --server.port 8501
+lex streamlit
 ```
 
 > [!tip]

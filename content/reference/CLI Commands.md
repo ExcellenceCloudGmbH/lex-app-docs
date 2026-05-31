@@ -11,12 +11,30 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | `lex setup`     | Generate `.run/`, `.env`, and `migrations/` for a new project |
 | `lex Init`      | Apply migrations + sync models/permissions to Keycloak        |
 | `lex start`     | Start the development server                                  |
+| `lex streamlit` | Start the [Streamlit](https://docs.streamlit.io/) dashboard server |
+| `lex create_db` | Create the project database from the configured `DATABASE_*` env vars |
 | `lex --version` | Print the installed `lex-app` version                         |
 
-`lex Init` also has two setup-focused flags worth knowing:
+`lex Init` has two setup-focused flags worth knowing:
 
 - `--bootstrap` — open the browser bootstrap flow if Keycloak credentials are missing
 - `--skip-client-preflight` — bypass the local Keycloak client safety check when you're intentionally managing that setup yourself
+
+### `lex start` flags
+
+`lex start` wraps the ASGI server. The Quick Start in [[getting started|Getting Started]] uses:
+
+```bash
+lex start --reload --loop asyncio lex_app.asgi:application
+```
+
+| Flag / argument | Meaning |
+|---|---|
+| `--reload` | Restart the server when source files change. Use during development only. |
+| `--loop asyncio` | Force the standard library asyncio event loop instead of `uvloop`. Recommended for development on Windows or when debugging async code. |
+| `lex_app.asgi:application` | The ASGI mount point. This is the framework's entry point — leave it as-is unless you have a custom ASGI app. |
+
+For production runs, drop `--reload`.
 
 ## Testing Commands
 
@@ -42,23 +60,47 @@ lex pytest -m "not slow"                 # exclude a group
 
 Test groups, recipients, and the tests entry point are configured in `lex_test_config.yaml` at your project root. Use `lex pytest-groups` to inspect what groups are registered and which tests belong to each.
 
+### `lex_test_config.yaml` at a glance
+
+The file is a small YAML document at your project root. The most useful keys:
+
+| Key | Purpose |
+|---|---|
+| `tests_root` | Directory pytest discovers tests in (relative to project root) |
+| `groups` | Mapping of group name → list of test files / nodeids. The group name is what you pass to `pytest -m` and what `lex pytest-groups` lists. |
+| `report.recipients` | List of email addresses that receive the PDF when `--report-and-email` is passed |
+| `report.sender` | "From" address on the report email (falls back to your SendGrid sender) |
+
 > [!note]
 > `--report` (and `--report-and-email`) require coverage data. If coverage cannot be collected, the command stops with an error instead of producing a report with missing coverage.
 
 ## Keycloak Commands
 
-| Command                | What It Does                                      |
-| ---------------------- | ------------------------------------------------- |
-| `lex Init`             | Sync models to Keycloak (also applies migrations) |
-| `lex generate-configs` | Regenerate Keycloak configuration files           |
+| Command                  | What It Does                                              |
+| ------------------------ | --------------------------------------------------------- |
+| `lex Init`               | Sync models to Keycloak (also applies migrations)         |
+| `lex sync_keycloak`      | Sync models, fields and permissions to Keycloak without running migrations |
+| `lex bootstrap_keycloak` | Run the first-time Keycloak realm/client bootstrap flow (same flow `lex Init --bootstrap` opens) |
+
+> [!note]
+> The standalone `lex-generate-configs` console script (note the hyphen, not `lex generate-configs`) regenerates the PyCharm run configurations under `.run/`. You usually don't need to call it directly — `lex setup` and `lex setup-with-ai` run it for you. There is no `lex generate-configs` subcommand.
 
 ## Database Commands
 
 | Command              | What It Does                                  |
 | -------------------- | --------------------------------------------- |
+| `lex create_db`      | Create the project database (from the env vars in your `.env`) |
 | `lex migrate`        | Apply pending Django migrations               |
 | `lex makemigrations` | Create new migration files from model changes |
 | `lex sqlflush`       | Print SQL statements to flush the database    |
+
+## Async / Celery Commands
+
+| Command              | What It Does                                                       |
+| -------------------- | ------------------------------------------------------------------ |
+| `lex celery`         | Run a raw Celery command (forwards everything after it to `celery`). Used to start workers — see [[features/processing/celery and async calculations|Celery & async calculations]] for the full worker invocation. |
+| `lex celery-workers` | Start the standard worker pool with the framework's default settings |
+| `lex flower`         | Launch [Flower](https://flower.readthedocs.io/), the Celery monitoring dashboard, against the configured broker |
 
 ## AI Commands
 
@@ -109,3 +151,6 @@ Get-Content .env | ForEach-Object {
 lex Init
 lex start
 ```
+
+
+

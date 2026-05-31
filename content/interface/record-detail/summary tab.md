@@ -47,7 +47,6 @@ For example:
 
 Your developer defines these presets via [[features/data-pipeline/serializers|serializers]]. As a user, you just pick the view that fits your task.
 
-<!-- 📸 TODO: Screenshot of View Preset dropdown showing available serializer options -->
 
 ## Export to PDF
 

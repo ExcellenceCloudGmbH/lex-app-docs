@@ -69,6 +69,21 @@ class MyModel(LexModel):
 | `PermissionResult.allow_fields({'a', 'b'})` | Allow only specific fields        |
 | `PermissionResult.allow_all_except({'x'})`  | Allow all except specified fields |
 | `PermissionResult.deny()`                   | Deny access entirely              |
+| `PermissionResult.deny_all(reason=None)`    | Deny access entirely with an optional reason string for logging |
+
+### Built-in Helpers
+
+For common patterns, `LexModel` provides ready-made helpers you can call directly from a permission method instead of building a `PermissionResult` by hand:
+
+| Helper                          | What It Does                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------- |
+| `allow_all_if_superuser`        | Grant full access when `user_context.is_superuser` is true                   |
+| `allow_all_if_in_groups`        | Grant full access when the user is in any of the given groups                |
+| `allow_fields_if_owner`         | Grant a field subset when the user owns the record (configurable owner field) |
+| `keycloak_fallback`             | Defer to a [Keycloak](https://www.keycloak.org/documentation) scope check    |
+| `allow_all_except_sensitive`    | Allow everything except a configured set of sensitive fields                 |
+
+See [[reference/LexModel Internals]] for the full signatures and parameter lists.
 
 ## Real-World Examples
 
