@@ -20,9 +20,6 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 - `--bootstrap` — open the browser bootstrap flow if Keycloak credentials are missing
 - `--skip-client-preflight` — bypass the local Keycloak client safety check when you're intentionally managing that setup yourself
 
-> [!note]
-> `lex Init2` is a newer variant of `lex Init` used by some legacy projects during migration. New projects should use `lex Init`.
-
 ### `lex start` flags
 
 `lex start` wraps the ASGI server. The Quick Start in [[getting started|Getting Started]] uses:
@@ -174,4 +171,5 @@ Get-Content .env | ForEach-Object {
 lex Init
 lex start
 ```
+
 
