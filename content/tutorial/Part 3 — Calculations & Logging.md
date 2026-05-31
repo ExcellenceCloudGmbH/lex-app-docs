@@ -183,7 +183,6 @@ You should see:
 - The calculated fields fill in automatically
 - The **Calculation Log** panel shows your formatted report
 
-<!-- 📸 TODO: Screenshot of calculation log panel -->
 
 ## How the State Machine Works
 

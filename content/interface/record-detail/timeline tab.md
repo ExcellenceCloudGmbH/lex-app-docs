@@ -48,7 +48,6 @@ Click any event on the timeline to open the **Version Details Drawer** — a sli
 - The author who made the change
 - The exact system-time and valid-time timestamps
 
-<!-- 📸 TODO: Screenshot of version details drawer showing field values with changed fields highlighted -->
 
 This is invaluable for investigations: "Why does this number look wrong? When did it change? Who changed it?"
 

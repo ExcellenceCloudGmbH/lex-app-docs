@@ -154,7 +154,7 @@ For development, you can skip running workers entirely — everything runs synch
 
 The framework provides two context managers for advanced dispatch control. You typically don't need these — the framework uses them internally — but they're available for custom task orchestration.
 
-> **Legacy names:** `RunInCelery`, `AwaitDispatch` and `UnblockCelery` still work as aliases.
+> **Legacy names:** `RunInCelery`, `AwaitDispatch` and `UnblockCelery` still work as aliases for `WaitForTasks`/`FireAndForget`. They have no removal date set, but new code should prefer the canonical names — you'll get a deprecation warning before they're removed.
 
 ### `WaitForTasks`
 

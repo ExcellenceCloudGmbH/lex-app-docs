@@ -17,7 +17,18 @@ const config: QuartzConfig = {
     },
     locale: "en-US",
     baseUrl: "excellencecloudgmbh.github.io/lex-app-docs",
-    ignorePatterns: ["private", "templates", ".obsidian"],
+    ignorePatterns: [
+      "private",
+      "templates",
+      ".obsidian",
+      // Internal workshop material — not part of the published reference.
+      "workshop",
+      // Upstream Quartz user manual — keep on disk for reference but don't ship.
+      "quartz_style_docs",
+      // Audit backlogs and customer-specific notes shouldn't publish.
+      "DOCS_AUDIT_*.md",
+      "PFE - *.md",
+    ],
     defaultDateType: "modified",
     theme: {
       fontOrigin: "googleFonts",

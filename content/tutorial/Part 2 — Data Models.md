@@ -445,7 +445,7 @@ untracked_models:
 | `untracked_models` | Excludes models from [django-simple-history](https://django-simple-history.readthedocs.io/) tracking. We recommend untracking upload models and other transient data to save storage. |
 
 > [!tip]
-> For a production example with nested sub-groups, see the [Armira project’s model_structure.yaml](https://github.com/ExcellenceCloudGmbH/lex-app) in `project_example/`. See [[features/data-pipeline/model structure]] for the full reference.
+> For the full reference — including nested sub-groups, model styling, and the `untracked_models` knob — see [[features/data-pipeline/model structure]].
 
 ## Apply to the Database
 
@@ -555,7 +555,7 @@ INITIAL_DATA = "Tests/test_data.json"
 `INITIAL_DATA` tells the framework where to find your seed data file. The path is relative to your project root.
 
 > [!note]
-> `lex_config.py` is also where you define `PROJECT_GROUPS` for [Keycloak](https://www.keycloak.org/documentation) access control (covered in [[tutorial/Part 4 — Validation & Permissions|Part 4]]). You can add it now if you like:
+> `lex_config.py` is also where you define `PROJECT_GROUPS` — the list of [Keycloak](https://www.keycloak.org/documentation) groups your project will create on `lex Init`. It's only a list of group names; you'll wire up the role-based permissions themselves in [[tutorial/Part 4 — Validation & Permissions|Part 4]]. Add the entry now:
 > ```python title="lex_config.py"
 > INITIAL_DATA = "Tests/test_data.json"
 > PROJECT_GROUPS = ["team_budget"]

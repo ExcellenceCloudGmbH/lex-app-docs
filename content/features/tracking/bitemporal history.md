@@ -45,7 +45,6 @@ That single class definition produces **three database tables** and **three Pyth
 | **History** (Level 1) | `HistoricalEmployee` | `TeamBudget_historicalemployee` | Valid-time snapshots |
 | **MetaHistory** (Level 2) | `MetaHistoricalEmployee` | `TeamBudget_employee_meta_history` | System-time snapshots |
 
-<!-- 📸 TODO: Add screenshot of the frontend history panel -->
 
 ## The Three-Layer Architecture
 

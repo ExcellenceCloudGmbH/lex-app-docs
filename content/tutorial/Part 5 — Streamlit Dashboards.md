@@ -16,6 +16,15 @@ Add this class method to your `BudgetSummary` class (after `calculate()`):
 > [!important]
 > Import `streamlit` **inside** the Streamlit methods, not at the top of the file. Your model file is loaded by Django at startup — when Streamlit isn't running. A top-level `import streamlit as st` would crash.
 
+> [!note]
+> The snippets below append to `BudgetSummary.py`. They assume the imports you already added in [[tutorial/Part 3 — Calculations & Logging|Part 3]] are still at the top of the file:
+> ```python
+> import pandas as pd
+> from django.db import models
+> from Input.Expense import Expense
+> ```
+> If any of these are missing, add them now so the new code doesn't raise `NameError`.
+
 ```python title="Reports/BudgetSummary.py"
     @classmethod
     def streamlit_class_main(cls):
@@ -146,7 +155,6 @@ Select **"Streamlit"** from the run configuration dropdown in PyCharm → click 
 
 In the frontend, navigate to **Reports → BudgetSummary** and click the [Streamlit](https://docs.streamlit.io/) icon in the toolbar (not on a specific record) to see the company-wide overview. Click the icon on a specific record for the team deep-dive.
 
-<!-- 📸 TODO: Screenshots of both dashboard levels -->
 
 ## Checkpoint
 
