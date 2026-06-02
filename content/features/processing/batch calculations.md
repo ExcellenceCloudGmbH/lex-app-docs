@@ -234,7 +234,7 @@ This means `create()` is **idempotent** — re-running it with the same inputs u
 
 The framework checks `CELERY_ACTIVE` and whether `calculate()` has been decorated with `@lex_shared_task`. If both are true, it uses `CeleryTaskDispatcher` to dispatch each group as a separate Celery task inside a `WaitForTasks` context. Otherwise, everything runs synchronously via `calc_and_save_sync()`. In both paths, logging context is attached to the current model automatically while each child calculation runs.
 
-The dispatcher has **multi-level fallback**: if a single task fails, that group is retried synchronously while others continue on Celery. If Celery itself goes down, the entire batch falls back to synchronous processing. During synchronous processing, individual model failures are logged and skipped — the batch only raises an error if every single model fails.
+The dispatcher has **multi-level fallback**: if a single task fails, that group is retried synchronously while others continue on Celery. If Celery itself goes down, the entire batch falls back to synchronous processing. In both async and sync processing, batches are now **fail-fast** — if one model errors, that batch stops immediately and raises.
 
 ## CalculatedModelMixin vs. CalculationModel
 
