@@ -2,7 +2,7 @@
 title: Calculations
 ---
 
-A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, calls your `calculate()` method, and then transitions to `SUCCESS` or `ERROR` depending on the outcome. You only write the business logic — everything else is handled for you.
+A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, calls your `calculate()` method, and then moves the record to the right terminal state for the outcome. You only write the business logic — everything else is handled for you.
 
 ## Defining a Calculation Model
 
@@ -35,19 +35,24 @@ stateDiagram-v2
     NOT_CALCULATED --> IN_PROGRESS : User clicks "Calculate"
     IN_PROGRESS --> SUCCESS : Completed without errors
     IN_PROGRESS --> ERROR : Exception occurred
-    IN_PROGRESS --> ABORTED : Manually cancelled
+    IN_PROGRESS --> CANCELLED : User cancels
+    IN_PROGRESS --> ABORTED : Framework recovers stuck run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
+    CANCELLED --> IN_PROGRESS : Retry
     ABORTED --> IN_PROGRESS : Retry
 ```
 
-| State | Meaning |
-|---|---|
-| `NOT_CALCULATED` | Record exists, no calculation run yet |
-| `IN_PROGRESS` | Calculation is currently running |
-| `SUCCESS` | Completed without errors |
-| `ERROR` | An exception occurred (details stored in `calculation_error_message`) |
-| `ABORTED` | Manually cancelled |
+| State            | Meaning                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| `NOT_CALCULATED` | Record exists, no calculation run yet                                 |
+| `IN_PROGRESS`    | Calculation is currently running                                      |
+| `SUCCESS`        | Completed without errors                                              |
+| `ERROR`          | An exception occurred (details stored in `calculation_error_message`) |
+| `CANCELLED`      | A user stopped a running calculation                                  |
+| `ABORTED`        | The framework recovered a calculation that got stuck in progress      |
+
+If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died.
 
 ## What You Get Automatically
 
@@ -56,6 +61,7 @@ You don't need to define or manage any of the following — they're inherited fr
 - **`is_calculated`** — the state field
 - **Recursion guard** — prevents re-entrant calculation loops
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
+- **Cancellation handling** — running Celery-backed calculations can be stopped cleanly from the UI/API
 - **Auto-save** — the record is saved automatically after `calculate()` returns
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
 - **System-save attribution** — any records you save inside `calculate()` won't have their `edited_by` / `edited_at` stamped with the triggering user; those saves are treated as system-triggered, not direct user edits
@@ -70,7 +76,8 @@ You don't need to define or manage any of the following — they're inherited fr
 > 2. Decides whether to run synchronously or via Celery (`should_use_celery()`)
 > 3. Calls your `calculate()` method
 > 4. On success: sets `is_calculated = SUCCESS` and saves
-> 5. On exception: sets `is_calculated = ERROR`, stores the traceback in `calculation_error_message`, and saves
+> 5. On cancellation: sets `is_calculated = CANCELLED`
+> 6. On other exceptions: sets `is_calculated = ERROR`, stores the traceback in `calculation_error_message`, and saves
 >
 > You never need to manage this yourself.
 
@@ -89,15 +96,15 @@ class CalculateBalanceSheet(CalculationModel):
 > [!note]- Migrating from V1?
 > If you're coming from `ConditionalUpdateMixin`, here's what changes:
 >
-> | Aspect | V1 (Old) | Current |
-> |---|---|---|
-> | Base class | `ConditionalUpdateMixin` | `CalculationModel` |
-> | Method name | `update()` | `calculate()` |
-> | Decorator | `@ConditionalUpdateMixin.conditional_calculation` | Not needed |
-> | State field | Boolean `is_calculated` | Enum with 5 states |
-> | Recursion guard | Manual `dont_update` flag | Automatic |
-> | Error handling | Manual `try/catch` | Automatic (stored in `calculation_error_message`) |
-> | Save | Manual `self.save()` | Automatic after method returns |
+> | Aspect          | V1 (Old)                                          | Current                                           |
+> | --------------- | ------------------------------------------------- | ------------------------------------------------- |
+> | Base class      | `ConditionalUpdateMixin`                          | `CalculationModel`                                |
+> | Method name     | `update()`                                        | `calculate()`                                     |
+> | Decorator       | `@ConditionalUpdateMixin.conditional_calculation` | Not needed                                        |
+> | State field     | Boolean `is_calculated`                           | Enum with 6 states                                |
+> | Recursion guard | Manual `dont_update` flag                         | Automatic                                         |
+> | Error handling  | Manual `try/catch`                                | Automatic (stored in `calculation_error_message`) |
+> | Save            | Manual `self.save()`                              | Automatic after method returns                    |
 >
 > ### Migration Checklist
 >

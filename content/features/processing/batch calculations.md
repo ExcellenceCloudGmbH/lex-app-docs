@@ -11,7 +11,8 @@ Sometimes one record isn't enough. When you need to calculate a liability for ev
 
 Imagine you're building a compensation system. An upload batch arrives containing 200 employee awards. For each award, you need to calculate a liability — pulling in HR data, currency rates, social security percentages, and previous-period values. That's 200 records that need to be created, populated, and saved.
 
-You *could* write a loop in a `CalculationModel.calculate()` method. But then you'd need to handle:
+You _could_ write a loop in a `CalculationModel.calculate()` method. But then you'd need to handle:
+
 - Generating all the combinations yourself
 - Checking for duplicates (what if the same upload is re-calculated?)
 - Grouping the work into batches for parallel processing
@@ -115,6 +116,7 @@ defining_fields = ['region', 'product', 'scenario']
 ```
 
 And each field returns:
+
 - `region` → `['US', 'EU', 'APAC']` (3 values)
 - `product` → `['A', 'B']` (2 values)
 - `scenario` → `['optimistic', 'pessimistic']` (2 values)
@@ -136,10 +138,12 @@ flowchart TD
 
 > [!tip]
 > You can **override** field values when calling `create()`:
+>
 > ```python
 > # Only generate for US and EU, optimistic scenario
 > MyModel.create(region=['US', 'EU'], scenario=['optimistic'])
 > ```
+>
 > Overridden fields skip `get_selected_key_list()` and use the provided values directly.
 
 ## Parallel Processing with `parallelizable_fields`
@@ -163,11 +167,11 @@ class LiabilityCalculation(CalculatedModelMixin):
 
 `parallelizable_fields` must be a **subset** of `defining_fields`. They control how models are grouped into Celery tasks:
 
-| `parallelizable_fields` | Grouping | Result |
-|---|---|---|
-| `[]` (empty) | All models in one group | 1 Celery task (or 1 sync batch) |
-| `['upload']` | One group per upload | If 3 uploads → 3 Celery tasks |
-| `['upload', 'region']` | One group per (upload, region) pair | 3 uploads × 4 regions → 12 Celery tasks |
+| `parallelizable_fields` | Grouping                            | Result                                  |
+| ----------------------- | ----------------------------------- | --------------------------------------- |
+| `[]` (empty)            | All models in one group             | 1 Celery task (or 1 sync batch)         |
+| `['upload']`            | One group per upload                | If 3 uploads → 3 Celery tasks           |
+| `['upload', 'region']`  | One group per (upload, region) pair | 3 uploads × 4 regions → 12 Celery tasks |
 
 The framework builds a **nested cluster** based on these fields, then flattens it into independent groups that can run in parallel:
 
@@ -218,11 +222,11 @@ flowchart LR
 
 For each generated combination, the framework queries the database for an existing record with the same defining field values. Three outcomes:
 
-| Existing Records | What Happens |
-|---|---|
-| **0** | New record — will be inserted |
-| **1** | Existing record — reuses its primary key (update in place) |
-| **> 1** | Data integrity error — raises an exception |
+| Existing Records | What Happens                                               |
+| ---------------- | ---------------------------------------------------------- |
+| **0**            | New record — will be inserted                              |
+| **1**            | Existing record — reuses its primary key (update in place) |
+| **> 1**          | Data integrity error — raises an exception                 |
 
 This means `create()` is **idempotent** — re-running it with the same inputs updates existing records rather than creating duplicates.
 
@@ -232,7 +236,7 @@ This means `create()` is **idempotent** — re-running it with the same inputs u
 
 ### Step 4 — Dispatch
 
-The framework checks `CELERY_ACTIVE` and whether `calculate()` has been decorated with `@lex_shared_task`. If both are true, it uses `CeleryTaskDispatcher` to dispatch each group as a separate Celery task inside a `WaitForTasks` context. Otherwise, everything runs synchronously via `calc_and_save_sync()`. In both paths, logging context is attached to the current model automatically while each child calculation runs.
+The framework checks `CELERY_ACTIVE` and whether Celery is actually available. When it is, it uses `CeleryTaskDispatcher` to dispatch each group as a separate Celery task inside a `WaitForTasks` context. Decorated calculations run through their task directly; undecorated ones are wrapped automatically. Otherwise, everything runs synchronously via `calc_and_save_sync()`. In both paths, logging context is attached to the current model automatically while each child calculation runs.
 
 The dispatcher has **multi-level fallback**: if a single task fails, that group is retried synchronously while others continue on Celery. If Celery itself goes down, the entire batch falls back to synchronous processing. During synchronous processing, individual model failures are logged and skipped — the batch only raises an error if every single model fails.
 
@@ -240,14 +244,14 @@ The dispatcher has **multi-level fallback**: if a single task fails, that group 
 
 These two base classes both have a `calculate()` method but serve fundamentally different purposes:
 
-| | `CalculationModel` | `CalculatedModelMixin` |
-|---|---|---|
-| **Purpose** | Single-record calculation triggered by the user | Batch generation of many records from combinations |
-| **Trigger** | User clicks **Calculate ▶️** in the UI | `cls.create()` called programmatically |
-| **Number of records** | Operates on **one existing** record | Creates/updates **many** records |
-| **State machine** | Yes — `NOT_CALCULATED` → `IN_PROGRESS` → `SUCCESS` / `ERROR` | No built-in state tracking |
-| **`defining_fields`** | Not used | Core concept — drives the combination engine |
-| **Use case** | "Calculate this report" | "Generate a liability for every award in this upload" |
+|                       | `CalculationModel`                                                                                      | `CalculatedModelMixin`                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Purpose**           | Single-record calculation triggered by the user                                                         | Batch generation of many records from combinations    |
+| **Trigger**           | User clicks **Calculate ▶️** in the UI                                                                  | `cls.create()` called programmatically                |
+| **Number of records** | Operates on **one existing** record                                                                     | Creates/updates **many** records                      |
+| **State machine**     | Yes — `NOT_CALCULATED` → `IN_PROGRESS` → terminal state (`SUCCESS`, `ERROR`, `CANCELLED`, or `ABORTED`) | No built-in state tracking                            |
+| **`defining_fields`** | Not used                                                                                                | Core concept — drives the combination engine          |
+| **Use case**          | "Calculate this report"                                                                                 | "Generate a liability for every award in this upload" |
 
 > [!info] They work together
 > A common pattern is to have a `CalculationModel` record (the "trigger") whose `calculate()` method calls `CalculatedModelMixin.create()` on a batch model. The trigger provides the UI button and state tracking; the mixin handles the bulk generation.

@@ -6,15 +6,15 @@ If your V1 project uses `ConditionalUpdateMixin` for on-demand calculations, thi
 
 ## What Changes
 
-| Aspect | V1 (`ConditionalUpdateMixin`) | Current (`CalculationModel`) |
-|---|---|---|
-| Base class | `ConditionalUpdateMixin` | `CalculationModel` |
-| Method name | `update()` | `calculate()` |
-| Decorator | `@conditional_calculation` | Not needed |
-| State field | Boolean `is_calculated` (true/false) | Enum with 5 states |
-| Recursion guard | Manual `dont_update` flag | Automatic |
-| Error handling | Manual `try/catch` | Automatic |
-| Save | Manual `self.save()` | Automatic |
+| Aspect          | V1 (`ConditionalUpdateMixin`)        | Current (`CalculationModel`) |
+| --------------- | ------------------------------------ | ---------------------------- |
+| Base class      | `ConditionalUpdateMixin`             | `CalculationModel`           |
+| Method name     | `update()`                           | `calculate()`                |
+| Decorator       | `@conditional_calculation`           | Not needed                   |
+| State field     | Boolean `is_calculated` (true/false) | Enum with 6 states           |
+| Recursion guard | Manual `dont_update` flag            | Automatic                    |
+| Error handling  | Manual `try/catch`                   | Automatic                    |
+| Save            | Manual `self.save()`                 | Automatic                    |
 
 ## Step-by-Step Conversion
 
@@ -170,7 +170,7 @@ After converting, remove these fields from your model — they're now inherited:
 
 ## The New State Machine
 
-V1's `is_calculated` was a simple boolean (true/false). The current system uses a 5-state enum:
+V1's `is_calculated` was a simple boolean (true/false). The current system uses a 6-state enum:
 
 ```mermaid
 stateDiagram-v2
@@ -178,9 +178,11 @@ stateDiagram-v2
     NOT_CALCULATED --> IN_PROGRESS : Calculate clicked
     IN_PROGRESS --> SUCCESS : Completed
     IN_PROGRESS --> ERROR : Exception
-    IN_PROGRESS --> ABORTED : Cancelled
+    IN_PROGRESS --> CANCELLED : User cancelled
+    IN_PROGRESS --> ABORTED : Startup recovery
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
+    CANCELLED --> IN_PROGRESS : Retry
     ABORTED --> IN_PROGRESS : Retry
 ```
 
