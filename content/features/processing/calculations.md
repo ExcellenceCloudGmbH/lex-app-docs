@@ -35,19 +35,22 @@ stateDiagram-v2
     NOT_CALCULATED --> IN_PROGRESS : User clicks "Calculate"
     IN_PROGRESS --> SUCCESS : Completed without errors
     IN_PROGRESS --> ERROR : Exception occurred
-    IN_PROGRESS --> ABORTED : Manually cancelled
+    IN_PROGRESS --> CANCELLED : Cancel requested
+    IN_PROGRESS --> ABORTED : Recovered after an interrupted run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
+    CANCELLED --> IN_PROGRESS : Retry
     ABORTED --> IN_PROGRESS : Retry
 ```
 
-| State | Meaning |
-|---|---|
-| `NOT_CALCULATED` | Record exists, no calculation run yet |
-| `IN_PROGRESS` | Calculation is currently running |
-| `SUCCESS` | Completed without errors |
-| `ERROR` | An exception occurred (details stored in `calculation_error_message`) |
-| `ABORTED` | Manually cancelled |
+| State            | Meaning                                                               |
+| ---------------- | --------------------------------------------------------------------- |
+| `NOT_CALCULATED` | Record exists, no calculation run yet                                 |
+| `IN_PROGRESS`    | Calculation is currently running                                      |
+| `SUCCESS`        | Completed without errors                                              |
+| `ERROR`          | An exception occurred (details stored in `calculation_error_message`) |
+| `CANCELLED`      | A user or operator stopped the calculation                            |
+| `ABORTED`        | The framework marked an interrupted run as no longer active           |
 
 ## What You Get Automatically
 
@@ -58,7 +61,27 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
 - **Auto-save** — the record is saved automatically after `calculate()` returns
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
+- **Operator recovery helpers** — inspect active calculations, find long-running ones, and bulk-cancel stale Celery jobs when a worker gets wedged
 - **System-save attribution** — any records you save inside `calculate()` won't have their `edited_by` / `edited_at` stamped with the triggering user; those saves are treated as system-triggered, not direct user edits
+
+## Checking What's Still Running
+
+If you need to triage a backlog, `CalculationModel` gives you three classmethods that work with the framework's active-calculation tracking:
+
+```python
+from lex.core.models.CalculationModel import CalculationModel
+
+# Everything currently running, oldest first
+CalculationModel.list_in_progress()
+
+# Only calculations running for at least 10 minutes
+CalculationModel.find_stuck(600)
+
+# Cancel stale Celery-backed calculations older than 30 minutes
+CalculationModel.cancel_stuck(1800, reason="Operator cleanup")
+```
+
+The report includes when each calculation started, how long it has been running, and whether it can actually be cancelled. Synchronous calculations still show up in the list, but they come back as not cancellable because there's no worker task to revoke.
 
 > [!tip] Need to generate many records at once?
 > If your calculation creates one output per combination (e.g., one liability per award per upload), see [[features/processing/batch calculations|Batch Calculations]] — `CalculatedModelMixin` handles the combination generation, deduplication, and parallel dispatch for you.
@@ -89,15 +112,15 @@ class CalculateBalanceSheet(CalculationModel):
 > [!note]- Migrating from V1?
 > If you're coming from `ConditionalUpdateMixin`, here's what changes:
 >
-> | Aspect | V1 (Old) | Current |
-> |---|---|---|
-> | Base class | `ConditionalUpdateMixin` | `CalculationModel` |
-> | Method name | `update()` | `calculate()` |
-> | Decorator | `@ConditionalUpdateMixin.conditional_calculation` | Not needed |
-> | State field | Boolean `is_calculated` | Enum with 5 states |
-> | Recursion guard | Manual `dont_update` flag | Automatic |
-> | Error handling | Manual `try/catch` | Automatic (stored in `calculation_error_message`) |
-> | Save | Manual `self.save()` | Automatic after method returns |
+> | Aspect          | V1 (Old)                                          | Current                                           |
+> | --------------- | ------------------------------------------------- | ------------------------------------------------- |
+> | Base class      | `ConditionalUpdateMixin`                          | `CalculationModel`                                |
+> | Method name     | `update()`                                        | `calculate()`                                     |
+> | Decorator       | `@ConditionalUpdateMixin.conditional_calculation` | Not needed                                        |
+> | State field     | Boolean `is_calculated`                           | Enum with 5 states                                |
+> | Recursion guard | Manual `dont_update` flag                         | Automatic                                         |
+> | Error handling  | Manual `try/catch`                                | Automatic (stored in `calculation_error_message`) |
+> | Save            | Manual `self.save()`                              | Automatic after method returns                    |
 >
 > ### Migration Checklist
 >

@@ -13,7 +13,7 @@ from lex.core.models.CalculationModel import CalculationModel
 
 ## The State Machine
 
-Every `CalculationModel` has an `is_calculated` field that transitions through five states:
+Every `CalculationModel` has an `is_calculated` field that transitions through six states:
 
 ```mermaid
 stateDiagram-v2
@@ -21,19 +21,22 @@ stateDiagram-v2
     NOT_CALCULATED --> IN_PROGRESS : "Calculate" clicked
     IN_PROGRESS --> SUCCESS : calculate() completed
     IN_PROGRESS --> ERROR : Exception raised
-    IN_PROGRESS --> ABORTED : Manually aborted
+    IN_PROGRESS --> CANCELLED : Cancel requested
+    IN_PROGRESS --> ABORTED : Recovered after an interrupted run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
+    CANCELLED --> IN_PROGRESS : Retry
     ABORTED --> IN_PROGRESS : Retry
 ```
 
-| State | Constant | Meaning |
-|---|---|---|
-| `NOT_CALCULATED` | `CalculationModel.NOT_CALCULATED` | Default — record exists but hasn't been processed |
-| `IN_PROGRESS` | `CalculationModel.IN_PROGRESS` | Calculation is running (triggers `calculate()` via lifecycle hook) |
-| `SUCCESS` | `CalculationModel.SUCCESS` | Calculation completed without error |
-| `ERROR` | `CalculationModel.ERROR` | An exception was raised — error details are stored on the record |
-| `ABORTED` | `CalculationModel.ABORTED` | Calculation was manually cancelled |
+| State            | Constant                          | Meaning                                                            |
+| ---------------- | --------------------------------- | ------------------------------------------------------------------ |
+| `NOT_CALCULATED` | `CalculationModel.NOT_CALCULATED` | Default — record exists but hasn't been processed                  |
+| `IN_PROGRESS`    | `CalculationModel.IN_PROGRESS`    | Calculation is running (triggers `calculate()` via lifecycle hook) |
+| `SUCCESS`        | `CalculationModel.SUCCESS`        | Calculation completed without error                                |
+| `ERROR`          | `CalculationModel.ERROR`          | An exception was raised — error details are stored on the record   |
+| `CANCELLED`      | `CalculationModel.CANCELLED`      | A user or operator stopped the calculation                         |
+| `ABORTED`        | `CalculationModel.ABORTED`        | The framework marked an interrupted run as no longer active        |
 
 The `is_calculated` field is **not editable** in the UI — it's managed entirely by the framework. When a user clicks **Calculate ▶️** in the frontend, the framework sets `is_calculated = IN_PROGRESS`, which triggers the `calculate_hook`.
 
@@ -55,13 +58,13 @@ class BudgetSummary(CalculationModel):
 
 **What you don't need to write:**
 
-| Concern | Handled By |
-|---|---|
-| `self.save()` | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`) |
-| Error handling | Framework catches exceptions and sets `is_calculated = ERROR` |
-| State transitions | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow |
-| Logging context | [[reference/LexLogger API|LexLogger]] automatically links to the current calculation |
-| Concurrency | Runs inside `transaction.atomic()` by default |
+| Concern                                  | Handled By                                                                                                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `self.save()`                            | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`)                                                           |
+| Error handling                           | Framework catches exceptions and sets `is_calculated = ERROR`                                                                                                   |
+| State transitions                        | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow                                                                                                   |
+| Logging context                          | [[reference/LexLogger API                                                                                                                                       | LexLogger]] automatically links to the current calculation |
+| Concurrency                              | Runs inside `transaction.atomic()` by default                                                                                                                   |
 | `edited_by` / `edited_at` on child saves | Any records you save inside `calculate()` are treated as system-triggered — their `edited_by` / `edited_at` are not stamped with the user who clicked Calculate |
 
 > [!note]
@@ -106,6 +109,41 @@ class HeavyReport(CalculationModel):
 > Set `CELERY_ACTIVE=true` in your project's `.env` file to enable Celery dispatch. You also need a running Redis instance (or [Memurai](https://www.memurai.com/get-memurai) on Windows) as the message broker.
 
 See [[features/processing/celery and async calculations]] for the full setup guide — environment variables, running workers, and the `WaitForTasks` / `FireAndForget` context managers.
+
+## Monitoring Active Calculations
+
+### `CalculationModel.list_in_progress()`
+
+Returns every currently active calculation, sorted oldest-first. Each row includes the record ID, a human-readable record label, when it started, how long it has been running, and whether it is cancellable.
+
+```python
+from lex.core.models.CalculationModel import CalculationModel
+
+active = CalculationModel.list_in_progress()
+```
+
+### `CalculationModel.find_stuck(older_than_seconds: float)`
+
+Returns the same report shape, but only for calculations whose runtime is at least the threshold you pass in.
+
+```python
+stuck = CalculationModel.find_stuck(900)  # 15 minutes or older
+```
+
+The threshold is inclusive, so `0` returns everything currently running.
+
+### `CalculationModel.cancel_stuck(older_than_seconds: float, *, reason=...)`
+
+Bulk-cancels stale calculations by reusing the normal cancellation flow for each matching record.
+
+```python
+report = CalculationModel.cancel_stuck(
+    1800,
+    reason="Operator cleanup after a worker stall",
+)
+```
+
+The return value tells you how many calculations were cancelled, skipped, or errored. Synchronous calculations are reported as `skipped_not_cancellable`, because there is no Celery task to revoke.
 
 ## Nested Calculations
 
