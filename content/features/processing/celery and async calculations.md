@@ -117,6 +117,9 @@ class ParentCalculation(CalculationModel):
 |---|---|---|
 | `CELERY_ACTIVE=true` | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, all calculations run synchronously. |
 | `IS_RUNNING_IN_CELERY=true` | Worker command only | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
+| `LEX_CLUSTER_CANCEL_ENABLED=true` | `.env` file (main app **and** workers) | Enables cross-worker cascade cancellation. When you cancel a parent calculation, Lex also tries to revoke already-dispatched child tasks. |
+| `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS=14400` | Optional `.env` override | How long Lex keeps the cross-worker cancellation task tree in Redis (default: 4 hours). |
+| `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS=3600` | Optional `.env` override | How long cancellation markers stay active in Redis so late-picked tasks can self-abort before doing work (default: 1 hour). |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -271,6 +274,15 @@ The dispatcher handles failures at multiple levels:
 | **Broker goes down mid-run** | Remaining groups run synchronously |
 
 This means your calculations are resilient — they always complete, even if the infrastructure has issues.
+
+## Cancellation Across Workers
+
+When you're running multiple workers/pods, cancellation is cascade-aware by default:
+
+- Cancelling a parent calculation also revokes child tasks that were already dispatched on other workers.
+- If a worker picks up a task just after cancellation, the task exits early and stays `ABORTED` instead of running to completion.
+
+You can tune this behavior with `LEX_CLUSTER_CANCEL_ENABLED`, `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS`, and `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS`.
 
 ## When to Use Celery
 
