@@ -102,6 +102,8 @@ The file is a small YAML document at your project root. The most useful keys:
 | `lex celery-workers` | Start the standard worker pool with the framework's default settings |
 | `lex flower`         | Launch [Flower](https://flower.readthedocs.io/), the Celery monitoring dashboard, against the configured broker |
 
+If you're using worker recovery, there are also two standalone console scripts outside the `lex` command tree: `lex-recovery-supervisor` for the always-on sweep loop, and `lex-recovery-beat` for the admin-scheduled recovery worker described in [[features/processing/celery and async calculations|Celery & async calculations]].
+
 ## AI Commands
 
 | Command | What It Does |
@@ -151,6 +153,5 @@ Get-Content .env | ForEach-Object {
 lex Init
 lex start
 ```
-
 
 
