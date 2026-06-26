@@ -113,6 +113,9 @@ This is where Lex App goes beyond standard history. The framework creates a **se
 
 Like Level 1, the `sys_to` fields are automatically chained — each meta row's `sys_to` points to the next row's `sys_from`, so you get a continuous system-time timeline.
 
+> [!tip]
+> Future-dated history edits run through Celery beat. They follow your project's Django timezone mode, so keep the same `USE_TZ` setting anywhere you create or run scheduled tasks.
+
 ### Why Two Levels?
 
 Level 1 alone tells you "what versions exist and when they were valid." But it can't answer "what did the system *believe* at a specific point in time?" — because Level 1 rows can be corrected retroactively (e.g., changing `valid_from` on a backdated salary). Level 2 captures every such correction with its own timestamp, making the full history **immutable and auditable**.

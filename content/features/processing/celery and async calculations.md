@@ -117,6 +117,7 @@ class ParentCalculation(CalculationModel):
 |---|---|---|
 | `CELERY_ACTIVE=true` | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, all calculations run synchronously. |
 | `IS_RUNNING_IN_CELERY=true` | Worker command only | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
+| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` | `.env` file for long-lived workers | Keeps the worker alive between scheduled jobs. Use this for any worker running Celery beat with `-B` — for example a recovery sweep worker. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -149,6 +150,9 @@ Start Celery workers in a **separate terminal** alongside your running app:
 > On **Windows**, Celery's default prefork pool isn't supported. Use the `--pool=solo` or `--pool=threads` flag, or run workers via [WSL](https://learn.microsoft.com/en-us/windows/wsl/).
 
 For development, you can skip running workers entirely — everything runs synchronously by default when `CELERY_ACTIVE` is not set or `false`.
+
+> [!tip]
+> Running a worker with `-B` turns it into a long-lived scheduler as well as a worker. In that setup, set `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` so it doesn't shut itself down after the first completed task.
 
 ## `WaitForTasks` and `FireAndForget`
 
