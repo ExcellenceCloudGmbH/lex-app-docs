@@ -11,7 +11,7 @@ Lex App reads its runtime configuration from environment variables — usually l
 
 | Variable               | Purpose                                                                                       |
 | ---------------------- | --------------------------------------------------------------------------------------------- |
-| `CELERY_ACTIVE`        | `true` to dispatch `@lex_shared_task`-decorated functions to Celery workers; otherwise tasks run synchronously in the current process. See [[features/processing/celery and async calculations]]. |
+| `CELERY_ACTIVE`        | `true` to let the framework dispatch calculations to Celery workers when they're available. `@lex_shared_task` still works, but root `CalculationModel` runs no longer require it just to use Celery. Otherwise tasks run synchronously in the current process. See [[features/processing/celery and async calculations]]. |
 | `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`. |
 
 ## Calculation threading

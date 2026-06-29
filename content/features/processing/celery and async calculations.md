@@ -62,7 +62,7 @@ By default, the framework connects to `redis://127.0.0.1:6379/1` for local devel
 
 ### The `@lex_shared_task` Decorator
 
-To make a `calculate()` method Celery-capable, decorate it with `@lex_shared_task`:
+You can decorate a `calculate()` method with `@lex_shared_task`:
 
 ```python
 from lex.lex_app.celery_tasks import lex_shared_task
@@ -77,19 +77,19 @@ class HeavyReport(CalculationModel):
 `@lex_shared_task` wraps your method into an enhanced Celery task with:
 
 - **Context-aware dispatch** — respects `WaitForTasks` and `FireAndForget` context managers
-- **Automatic status callbacks** — the `CallbackTask` base class updates `is_calculated` to `SUCCESS` or `ERROR` on completion
+- **Automatic status callbacks** — the task lifecycle updates `is_calculated` to the right terminal state on completion
 - **Context propagation** — calculation IDs and audit logging context are forwarded to workers, including the active child model during batch dispatch
 
-Without the decorator, `calculate()` stays in the app process — even when `CELERY_ACTIVE=true`.
+For root `CalculationModel` runs, the decorator is now optional. If `CELERY_ACTIVE=true` and Celery is reachable, the framework dispatches the calculation to a worker either way. Decorated methods are sent directly; undecorated ones are wrapped automatically.
 
 ### The Dispatch Flow
 
 When a user clicks **Calculate ▶️**, the framework decides whether to use Celery or keep the work in-process:
 
 1. Is `CELERY_ACTIVE=true` set in the environment?
-2. Does the `calculate()` method have a `.delay()` attribute (i.e., is it decorated with `@lex_shared_task`)?
+2. Is Celery available and the broker reachable?
 
-If **both** are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
+If **both** are true, the calculation is dispatched to a Celery worker — decorated methods (`@lex_shared_task`) go directly, undecorated ones are wrapped for you. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
 
 For batch calculations (a parent triggering children), the framework uses `CeleryTaskDispatcher` to:
 
@@ -173,6 +173,12 @@ The framework includes a background recovery system that monitors running tasks 
 - A stale task is automatically requeued, up to `LEX_TASK_MAX_RETRIES` times (default 4). If the budget is exhausted the task is marked as failed so the caller's result is not left hanging.
 
 Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
+
+## Cancelling a Running Calculation
+
+If a calculation is running on a Celery worker, the UI/API can cancel it immediately. The framework revokes the running task, marks the record as `CANCELLED`, and also stops any active child calculations that belong to the same calculation tree.
+
+If the calculation is running synchronously in the web process, there's nothing to revoke, so instant cancel isn't available on that path.
 
 ## `WaitForTasks` and `FireAndForget`
 
