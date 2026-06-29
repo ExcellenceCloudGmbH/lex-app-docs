@@ -62,6 +62,14 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 | ------------------- | -------------------------------------------------------------------- |
 | `SENDGRID_API_KEY`  | API key used to send the PDF test report (`lex pytest --report-and-email`) and any project-level transactional mail. |
 
+## Logging & warnings
+
+| Variable                | Purpose                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `LEX_LOG_LEVEL`         | Log level for the framework's own `lex.*` loggers. Set `DEBUG` to surface the framework's debug output **without** turning on the third-party DEBUG firehose. Default `INFO`. |
+| `LEX_SUPPRESS_INSECURE_WARNING` | Suppresses urllib3's `InsecureRequestWarning` (the Keycloak admin client can emit one per request against a self-signed dev endpoint). Set `False` to restore the warning while debugging TLS. Default `True`. |
+| `LEX_SUPPRESS_WARNINGS` | Suppresses Python warnings raised during app startup (`AppConfig.ready()`). Set `False` to restore them. Default `True`. |
+
 ## Where these get set
 
 | Place                 | When it's used                                              |
