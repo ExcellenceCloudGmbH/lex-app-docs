@@ -110,9 +110,9 @@ The file is a small YAML document at your project root. The most useful keys:
 |---|---|
 | `lex setup-with-ai` | Configure LEX AI integration (GitHub Copilot MCP, remote MCP server) |
 | `lex ai-update` | Apply incremental updates to an existing LEX AI setup (e.g. remove stale config keys) |
-| `lex ai-dashboard` | Open a local web dashboard to switch MCP mode, update credentials, and inspect server status |
+| `lex ai-dashboard` | Open a local web dashboard to switch MCP mode, update credentials (GitHub token, remote API key, remote MCP URL), and inspect server status |
 | `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
-| `lex ai-faq` | Open the LEX AI FAQ page in your browser |
+| `lex ai-faq` | Open the LEX AI FAQ page in your browser (including the Prompt Builder and the Lex AI behavior map) |
 
 `lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder). It also refreshes the AI docs folder in your project (`docs/`) from the version shipped with your installed `lex-app` package.
 
@@ -120,7 +120,9 @@ The file is a small YAML document at your project root. The most useful keys:
 
 `lex ai-update` is safe to run at any time — it only removes keys that are no longer needed, restores missing AI asset folders, and reports exactly what it changed.
 
-`lex ai-dashboard` opens a browser page where you can switch between forward and backward MCP mode, update your GitHub token and remote MCP API key, and see the current server status. With lex-mcp-local ≥ 0.2.3, mode changes are instant — the server restarts itself and the IDE picks up the new tool surface automatically.
+`lex ai-dashboard` opens a browser page where you can switch between forward and backward MCP mode, update your GitHub token, remote MCP API key, and remote MCP URL, and see the current server status. With lex-mcp-local ≥ 0.2.3, mode changes are instant — the server restarts itself and the IDE picks up the new tool surface automatically. Credential changes in the dashboard now also restart the MCP server, so new token/key/URL values take effect immediately.
+
+`lex ai-faq` opens an in-browser FAQ that now includes an interactive **Prompt Builder** — pick a scenario (add a feature, revise a plan, start a new project, or auto-generate docs for an existing project) and it crafts the prompt for you — alongside a visual **Lex AI behavior map** that walks through each workflow as a step-by-step timeline.
 
 `lex ai-verify` checks the AI asset files for the active MCP mode and restores any that are missing or out of date. It resolves the active mode from the CLI `--mode` flag, then the override file, then your `.env`, then `mcp.json`, defaulting to `forward`. Pass `--silent` to suppress all output on success — useful in automated or MCP pre-flight contexts.
 
