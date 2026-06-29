@@ -117,6 +117,12 @@ class ParentCalculation(CalculationModel):
 |---|---|---|
 | `CELERY_ACTIVE=true` | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, calculations stay in-process in the app. |
 | `IS_RUNNING_IN_CELERY=true` | Worker command only | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
+| `CELERY_BEAT_SCHEDULER` | `.env` or deployment config | Override the Beat scheduler class. Defaults to `django_celery_beat.schedulers:DatabaseScheduler` (reads the periodic-task schedule from the database). You can set it to `celery.beat:PersistentScheduler` for local dev if you don't need the DB-backed schedule. |
+| `LEX_TASK_RECOVERY_ENABLED=false` | `.env` or deployment config | Disables the worker-recovery system (heartbeat, dead-worker detection, and automatic task requeue). Set this in local dev and CI where no real Redis-backed Celery is running. Default: `true`. |
+| `LEX_TASK_HEARTBEAT_INTERVAL` | Deployment config | How often (in seconds) a running task emits a heartbeat to signal it is alive. Default: `5`. |
+| `LEX_TASK_HB_TTL_MULTIPLIER` | Deployment config | A task is considered dead after `HEARTBEAT_INTERVAL × TTL_MULTIPLIER` seconds without a heartbeat. Default: `3` (15 s at the default interval). |
+| `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` | Deployment config | How often (in seconds) the supervisor sweeps for dead workers and requeues their tasks. Default: `10`. |
+| `LEX_TASK_MAX_RETRIES` | Deployment config | Maximum number of times a task is automatically requeued after a dead-worker event. Once the budget is exhausted, the task is marked as failed. Default: `4`. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -149,6 +155,24 @@ Start Celery workers in a **separate terminal** alongside your running app:
 > On **Windows**, Celery's default prefork pool isn't supported. Use the `--pool=solo` or `--pool=threads` flag, or run workers via [WSL](https://learn.microsoft.com/en-us/windows/wsl/).
 
 For development, you can skip running workers entirely — calculations stay in-process by default when `CELERY_ACTIVE` is not set or `false`.
+
+## Worker Shutdown & Recovery
+
+### Auto-shutdown after task completion
+
+In deployed (non-local) environments, a worker automatically requests a warm shutdown after finishing a task — but only if it has no other active or reserved work at that moment. This keeps the worker pool lean without risking premature shutdown when multiple tasks are queued on the same worker.
+
+The check is safe under any `--concurrency` and `--prefetch-multiplier` combination.
+
+### Task recovery
+
+The framework includes a background recovery system that monitors running tasks via heartbeats and requeues work from workers that have died unexpectedly.
+
+- Every running task emits a periodic heartbeat (every `LEX_TASK_HEARTBEAT_INTERVAL` seconds, default 5 s).
+- A supervisor sweep runs every `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` seconds (default 10 s) and looks for tasks whose heartbeat has gone stale.
+- A stale task is automatically requeued, up to `LEX_TASK_MAX_RETRIES` times (default 4). If the budget is exhausted the task is marked as failed so the caller's result is not left hanging.
+
+Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
 
 ## `WaitForTasks` and `FireAndForget`
 
