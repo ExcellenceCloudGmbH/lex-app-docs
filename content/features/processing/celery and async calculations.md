@@ -188,6 +188,19 @@ The framework includes a background recovery system that monitors running tasks 
 
 Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
 
+#### Running the recovery driver
+
+In a multi-worker deployment the sweep runs in its own process alongside your normal workers. Two standalone console scripts are available (note: these are separate executables, not `lex` subcommands):
+
+- `lex-recovery-supervisor` — runs the sweep in a dedicated always-on loop.
+- `lex-recovery-beat` — runs a lightweight Celery worker with an embedded scheduler, so the sweep schedule is **visible in the Django admin** instead of baked into the process.
+
+```bash
+IS_RUNNING_IN_CELERY=true CELERY_ACTIVE=true lex-recovery-beat
+```
+
+Either driver listens on a dedicated `recovery` queue, so the periodic sweep never inflates the main work queue your autoscaler watches. When it finds stranded work it re-queues that work onto the **normal** queue — so your standard workers do the actual recalculation, and the recovery process only detects and re-dispatches. Keep your regular workers running as usual.
+
 ## Cancelling a Running Calculation
 
 If a calculation is running on a Celery worker, the UI/API can cancel it immediately. The framework revokes the running task, marks the record as `CANCELLED`, and also stops any active child calculations that belong to the same calculation tree.
