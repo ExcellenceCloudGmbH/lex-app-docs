@@ -123,6 +123,8 @@ class ParentCalculation(CalculationModel):
 | `LEX_TASK_HB_TTL_MULTIPLIER` | Deployment config | A task is considered dead after `HEARTBEAT_INTERVAL × TTL_MULTIPLIER` seconds without a heartbeat. Default: `3` (15 s at the default interval). |
 | `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` | Deployment config | How often (in seconds) the supervisor sweeps for dead workers and requeues their tasks. Default: `10`. |
 | `LEX_TASK_MAX_RETRIES` | Deployment config | Maximum number of times a task is automatically requeued after a dead-worker event. Once the budget is exhausted, the task is marked as failed. Default: `4`. |
+| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | Deployment config | Whether an idle worker should terminate itself so its pod can scale to zero (see **Idle self-termination** below). Only takes effect in a non-local `DEPLOYMENT_TARGET` — local dev and CI are unaffected. Default: `true`. |
+| `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` | Deployment config | How long (in seconds) a worker may sit with no work before the idle watchdog shuts it down. Default: `30`. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -163,6 +165,15 @@ For development, you can skip running workers entirely — calculations stay in-
 In deployed (non-local) environments, a worker automatically requests a warm shutdown after finishing a task — but only if it has no other active or reserved work at that moment. This keeps the worker pool lean without risking premature shutdown when multiple tasks are queued on the same worker.
 
 The check is safe under any `--concurrency` and `--prefetch-multiplier` combination.
+
+### Idle self-termination
+
+In deployed environments where workers run as autoscaled pods (e.g. KEDA ScaledJobs), the framework actively shuts an idle worker down so its pod can scale to zero. Two triggers drive this:
+
+- An **idle watchdog** reaps a worker that has been sitting with no work for `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` (default 30 s) — including a worker that started but never picked up a task.
+- A **cancel fast-path** terminates a worker as soon as its only task is revoked, so a cancelled calculation doesn't leave a pod lingering.
+
+Both triggers are gated behind a non-local `DEPLOYMENT_TARGET`, so local development and CI are never affected regardless of the settings. Set `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` to keep workers alive even when idle.
 
 ### Task recovery
 
