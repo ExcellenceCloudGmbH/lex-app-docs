@@ -114,6 +114,8 @@ See [[features/processing/celery and async calculations]] for the full setup gui
 
 Use `CalculationModel.cancel(instance, recursive=True)` to stop an in-progress calculation that is currently running on Celery. The framework revokes the worker task, persists `CANCELLED`, and cancels active descendants in the same calculation tree as well.
 
+For batch fan-outs whose tasks are spread across multiple worker pods, `cancel()` also consults a **Redis cluster cancel index**: each task registers its ID under the calculation's tree, so `cancel()` discovers and revokes descendant tasks it didn't directly dispatch. It additionally writes a cooperative cancel marker that an unstarted or between-models task checks and self-aborts on. This cascade is gated by `LEX_CLUSTER_CANCEL_ENABLED` and is inert without a reachable Redis.
+
 If the record is not in progress — or it's running synchronously with no worker task to revoke — `cancel()` returns a report saying it wasn't cancellable instead of forcing the state change.
 
 ## Operator Recovery API

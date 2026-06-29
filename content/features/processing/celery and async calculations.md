@@ -125,6 +125,9 @@ class ParentCalculation(CalculationModel):
 | `LEX_TASK_MAX_RETRIES` | Deployment config | Maximum number of times a task is automatically requeued after a dead-worker event. Once the budget is exhausted, the task is marked as failed. Default: `4`. |
 | `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | Deployment config | Whether an idle worker should terminate itself so its pod can scale to zero (see **Idle self-termination** below). Only takes effect in a non-local `DEPLOYMENT_TARGET` — local dev and CI are unaffected. Default: `true`. |
 | `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` | Deployment config | How long (in seconds) a worker may sit with no work before the idle watchdog shuts it down. Default: `30`. |
+| `LEX_CLUSTER_CANCEL_ENABLED` | Deployment config | Whether cancelling a calculation cascades to descendant tasks running on other worker pods via the Redis cancel index (see **Cancelling a Running Calculation**). Inert when `CELERY_ACTIVE` is off or no Redis is reachable. Default: `true`. |
+| `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Deployment config | TTL (seconds) for the Redis cancel-index tree that maps a calculation to its descendant task IDs. Default: `14400` (4 h). |
+| `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | Deployment config | TTL (seconds) for the cooperative cancel marker a task checks to self-abort. Default: `3600` (1 h). |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -188,6 +191,10 @@ Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole sys
 ## Cancelling a Running Calculation
 
 If a calculation is running on a Celery worker, the UI/API can cancel it immediately. The framework revokes the running task, marks the record as `CANCELLED`, and also stops any active child calculations that belong to the same calculation tree.
+
+This cascade works **across worker pods**. When a batch calculation fans out into many tasks spread over several workers, each task registers its ID in a shared Redis cancel index. Cancelling the parent discovers every descendant task in that index and revokes it — you don't have to chase down individual workers. Alongside the revoke, the framework sets a cooperative cancel marker, so a task that hasn't started yet (or is sitting between two models in a batch) sees the marker and self-aborts rather than waiting to be force-killed.
+
+The cascade is inert whenever `CELERY_ACTIVE` is off or no Redis is reachable, and can be turned off with `LEX_CLUSTER_CANCEL_ENABLED=false`.
 
 If the calculation is running synchronously in the web process, there's nothing to revoke, so instant cancel isn't available on that path.
 
