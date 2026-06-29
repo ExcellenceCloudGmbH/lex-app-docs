@@ -123,7 +123,7 @@ class ParentCalculation(CalculationModel):
 | `LEX_TASK_HB_TTL_MULTIPLIER` | Deployment config | A task is considered dead after `HEARTBEAT_INTERVAL × TTL_MULTIPLIER` seconds without a heartbeat. Default: `3` (15 s at the default interval). |
 | `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` | Deployment config | How often (in seconds) the supervisor sweeps for dead workers and requeues their tasks. Default: `10`. |
 | `LEX_TASK_MAX_RETRIES` | Deployment config | Maximum number of times a task is automatically requeued after a dead-worker event. Once the budget is exhausted, the task is marked as failed. Default: `4`. |
-| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | Deployment config | Whether an idle worker should terminate itself so its pod can scale to zero (see **Idle self-termination** below). Only takes effect in a non-local `DEPLOYMENT_TARGET` — local dev and CI are unaffected. Default: `true`. |
+| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | Deployment config | Master switch for **all** worker self-termination — the idle watchdog, the cancel fast-path, and the post-task warm shutdown (see **Worker Shutdown & Recovery** below). Only takes effect in a non-local `DEPLOYMENT_TARGET` — local dev and CI are unaffected. Set to `false` for long-lived `-B`/recovery-beat workers. Default: `true`. |
 | `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` | Deployment config | How long (in seconds) a worker may sit with no work before the idle watchdog shuts it down. Default: `30`. |
 | `LEX_CLUSTER_CANCEL_ENABLED` | Deployment config | Whether cancelling a calculation cascades to descendant tasks running on other worker pods via the Redis cancel index (see **Cancelling a Running Calculation**). Inert when `CELERY_ACTIVE` is off or no Redis is reachable. Default: `true`. |
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Deployment config | TTL (seconds) for the Redis cancel-index tree that maps a calculation to its descendant task IDs. Default: `14400` (4 h). |
@@ -169,6 +169,8 @@ In deployed (non-local) environments, a worker automatically requests a warm shu
 
 The check is safe under any `--concurrency` and `--prefetch-multiplier` combination.
 
+This post-task shutdown obeys the same `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` master switch as the idle watchdog below. Setting it to `false` keeps the worker alive after it finishes a task — which is exactly what a long-lived worker that also runs an embedded scheduler (a `-B` / recovery-beat process) needs, so it doesn't terminate itself after its first sweep.
+
 ### Idle self-termination
 
 In deployed environments where workers run as autoscaled pods (e.g. KEDA ScaledJobs), the framework actively shuts an idle worker down so its pod can scale to zero. Two triggers drive this:
@@ -176,7 +178,10 @@ In deployed environments where workers run as autoscaled pods (e.g. KEDA ScaledJ
 - An **idle watchdog** reaps a worker that has been sitting with no work for `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` (default 30 s) — including a worker that started but never picked up a task.
 - A **cancel fast-path** terminates a worker as soon as its only task is revoked, so a cancelled calculation doesn't leave a pod lingering.
 
-Both triggers are gated behind a non-local `DEPLOYMENT_TARGET`, so local development and CI are never affected regardless of the settings. Set `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` to keep workers alive even when idle.
+Both triggers are gated behind a non-local `DEPLOYMENT_TARGET`, so local development and CI are never affected regardless of the settings. `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` is the master switch that turns off **all** self-termination paths — the idle watchdog, the cancel fast-path, *and* the post-task warm shutdown above.
+
+> [!tip] Long-lived workers with an embedded scheduler
+> If you run a worker with `-B` (an embedded Beat scheduler) or the recovery-beat process, set `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` for it. Otherwise it would request a warm shutdown after its first task and crash-loop — defeating the point of keeping a single always-on process around to drive the schedule.
 
 ### Task recovery
 
