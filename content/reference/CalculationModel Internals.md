@@ -87,7 +87,7 @@ In production, calculations can be dispatched to [Celery](https://docs.celeryq.d
 1. Is the `CELERY_ACTIVE` environment variable set to `true`?
 2. Does the `calculate()` method have a `.delay()` attribute (i.e., is it decorated with `@lex_shared_task`)?
 
-If both are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs synchronously in the request thread.
+If both are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. Either way, the record is first saved in `IN_PROGRESS` and then updated again when the calculation finishes.
 
 To make a calculation Celery-capable, decorate it with `@lex_shared_task`:
 
@@ -100,7 +100,7 @@ class HeavyReport(CalculationModel):
         ...
 ```
 
-`@lex_shared_task` wraps your method with context-aware dispatch, automatic status callbacks (`SUCCESS` / `ERROR`), and audit logging context propagation to worker processes. Without the decorator, `calculate()` always runs synchronously — even when `CELERY_ACTIVE=true`.
+`@lex_shared_task` wraps your method with context-aware dispatch, automatic status callbacks (`SUCCESS` / `ERROR`), and audit logging context propagation to worker processes. Without the decorator, `calculate()` stays in-process in the app — even when `CELERY_ACTIVE=true`.
 
 > [!note]
 > Set `CELERY_ACTIVE=true` in your project's `.env` file to enable Celery dispatch. You also need a running Redis instance (or [Memurai](https://www.memurai.com/get-memurai) on Windows) as the message broker.

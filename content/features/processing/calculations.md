@@ -2,7 +2,7 @@
 title: Calculations
 ---
 
-A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, calls your `calculate()` method, and then transitions to `SUCCESS` or `ERROR` depending on the outcome. You only write the business logic — everything else is handled for you.
+A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, kicks off your `calculate()` method, and then transitions to `SUCCESS` or `ERROR` depending on the outcome. The record can stay in progress while the work finishes — users don't need to keep the request open themselves. You only write the business logic — everything else is handled for you.
 
 ## Defining a Calculation Model
 
@@ -57,6 +57,7 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Recursion guard** — prevents re-entrant calculation loops
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
 - **Auto-save** — the record is saved automatically after `calculate()` returns
+- **Non-blocking trigger** — clicking **Calculate** returns the record in `IN_PROGRESS`, then the UI updates again when the run finishes
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
 - **System-save attribution** — any records you save inside `calculate()` won't have their `edited_by` / `edited_at` stamped with the triggering user; those saves are treated as system-triggered, not direct user edits
 
@@ -67,7 +68,7 @@ You don't need to define or manage any of the following — they're inherited fr
 > The `CalculationModel` base class uses `@hook(AFTER_UPDATE)` on the `is_calculated` field. When it transitions to `IN_PROGRESS`, the framework calls `calculate_hook()` which:
 >
 > 1. Sets `is_calculated = IN_PROGRESS`
-> 2. Decides whether to run synchronously or via Celery (`should_use_celery()`)
+> 2. Decides whether to hand the work to Celery or run it in-process (`should_use_celery()`)
 > 3. Calls your `calculate()` method
 > 4. On success: sets `is_calculated = SUCCESS` and saves
 > 5. On exception: sets `is_calculated = ERROR`, stores the traceback in `calculation_error_message`, and saves

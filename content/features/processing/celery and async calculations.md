@@ -80,16 +80,16 @@ class HeavyReport(CalculationModel):
 - **Automatic status callbacks** — the `CallbackTask` base class updates `is_calculated` to `SUCCESS` or `ERROR` on completion
 - **Context propagation** — calculation IDs and audit logging context are forwarded to workers, including the active child model during batch dispatch
 
-Without the decorator, `calculate()` always runs synchronously — even when `CELERY_ACTIVE=true`.
+Without the decorator, `calculate()` stays in the app process — even when `CELERY_ACTIVE=true`.
 
 ### The Dispatch Flow
 
-When a user clicks **Calculate ▶️**, the framework decides sync vs. async:
+When a user clicks **Calculate ▶️**, the framework decides whether to use Celery or keep the work in-process:
 
 1. Is `CELERY_ACTIVE=true` set in the environment?
 2. Does the `calculate()` method have a `.delay()` attribute (i.e., is it decorated with `@lex_shared_task`)?
 
-If **both** are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs synchronously in the request thread.
+If **both** are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
 
 For batch calculations (a parent triggering children), the framework uses `CeleryTaskDispatcher` to:
 
@@ -115,7 +115,7 @@ class ParentCalculation(CalculationModel):
 
 | Variable | Where to Set | Purpose |
 |---|---|---|
-| `CELERY_ACTIVE=true` | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, all calculations run synchronously. |
+| `CELERY_ACTIVE=true` | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, calculations stay in-process in the app. |
 | `IS_RUNNING_IN_CELERY=true` | Worker command only | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
@@ -148,7 +148,7 @@ Start Celery workers in a **separate terminal** alongside your running app:
 > [!note]
 > On **Windows**, Celery's default prefork pool isn't supported. Use the `--pool=solo` or `--pool=threads` flag, or run workers via [WSL](https://learn.microsoft.com/en-us/windows/wsl/).
 
-For development, you can skip running workers entirely — everything runs synchronously by default when `CELERY_ACTIVE` is not set or `false`.
+For development, you can skip running workers entirely — calculations stay in-process by default when `CELERY_ACTIVE` is not set or `false`.
 
 ## `WaitForTasks` and `FireAndForget`
 

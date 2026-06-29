@@ -14,6 +14,15 @@ Lex App reads its runtime configuration from environment variables — usually l
 | `CELERY_ACTIVE`        | `true` to dispatch `@lex_shared_task`-decorated functions to Celery workers; otherwise tasks run synchronously in the current process. See [[features/processing/celery and async calculations]]. |
 | `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`. |
 
+## Calculation threading
+
+These control the thread pools that keep long-running calculations from blocking the web server. Defaults are sensible — only tune them if you have a specific throughput or responsiveness problem.
+
+| Variable                  | Purpose                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `LEX_CALCULATION_THREADS` | Size of the dedicated pool that runs in-process calculations off the request thread, so calculations never starve API calls, WebSocket auth, or health checks. Default `10`. |
+| `ASGI_THREADS`            | Size of the ASGI sync executor used for regular sync work. Raising it gives the server more headroom for concurrent sync operations. Default `3`. |
+
 ## Streamlit
 
 | Variable                | Purpose                                                                                  |
