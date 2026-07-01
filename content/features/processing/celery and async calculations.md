@@ -113,7 +113,7 @@ class ParentCalculation(CalculationModel):
 
 #### Nested fan-out runs in parallel too
 
-The same rule applies when a calculation is **already running inside a worker** and triggers further work of its own. That nested fan-out is dispatched across the worker pool by default — it does *not* collapse onto the single slot the parent occupies. The parent still blocks until its children finish: if you've wrapped the work in a `WaitForTasks` context the framework reuses it, and if not it opens one for you and waits.
+The same rule applies when a calculation is **already running inside a worker** and triggers further work of its own. That nested fan-out is dispatched across the worker pool by default — it does *not* collapse onto the single slot the parent occupies. The parent still blocks until its children finish: if you've wrapped the work in a `WaitForTasks` context the framework reuses it, and if not it opens one for you and waits. This worker-in-worker wait path is now handled safely, so nested fan-out no longer trips Celery's "Never call result.get() within a task!" guard and drops back to a full synchronous rerun.
 
 This matters for large combinatorial calculations. A parent that expands into, say, 50 clusters over tens of thousands of rows spreads those clusters across every available worker instead of grinding through them one at a time on a single slot. You don't have to opt in — write the same `calculate()` and the children parallelise on their own.
 
