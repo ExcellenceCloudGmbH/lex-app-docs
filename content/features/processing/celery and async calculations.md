@@ -197,6 +197,8 @@ The framework includes a background recovery system that monitors running tasks 
 - A supervisor sweep runs every `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` seconds (default 10 s) and looks for tasks whose heartbeat has gone stale.
 - A stale task is automatically requeued, up to `LEX_TASK_MAX_RETRIES` times (default 4). If the budget is exhausted the task is marked as failed so the caller's result is not left hanging.
 
+When a callback or recovery sweep moves a calculation to a terminal status, that state change is persisted as a normal save on the live row, so you get a matching history/timeline entry (including the recovery reason when applicable).
+
 Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
 
 #### Running the recovery driver
