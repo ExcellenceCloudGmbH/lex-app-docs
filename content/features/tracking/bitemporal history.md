@@ -223,12 +223,16 @@ system_at_feb = get_queryset_as_of(HistoricalEmployee, feb_1)
 
 ## The REST API
 
-The history endpoint supports time-travel via the `as_of` query parameter:
+Both the main list endpoint and the history endpoint support time-travel via the `as_of` query parameter:
 
 ```
-GET /api/employee/42/history/              → all Level 1 versions
-GET /api/employee/42/history/?as_of=2026-02-01T00:00:00Z  → Level 2 snapshot at that system time
+GET /api/employee/?as_of=2026-02-01T00:00:00Z             → employee list as it existed then
+GET /api/employee/42/history/                             → all Level 1 versions
+GET /api/employee/42/history/?as_of=2026-02-01T00:00:00Z → Level 2 snapshot at that system time
 ```
+
+Use a normal ISO timestamp. `Z` or an explicit offset are the clearest
+options, but a naive timestamp is also accepted and treated as UTC.
 
 Each response entry includes:
 
