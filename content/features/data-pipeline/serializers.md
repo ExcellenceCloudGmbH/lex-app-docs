@@ -125,6 +125,42 @@ When validation fails, the error message appears directly in the frontend UI —
 > [!tip] Serializer validation vs. `pre_validation()`
 > Serializer validation and [[features/data-pipeline/lifecycle hooks#`pre_validation()` — Guard Before Save|pre_validation()]] both block invalid data before it's saved — but they run at different layers. Serializer validation runs in the **API layer** (when data arrives via REST), while `pre_validation()` runs in the **model layer** (on every `save()`, regardless of source). If a rule should apply no matter how the model is saved — API, management command, hook, calculation — put it in `pre_validation()`. If it's specific to the REST API (e.g., formatting, permission-aware checks), use a serializer.
 
+## Foreign keys read as names, not IDs
+
+When a model points at another model through a `ForeignKey`, the raw API value for that
+field is the linked record's database id — a number. On its own, a column showing
+`1042` isn't very useful to read.
+
+So alongside the raw id, every serialized row **also** carries a companion value with the
+linked record's readable name. For a `fund` foreign key you get both:
+
+```json
+{
+  "fund": 1042,
+  "fund__short_description": "Growth Opportunities Fund"
+}
+```
+
+The grid uses `fund__short_description` to *display* the column, while filtering, sorting,
+and editing still run against the real `fund` id underneath. You don't configure anything
+for this — it happens for every foreign key automatically, and the raw id is never
+altered, so existing integrations keep working unchanged.
+
+The display text comes straight from the linked model's `__str__`. That method is your
+control point: define it to return whatever a person should see for that record.
+
+```python
+class Fund(LexModel):
+    name = models.CharField(max_length=200)
+    vintage_year = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.name} ({self.vintage_year})"
+```
+
+With this in place, any grid that links to a `Fund` shows *"Growth Opportunities Fund
+(2021)"* instead of a bare id — everywhere, without touching the serializer.
+
 ## Multiple Serializer Views
 
 You can define multiple serializers for the same model — for example, a default view and a more detailed view:

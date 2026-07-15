@@ -18,10 +18,18 @@ Every `LexModel` subclass automatically gets these fields — you never need to 
 | Field | Type | Description |
 |---|---|---|
 | `id` | `AutoField` | Primary key (inherited from [Django](https://docs.djangoproject.com/)) |
+| `created_at` | `DateTimeField` | When the record was first created (set automatically) |
+| `edited_at` | `DateTimeField` | When the record was last edited (set automatically on every user edit) |
 | `created_by` | `TextField` | Username of the creator (set automatically) |
 | `edited_by` | `TextField` | Username of the last editor (set automatically for normal user edits; calculation-triggered framework saves don't overwrite it) |
 
 History fields (via [django-simple-history](https://django-simple-history.readthedocs.io/)) are added transparently — you don't interact with them directly.
+
+> [!note] Timestamps are stored and served in UTC
+> `created_at` and `edited_at` are stored in UTC and served by the API with an explicit
+> `Z` designator (e.g. `2026-07-14T11:43:00Z`). Parse them as UTC and convert to local
+> time for display — the application already does this for you. This is the same contract
+> the [[features/tracking/bitemporal history#The REST API|`as_of` history queries]] follow.
 
 ## Lifecycle Hooks
 

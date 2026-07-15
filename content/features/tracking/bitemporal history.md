@@ -248,6 +248,15 @@ Each response entry includes:
 
 The `snapshot` contains all field values at that version, serialized through your model's default serializer. The `system_history` array contains the Level 2 meta records for that history row.
 
+> [!important] Always send `as_of` in UTC
+> The `as_of` value is interpreted as **UTC**. Send an explicit designator — a trailing
+> `Z` (as above) or an offset like `+02:00` — so the instant is unambiguous. A value with
+> no timezone (`2026-02-01T09:00:00`) is read as UTC, *not* as your local wall-clock time,
+> so a naive local time can land you on the wrong side of an edit. The application's own
+> **As-Of** control already sends UTC for you; this only matters when you call the endpoint
+> directly. For the same reason, every timestamp the API *returns* carries a `Z` — parse it
+> as UTC and convert to local time for display.
+
 ## In the Frontend
 
 The bitemporal model powers several parts of the user interface:

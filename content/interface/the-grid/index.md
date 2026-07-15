@@ -41,7 +41,6 @@ Take your data out of Lex App when you need to. Export respects your current vie
 
 Above every grid is a toolbar that gives you quick access to key actions:
 
-<!-- 📸 SCREENSHOT: Grid toolbar showing view selector, density, export, and calculate buttons -->
 
 | Control | What It Does |
 |---|---|
@@ -50,11 +49,14 @@ Above every grid is a toolbar that gives you quick access to key actions:
 | **As-Of** | Time-travel to see data as it existed at any point in the past |
 | **Export** | Download the current view as Excel or CSV |
 | **Calculate** | Trigger calculations on selected records (for calculation models) |
+| **Abort** | Stop an in-progress calculation — appears next to the spinner while a calculation is running |
 | **Add Record** | Create a new entry inline or via form |
 
 ## Inline Editing
 
 Double-click any editable cell to modify it directly in the grid. Changes are validated in real-time — if a [[features/data-pipeline/serializers|serializer]] rejects the value, you'll see the error immediately. No separate edit form needed for quick corrections.
+
+The grid stays live: when a record changes — whether you edited it, a colleague did, or a calculation produced it — the open grid updates on its own, so you're always looking at current data without pressing **Refresh**.
 
 Fields you don't have [[features/access-and-ui/permissions|permission]] to edit appear as read-only — the grid respects your access level down to individual cells.
 
