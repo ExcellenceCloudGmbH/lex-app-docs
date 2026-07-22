@@ -77,3 +77,9 @@ If you need a subset, select specific rows in the grid (click to select, `Shift+
 
 > [!tip]
 > Combine selection with [[interface/the-grid/filtering and sorting|filters]] for precision: filter down to the relevant records, select a handful, and export just those.
+
+## Datetimes in Excel exports
+
+Excel has no timezone type. When your data contains datetime values, the exported workbook shows them in your **browser's local timezone** — the same time you see in the grid — rather than UTC. If the exported file is opened by someone in a different timezone, the digits they see represent the original exporter's local time.
+
+CSV exports are unaffected: they always include UTC offsets (e.g. `2026-07-14T11:00:00+02:00`).
