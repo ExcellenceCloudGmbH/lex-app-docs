@@ -93,6 +93,12 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 | `LEX_SUPPRESS_INSECURE_WARNING` | Suppresses urllib3's `InsecureRequestWarning` (the Keycloak admin client can emit one per request against a self-signed dev endpoint). Set `False` to restore the warning while debugging TLS. Default `True`. |
 | `LEX_SUPPRESS_WARNINGS` | Suppresses Python warnings raised during app startup (`AppConfig.ready()`). Set `False` to restore them. Default `True`. |
 
+## Widget integrations
+
+| Variable                   | Purpose                                                                 |
+| -------------------------- | ----------------------------------------------------------------------- |
+| `QUACKBACK_WIDGET_SECRET`  | Shared secret used to sign short-lived SSO tokens for the Quackback widget endpoint (`POST /api/quackback-widget-token/`). |
+
 ## Where these get set
 
 | Place                  | When it's used                                                                                               |
