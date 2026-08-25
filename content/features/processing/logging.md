@@ -129,6 +129,32 @@ class ParentCalculation(CalculationModel):
 
 This ensures logs from the child appear nested under the parent in the frontend, and that real-time updates are propagated up to the root record's log panel.
 
+## Section Headings
+
+You can also pass a plain string to `model_logging_context` to group log output under a titled section node — no model instance needed:
+
+```python
+from lex.audit_logging.utils.ModelContext import model_logging_context
+
+
+class MyCalculation(CalculationModel):
+    def calculate(self):
+        with model_logging_context("Data preparation"):
+            LexLogger().add_text("Loading source data...").log()
+            LexLogger().add_text("Validating inputs...").log()
+
+        with model_logging_context("Processing"):
+            LexLogger().add_text("Running calculations...").log()
+```
+
+The section titles appear as labeled nodes in the frontend's log tree, making long calculations easy to navigate. Headings nest freely with model contexts and with each other:
+
+```python
+with model_logging_context(child):
+    with model_logging_context("Adjustments"):
+        LexLogger().add_text("Applying adjustments...").log()
+```
+
 For the complete method list, see the [[reference/LexLogger API|LexLogger API reference]].
 
 > [!note]- Migrating from V1?
