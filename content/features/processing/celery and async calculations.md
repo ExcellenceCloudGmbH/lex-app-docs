@@ -223,6 +223,9 @@ The framework includes a background recovery system that monitors running tasks 
 - A stale task is automatically requeued, up to `LEX_TASK_MAX_RETRIES` times (default 4). If the budget is exhausted the task is marked as failed so the caller's result is not left hanging.
 
 Recovery is **off by default**. Turn it on with `LEX_TASK_RECOVERY_ENABLED=true` only in environments where you also run a recovery driver (`lex-recovery-supervisor` or `lex-recovery-beat`). In local development and CI, you usually leave it off.
+When a callback or recovery sweep moves a calculation to a terminal status, that state change is persisted as a normal save on the live row, so you get a matching history/timeline entry (including the recovery reason when applicable).
+
+Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
 
 #### Running the recovery driver
 

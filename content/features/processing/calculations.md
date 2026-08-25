@@ -70,6 +70,7 @@ If you're using Celery workers, cancelling is immediate: the framework revokes t
 If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died.
 | `CANCELLED`      | A user or operator stopped the calculation                            |
 | `ABORTED`        | The framework marked an interrupted run as no longer active           |
+If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died. Those terminal status updates are saved as normal model changes, so they show up in History/Timeline just like in-process runs.
 
 ## What You Get Automatically
 
