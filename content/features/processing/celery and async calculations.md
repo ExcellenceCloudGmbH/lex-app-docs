@@ -96,6 +96,8 @@ If **both** are true, the calculation is dispatched to a Celery worker — decor
 If **both** are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
 If **both** are true, the calculation is dispatched to a Celery worker. If your method is decorated with `@lex_shared_task`, it's dispatched directly. If not, the framework wraps it for you automatically. If Celery isn't available, the same calculation runs synchronously in the request thread.
 
+If a calculation is already running on a worker and triggers child calculations, those children are dispatched to Celery by default. The parent waits for those children unless you explicitly wrap that section in `FireAndForget`.
+
 For batch calculations (a parent triggering children), the framework uses `CeleryTaskDispatcher` to:
 
 1. **Group** the child models into batches (clustered by calculation order)
@@ -399,6 +401,8 @@ When contexts are nested, the **innermost** matching context wins:
 | 1 (highest) | `FireAndForget` | Dispatch to Celery, don't wait    |
 | 2           | `WaitForTasks`  | Dispatch to Celery, block on exit |
 | 3 (default) | No context      | Run synchronously in-process      |
+
+For nested calculations already running inside a Celery worker, "No context" still dispatches child calculations and waits for them by default.
 
 ## Failure Handling
 
