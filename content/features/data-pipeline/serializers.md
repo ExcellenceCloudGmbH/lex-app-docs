@@ -173,6 +173,9 @@ InvestorCashflow.api_serializers = {
 > [!note] The `id` field is always present
 > When you override `api_serializers["default"]`, the framework always includes the model's primary key as `id` in the serialized output — even if your `Meta.fields` omits it. Row navigation, edit URLs, and the CRUD loading overlay all depend on this field.
 
+> [!tip] Foreign keys now come with a readable companion value
+> In list and detail responses, foreign-key fields keep their raw ID (`team: 79`) and also include a second key with the related record's label (`team__short_description: "Growth Fund"`). That gives custom frontends and integrations something human-readable to show without losing the real ID needed for edits, filters, and writes.
+
 ### Renaming the framework serializer
 
 When you override `api_serializers["default"]` with a custom serializer, the framework's auto-generated serializer is replaced in the map — your serializer becomes `"default"`. For most models this is exactly what you want.
