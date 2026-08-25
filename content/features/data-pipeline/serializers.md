@@ -72,6 +72,15 @@ This example shows three important patterns:
 > [!warning] PATCH and cross-field validation
 > When a user edits a single cell in the grid, the frontend sends a **PATCH** request containing only that field. In `validate()`, `attrs` won't include the fields the user didn't touch. Always fall back to `self.instance` for the "other" field — otherwise the rule silently passes.
 
+> [!tip] Clearing file fields on update
+> For `FileField` / `ImageField` updates sent as `multipart/form-data`, use:
+>
+> - `""` (empty string) to clear the currently stored file
+> - omitted key to keep the current file
+> - a new upload to replace the current file
+>
+> If the field is required, clearing it still fails validation.
+
 ## More Validation Patterns
 
 Here are additional patterns you can mix and match in your serializers:

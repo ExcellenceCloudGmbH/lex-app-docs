@@ -43,7 +43,7 @@ For production runs, drop `--reload`.
 | `lex pytest`        | Run your project's test suite with Django bootstrapped                |
 | `lex pytest-groups` | List configured test groups and the tests they contain (no tests run) |
 
-`lex pytest` behaves like plain `pytest` — any flags you pass are forwarded directly. Before running, it prepares Django's test environment and a dedicated test database (scoped to your `default` alias) so your normal development database is never touched by accident. If that setup step fails, `lex pytest` stops early and shows the setup error instead of continuing with a partial run.
+`lex pytest` behaves like plain `pytest` — any flags you pass are forwarded directly. Before running, it prepares Django's test environment and sets up the test database for your `default` alias. If that test DB already exists, `lex pytest` reuses it and runs migrations (`keepdb` behavior); if it's missing (common in CI), it creates it first. If that setup step fails, `lex pytest` stops early and shows the setup error instead of continuing with a partial run.
 
 Two extra flags are intercepted:
 
