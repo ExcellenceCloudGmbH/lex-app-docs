@@ -4,6 +4,7 @@ title: Calculations
 
 A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, kicks off your `calculate()` method, and then moves the record to the right terminal state for the outcome. The record can stay in progress while the work finishes — users don't need to keep the request open themselves. You only write the business logic — everything else is handled for you.
 A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, kicks off your `calculate()` method, and then transitions to `SUCCESS` or `ERROR` depending on the outcome. The record can stay in progress while the work finishes — users don't need to keep the request open themselves. You only write the business logic — everything else is handled for you.
+A `CalculationModel` is a model whose records can be "calculated" on demand. When a user clicks **Calculate** in the frontend, the framework transitions the record to `IN_PROGRESS`, calls your `calculate()` method, and then moves the record to the right terminal state for the outcome. You only write the business logic — everything else is handled for you.
 
 ## Defining a Calculation Model
 
@@ -61,6 +62,10 @@ If you're using Celery workers, cancelling is immediate: the framework revokes t
 | `SUCCESS`        | Completed without errors                                              |
 | `ERROR`          | An exception occurred (details stored in `calculation_error_message`) |
 | `ABORTED`        | Manually cancelled                                                    |
+| `CANCELLED`      | A user stopped a running calculation                                  |
+| `ABORTED`        | The framework recovered a calculation that got stuck in progress      |
+
+If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died.
 
 ## What You Get Automatically
 
@@ -69,6 +74,7 @@ You don't need to define or manage any of the following — they're inherited fr
 - **`is_calculated`** — the state field
 - **Recursion guard** — prevents re-entrant calculation loops
 - **Error capture** — exceptions are caught and stored in `calculation_error_message`
+- **Cancellation handling** — running Celery-backed calculations can be stopped cleanly from the UI/API
 - **Auto-save** — the record is saved automatically after `calculate()` returns
 - **Non-blocking trigger** — clicking **Calculate** returns the record in `IN_PROGRESS`, then the UI updates again when the run finishes
 - **Cancellation handling** — running Celery-backed calculations can be stopped cleanly from the UI/API
@@ -120,6 +126,7 @@ class CalculateBalanceSheet(CalculationModel):
 > | Method name     | `update()`                                        | `calculate()`                                     |
 > | Decorator       | `@ConditionalUpdateMixin.conditional_calculation` | Not needed                                        |
 > | State field     | Boolean `is_calculated`                           | Enum with 5 states                                |
+> | State field     | Boolean `is_calculated`                           | Enum with 6 states                                |
 > | Recursion guard | Manual `dont_update` flag                         | Automatic                                         |
 > | Error handling  | Manual `try/catch`                                | Automatic (stored in `calculation_error_message`) |
 > | Save            | Manual `self.save()`                              | Automatic after method returns                    |

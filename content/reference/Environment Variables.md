@@ -39,28 +39,32 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `LEX_CLUSTER_CANCEL_ENABLED`       | Whether cancelling a calculation cascades to descendant tasks on other worker pods via the Redis cancel index. Inert when `CELERY_ACTIVE` is off or no Redis is reachable. Default `true`. |
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | TTL (seconds) for the Redis cancel-index tree mapping a calculation to its descendant task IDs. Default `14400` (4 h). |
 | `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | TTL (seconds) for the cooperative cancel marker a task checks to self-abort. Default `3600` (1 h). |
+| Variable               | Purpose                                                                                                                                                                                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CELERY_ACTIVE`        | `true` to let the framework dispatch calculations to Celery workers when they're available. `@lex_shared_task` still works, but root `CalculationModel` runs no longer require it just to use Celery. See [[features/processing/celery and async calculations]]. |
+| `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`.                                                           |
 
 ## Streamlit
 
-| Variable                | Purpose                                                                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------- |
-| `IS_STREAMLIT_ENABLED`  | `true` to enable the Streamlit toolbar icon in the frontend. See [[features/access-and-ui/streamlit dashboards]]. |
+| Variable               | Purpose                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `IS_STREAMLIT_ENABLED` | `true` to enable the Streamlit toolbar icon in the frontend. See [[features/access-and-ui/streamlit dashboards]]. |
 
 ## Keycloak / OIDC
 
-| Variable                | Purpose                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| `KEYCLOAK_REALM`        | Name of the Keycloak realm the framework targets when syncing models, fields, and groups. |
-| `KEYCLOAK_REALM_NAME`   | Display name of the realm (used during bootstrap). Falls back to `KEYCLOAK_REALM` if unset. |
-| `OIDC_RP_CLIENT_ID`     | Your project's OIDC client ID — the identifier the browser logs in against.               |
+| Variable              | Purpose                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| `KEYCLOAK_REALM`      | Name of the Keycloak realm the framework targets when syncing models, fields, and groups.   |
+| `KEYCLOAK_REALM_NAME` | Display name of the realm (used during bootstrap). Falls back to `KEYCLOAK_REALM` if unset. |
+| `OIDC_RP_CLIENT_ID`   | Your project's OIDC client ID — the identifier the browser logs in against.                 |
 
 Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin credentials) are read at the Django-settings layer. `lex setup` writes a complete set into your `.env` — start from that file rather than constructing the list by hand.
 
 ## Mail
 
-| Variable            | Purpose                                                              |
-| ------------------- | -------------------------------------------------------------------- |
-| `SENDGRID_API_KEY`  | API key used to send the PDF test report (`lex pytest --report-and-email`) and any project-level transactional mail. |
+| Variable           | Purpose                                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `SENDGRID_API_KEY` | API key used to send the PDF test report (`lex pytest --report-and-email`) and any project-level transactional mail. |
 
 ## Widget integrations
 
@@ -78,10 +82,10 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 
 ## Where these get set
 
-| Place                 | When it's used                                              |
-| --------------------- | ----------------------------------------------------------- |
-| `.env` at project root | Local development. Loaded by PyCharm run configs and `set -a; source .env; set +a` in the terminal. |
-| Container / cloud env | Production. Whatever your platform's secret manager exposes (Docker `--env-file`, Kubernetes Secrets, etc.). |
+| Place                  | When it's used                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `.env` at project root | Local development. Loaded by PyCharm run configs and `set -a; source .env; set +a` in the terminal.          |
+| Container / cloud env  | Production. Whatever your platform's secret manager exposes (Docker `--env-file`, Kubernetes Secrets, etc.). |
 
 > [!tip]
 > If you change anything in `.env`, restart your `lex start` / `lex streamlit` processes (and your Celery workers if you have them) — the variables are read once at startup.
@@ -91,4 +95,3 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 - [[reference/CLI Commands]] — every command that reads these variables.
 - [[reference/lex_config.md|lex_config.py]] — the Python-side configuration that complements these env vars.
 - [[installation]] — how `.env` is generated by `lex setup`.
-

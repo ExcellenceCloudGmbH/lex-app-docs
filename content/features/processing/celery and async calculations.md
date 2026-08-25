@@ -94,6 +94,7 @@ When a user clicks **Calculate ▶️**, the framework decides whether to use Ce
 
 If **both** are true, the calculation is dispatched to a Celery worker — decorated methods (`@lex_shared_task`) go directly, undecorated ones are wrapped for you. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
 If **both** are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
+If **both** are true, the calculation is dispatched to a Celery worker. If your method is decorated with `@lex_shared_task`, it's dispatched directly. If not, the framework wraps it for you automatically. If Celery isn't available, the same calculation runs synchronously in the request thread.
 
 For batch calculations (a parent triggering children), the framework uses `CeleryTaskDispatcher` to:
 
@@ -141,6 +142,9 @@ This matters for large combinatorial calculations. A parent that expands into, s
 | Variable                    | Where to Set                           | Purpose                                                                                                                                       |
 | --------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CELERY_ACTIVE=true`        | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, calculations stay in-process in the app.                                                      |
+| Variable                    | Where to Set                           | Purpose                                                                                                                                       |
+| --------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CELERY_ACTIVE=true`        | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, all calculations run synchronously.                                                           |
 | `IS_RUNNING_IN_CELERY=true` | Worker command only                    | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
@@ -248,6 +252,12 @@ The framework includes a background recovery system that monitors running tasks 
 - A stale task is automatically requeued, up to `LEX_TASK_MAX_RETRIES` times (default 4). If the budget is exhausted the task is marked as failed so the caller's result is not left hanging.
 
 Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
+
+## Cancelling a Running Calculation
+
+If a calculation is running on a Celery worker, the UI/API can cancel it immediately. The framework revokes the running task, marks the record as `CANCELLED`, and also stops any active child calculations that belong to the same calculation tree.
+
+If the calculation is running synchronously in the web process, there's nothing to revoke, so instant cancel isn't available on that path.
 
 ## `WaitForTasks` and `FireAndForget`
 

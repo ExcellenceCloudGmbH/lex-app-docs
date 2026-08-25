@@ -44,6 +44,14 @@ stateDiagram-v2
 | `SUCCESS`        | `CalculationModel.SUCCESS`        | Calculation completed without error                                |
 | `ERROR`          | `CalculationModel.ERROR`          | An exception was raised — error details are stored on the record   |
 | `ABORTED`        | `CalculationModel.ABORTED`        | Calculation was manually cancelled                                 |
+| State            | Constant                          | Meaning                                                               |
+| ---------------- | --------------------------------- | --------------------------------------------------------------------- |
+| `NOT_CALCULATED` | `CalculationModel.NOT_CALCULATED` | Default — record exists but hasn't been processed                     |
+| `IN_PROGRESS`    | `CalculationModel.IN_PROGRESS`    | Calculation is running (triggers `calculate()` via lifecycle hook)    |
+| `SUCCESS`        | `CalculationModel.SUCCESS`        | Calculation completed without error                                   |
+| `ERROR`          | `CalculationModel.ERROR`          | An exception was raised — error details are stored on the record      |
+| `CANCELLED`      | `CalculationModel.CANCELLED`      | A user cancelled a running calculation                                |
+| `ABORTED`        | `CalculationModel.ABORTED`        | The framework recovered a calculation that was left stuck in progress |
 
 The `is_calculated` field is **not editable** in the UI — it's managed entirely by the framework. When a user clicks **Calculate ▶️** in the frontend, the framework sets `is_calculated = IN_PROGRESS`, which triggers the `calculate_hook`.
 
@@ -78,6 +86,12 @@ class BudgetSummary(CalculationModel):
 | Error handling                           | Framework catches exceptions and sets `is_calculated = ERROR`                                                                                                   |
 | State transitions                        | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow                                                                                                   |
 | Logging context                          | [[reference/LexLogger API                                                                                                                                       | LexLogger]] automatically links to the current calculation |
+| Concern                                  | Handled By                                                                                                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `self.save()`                            | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`)                                                           |
+| Error handling                           | Framework catches exceptions and stores the error details on the record                                                                                         |
+| State transitions                        | Lifecycle hooks manage the `IN_PROGRESS → terminal state` flow                                                                                                  |
+| Logging context                          | [[reference/LexLogger API\|LexLogger]] automatically links to the current calculation                                                                           |
 | Concurrency                              | Runs inside `transaction.atomic()` by default                                                                                                                   |
 | `edited_by` / `edited_at` on child saves | Any records you save inside `calculate()` are treated as system-triggered — their `edited_by` / `edited_at` are not stamped with the user who clicked Calculate |
 
@@ -106,6 +120,7 @@ In production, calculations can be dispatched to [Celery](https://docs.celeryq.d
 
 If both are true, the calculation is dispatched to a Celery worker — decorated methods are dispatched directly, undecorated methods are wrapped automatically. Otherwise, it runs in-process on the app server. Either way, the record is first saved in `IN_PROGRESS` and then updated again when the calculation finishes.
 If both are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. Either way, the record is first saved in `IN_PROGRESS` and then updated again when the calculation finishes.
+If both are true, the calculation is dispatched to a Celery worker. Decorated methods are dispatched directly; undecorated methods are wrapped automatically. Otherwise, it runs synchronously in the request thread.
 
 If you want the method itself to behave like a Celery task, decorate it with `@lex_shared_task`:
 
@@ -147,6 +162,8 @@ For triaging and recovering from calculations that are wedged in `IN_PROGRESS`, 
 `cancel_stuck()` reuses the per-record `cancel()` machinery, so each cancelled run gets the identical terminal state, audit row, and WebSocket broadcast as a single user-initiated cancel — there's no parallel recovery code path. Because `cancel()` is recursive, cancelling a parent also revokes descendants sharing its `calculation_id`; each parent appears only once in `results`. Synchronously-dispatched runs (no `task_id`) can't be revoked and are reported as `skipped_not_cancellable` rather than force-failed.
 
 `started_at` is anchored to a monotonic clock internally, so `age_seconds` stays correct even if the system wall-clock jumps.
+
+If the record is not in progress — or it's running synchronously with no worker task to revoke — `cancel()` returns a report saying it wasn't cancellable instead of forcing the state change.
 
 ## Nested Calculations
 
