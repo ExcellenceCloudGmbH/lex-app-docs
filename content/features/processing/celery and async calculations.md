@@ -34,6 +34,7 @@ The key design principle: **Celery is optional**. If the broker is down or Celer
 Celery needs a message broker to dispatch tasks. Lex App uses **Redis** by default.
 
 > [!info]- Linux / macOS — Install Redis
+>
 > ```bash
 > # Ubuntu / Debian
 > sudo apt install redis-server
@@ -43,6 +44,7 @@ Celery needs a message broker to dispatch tasks. Lex App uses **Redis** by defau
 > brew install redis
 > brew services start redis
 > ```
+>
 > Verify with `redis-cli ping` — you should get `PONG`.
 
 > [!info]- Windows — Install Memurai
@@ -81,6 +83,7 @@ class HeavyReport(CalculationModel):
 - **Context propagation** — calculation IDs and audit logging context are forwarded to workers, including the active child model during batch dispatch
 
 For root `CalculationModel` runs, the decorator is now optional. If `CELERY_ACTIVE=true` and Celery is reachable, the framework dispatches the calculation to a worker either way. Decorated methods are sent directly; undecorated ones are wrapped automatically.
+Without the decorator, `calculate()` stays in the app process — even when `CELERY_ACTIVE=true`.
 
 ### The Dispatch Flow
 
@@ -90,6 +93,7 @@ When a user clicks **Calculate ▶️**, the framework decides whether to use Ce
 2. Is Celery available and the broker reachable?
 
 If **both** are true, the calculation is dispatched to a Celery worker — decorated methods (`@lex_shared_task`) go directly, undecorated ones are wrapped for you. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
+If **both** are true, the calculation is dispatched to a Celery worker via `calc_and_save.delay()`. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
 
 For batch calculations (a parent triggering children), the framework uses `CeleryTaskDispatcher` to:
 
@@ -134,6 +138,10 @@ This matters for large combinatorial calculations. A parent that expands into, s
 | `LEX_CLUSTER_CANCEL_ENABLED` | Deployment config | Whether cancelling a calculation cascades to descendant tasks running on other worker pods via the Redis cancel index (see **Cancelling a Running Calculation**). Inert when `CELERY_ACTIVE` is off or no Redis is reachable. Default: `true`. |
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Deployment config | TTL (seconds) for the Redis cancel-index tree that maps a calculation to its descendant task IDs. Default: `14400` (4 h). |
 | `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | Deployment config | TTL (seconds) for the cooperative cancel marker a task checks to self-abort. Default: `3600` (1 h). |
+| Variable                    | Where to Set                           | Purpose                                                                                                                                       |
+| --------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CELERY_ACTIVE=true`        | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, calculations stay in-process in the app.                                                      |
+| `IS_RUNNING_IN_CELERY=true` | Worker command only                    | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -146,6 +154,7 @@ CELERY_ACTIVE=true
 Start Celery workers in a **separate terminal** alongside your running app:
 
 > [!info]- Linux / macOS
+>
 > ```bash
 > IS_RUNNING_IN_CELERY=true CELERY_ACTIVE=true lex celery -A lex_app worker \
 >   --loglevel=info \
@@ -154,11 +163,11 @@ Start Celery workers in a **separate terminal** alongside your running app:
 >   -n worker1@%h
 > ```
 >
-> | Flag | Meaning |
-> |---|---|
-> | `--concurrency=12` | Number of parallel worker threads/processes |
-> | `--prefetch-multiplier=1` | Don't prefetch extra tasks — important for long-running calculations |
-> | `-n worker1@%h` | Worker name (`%h` expands to hostname). Use `worker2@%h`, `worker3@%h`, etc. for additional workers |
+> | Flag                      | Meaning                                                                                             |
+> | ------------------------- | --------------------------------------------------------------------------------------------------- |
+> | `--concurrency=12`        | Number of parallel worker threads/processes                                                         |
+> | `--prefetch-multiplier=1` | Don't prefetch extra tasks — important for long-running calculations                                |
+> | `-n worker1@%h`           | Worker name (`%h` expands to hostname). Use `worker2@%h`, `worker3@%h`, etc. for additional workers |
 >
 > You can run multiple worker processes on the same machine by changing the `-n` name.
 
@@ -312,47 +321,47 @@ with WaitForTasks():
 
 #### When to use `FireAndForget`
 
-| Use case | Why fire-and-forget |
-|---|---|
-| Email / Slack / webhook notifications | Caller doesn't need the result |
-| Audit-log enrichment (async) | Nice-to-have, not on the critical path |
-| Cache warming / precomputation | Optimisation, not required for correctness |
-| Analytics / telemetry events | Tracking shouldn't slow calculations |
+| Use case                              | Why fire-and-forget                        |
+| ------------------------------------- | ------------------------------------------ |
+| Email / Slack / webhook notifications | Caller doesn't need the result             |
+| Audit-log enrichment (async)          | Nice-to-have, not on the critical path     |
+| Cache warming / precomputation        | Optimisation, not required for correctness |
+| Analytics / telemetry events          | Tracking shouldn't slow calculations       |
 
-The key question: *"If this task fails or is delayed, does the caller break?"* If **no** → `FireAndForget`. If **yes** → let `WaitForTasks` handle it.
+The key question: _"If this task fails or is delayed, does the caller break?"_ If **no** → `FireAndForget`. If **yes** → let `WaitForTasks` handle it.
 
 ### Priority hierarchy
 
 When contexts are nested, the **innermost** matching context wins:
 
-| Priority | Context | Behaviour |
-|---|---|---|
-| 1 (highest) | `FireAndForget` | Dispatch to Celery, don't wait |
-| 2 | `WaitForTasks` | Dispatch to Celery, block on exit |
-| 3 (default) | No context | Run synchronously in-process |
+| Priority    | Context         | Behaviour                         |
+| ----------- | --------------- | --------------------------------- |
+| 1 (highest) | `FireAndForget` | Dispatch to Celery, don't wait    |
+| 2           | `WaitForTasks`  | Dispatch to Celery, block on exit |
+| 3 (default) | No context      | Run synchronously in-process      |
 
 ## Failure Handling
 
 The dispatcher handles failures at multiple levels:
 
-| Failure Type | What Happens |
-|---|---|
-| **Celery import fails** | Entire batch runs synchronously |
+| Failure Type                   | What Happens                                             |
+| ------------------------------ | -------------------------------------------------------- |
+| **Celery import fails**        | Entire batch runs synchronously                          |
 | **Single task dispatch fails** | That group runs synchronously, others continue on Celery |
-| **Task execution fails** | Failed group retried synchronously |
-| **Broker goes down mid-run** | Remaining groups run synchronously |
+| **Task execution fails**       | Failed group retried synchronously                       |
+| **Broker goes down mid-run**   | Remaining groups run synchronously                       |
 
 This means your calculations are resilient — they always complete, even if the infrastructure has issues.
 
 ## When to Use Celery
 
-| Scenario | Celery Useful? |
-|---|---|
-| Single calculation, no children | No — no parallelism to gain |
-| Parent triggers 2–3 children | Maybe — overhead may not be worth it |
-| Parent triggers 10+ children | Yes — significant speedup |
+| Scenario                             | Celery Useful?                          |
+| ------------------------------------ | --------------------------------------- |
+| Single calculation, no children      | No — no parallelism to gain             |
+| Parent triggers 2–3 children         | Maybe — overhead may not be worth it    |
+| Parent triggers 10+ children         | Yes — significant speedup               |
 | Long-running calculations (minutes+) | Yes — prevents blocking the web process |
-| Development / small projects | No — synchronous is simpler |
+| Development / small projects         | No — synchronous is simpler             |
 
 ## Monitoring
 
