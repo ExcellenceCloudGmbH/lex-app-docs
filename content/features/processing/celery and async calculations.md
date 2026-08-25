@@ -155,6 +155,7 @@ This matters for large combinatorial calculations. A parent that expands into, s
 | `LEX_CLUSTER_CANCEL_ENABLED=true` | `.env` file (main app **and** workers) | Enables cross-worker cascade cancellation. When you cancel a parent calculation, Lex also tries to revoke already-dispatched child tasks. |
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS=14400` | Optional `.env` override | How long Lex keeps the cross-worker cancellation task tree in Redis (default: 4 hours). |
 | `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS=3600` | Optional `.env` override | How long cancellation markers stay active in Redis so late-picked tasks can self-abort before doing work (default: 1 hour). |
+| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` | `.env` file for long-lived workers | Keeps the worker alive between scheduled jobs. Use this for any worker running Celery beat with `-B` — for example a recovery sweep worker. |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -286,6 +287,9 @@ IS_RUNNING_IN_CELERY=true CELERY_ACTIVE=true lex-recovery-beat
 ```
 
 Keep your regular Celery workers running as usual — the recovery worker is only there to detect and re-dispatch stranded work.
+
+> [!tip]
+> Running a worker with `-B` turns it into a long-lived scheduler as well as a worker. In that setup, set `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` so it doesn't shut itself down after the first completed task.
 
 ## `WaitForTasks` and `FireAndForget`
 

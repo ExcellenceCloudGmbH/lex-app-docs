@@ -55,6 +55,7 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Redis TTL (default `14400`) for the cross-worker cancellation task tree. |
 | `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | Redis TTL (default `3600`) for cancellation markers that let late-starting tasks self-abort early. |
 | `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`; if you run a standalone recovery worker such as `lex-recovery-beat`, export it there too. |
+| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | Master switch for worker self-shutdown. Leave it `true` for one-task workers that should exit when they're done. Set it to `false` for long-lived workers — especially anything running Celery beat with `-B`, so it stays up between scheduled sweeps. |
 
 ## Streamlit
 
