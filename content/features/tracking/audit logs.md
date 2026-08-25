@@ -69,6 +69,7 @@ The audit system includes built-in resilience:
   - A `pgcode` attribute matching one of the `RETRYABLE_SQLSTATE_CODES` (e.g. `40P01` for deadlock, `40001` for serialization failure)
   - An error message containing `"deadlock detected"` or `"could not serialize access"`
   Each retry waits briefly before re-attempting; once all retries are exhausted the last exception propagates normally.
+- **Deadlock retries** — database operations are automatically retried on transient PostgreSQL errors. Retryable conditions are identified by both `pgcode` values (e.g. `40P01` deadlock, `40001` serialization failure) and by matching common error message substrings such as `"deadlock detected"` and `"could not serialize access"`. The retry constants `RETRYABLE_SQLSTATE_CODES` and `MAX_UPDATE_RETRIES` are importable from `lex.audit_logging.mixins.AuditLogMixin` if you need to reference them in custom tooling.
 - **ContentType cache healing** — if Django's ContentType cache goes stale (e.g., after a migration), the system detects and auto-corrects it
 - **Error preservation** — failed operations store the full traceback for debugging
 

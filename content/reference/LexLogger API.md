@@ -71,8 +71,11 @@ LexLogger automatically resolves:
 | **Calculation ID** | Links to the current `CalculationLog` entry |
 | **Model Instance** | Identifies which model is executing |
 | **Parent/Child** | Links nested calculations hierarchically |
+| **Root Record** | Fan-out sends real-time updates to the root record's channel as well as the current record's channel |
 
 You never need to pass context manually.
+
+If context resolution is incomplete (for example when logging outside a running calculation), the system falls back to the `ModelContext` stack for WebSocket routing and emits a debug-level `"Context resolution incomplete"` message.
 
 ## Nested Calculations
 
@@ -92,5 +95,7 @@ class ParentCalculation(CalculationModel):
 
         LexLogger().add_text("Child finished.").log()
 ```
+
+Because log messages fan out to both the current record and the root record, the parent's log panel shows all child log output in real-time.
 
 See [[features/processing/logging]] for more examples and usage patterns.
