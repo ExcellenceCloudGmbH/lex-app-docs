@@ -39,8 +39,6 @@ stateDiagram-v2
     IN_PROGRESS --> ERROR : Exception occurred
     IN_PROGRESS --> CANCELLED : User cancels
     IN_PROGRESS --> ABORTED : Framework recovers stuck run
-    IN_PROGRESS --> CANCELLED : Cancel requested
-    IN_PROGRESS --> ABORTED : Recovered after an interrupted run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
     CANCELLED --> IN_PROGRESS : Retry
@@ -53,23 +51,9 @@ stateDiagram-v2
 | `IN_PROGRESS` | Calculation is currently running |
 | `SUCCESS` | Completed without errors |
 | `ERROR` | An exception occurred (details stored in `calculation_error_message`) |
-| `CANCELLED` | A user stopped a running calculation |
-| `ABORTED` | The framework recovered a calculation that got stuck in progress |
+| `CANCELLED` | A user or operator stopped a running calculation |
+| `ABORTED` | The framework reclaimed a run that was interrupted and never finished cleanly |
 
-If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died.
-| State            | Meaning                                                               |
-| ---------------- | --------------------------------------------------------------------- |
-| `NOT_CALCULATED` | Record exists, no calculation run yet                                 |
-| `IN_PROGRESS`    | Calculation is currently running                                      |
-| `SUCCESS`        | Completed without errors                                              |
-| `ERROR`          | An exception occurred (details stored in `calculation_error_message`) |
-| `ABORTED`        | Manually cancelled                                                    |
-| `CANCELLED`      | A user stopped a running calculation                                  |
-| `ABORTED`        | The framework recovered a calculation that got stuck in progress      |
-
-If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died.
-| `CANCELLED`      | A user or operator stopped the calculation                            |
-| `ABORTED`        | The framework marked an interrupted run as no longer active           |
 If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died. Those terminal status updates are saved as normal model changes, so they show up in History/Timeline just like in-process runs.
 
 ## What You Get Automatically

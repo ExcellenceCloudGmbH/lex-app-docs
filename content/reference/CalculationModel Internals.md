@@ -23,8 +23,6 @@ stateDiagram-v2
     IN_PROGRESS --> ERROR : Exception raised
     IN_PROGRESS --> CANCELLED : User cancelled
     IN_PROGRESS --> ABORTED : Startup recovery
-    IN_PROGRESS --> CANCELLED : Cancel requested
-    IN_PROGRESS --> ABORTED : Recovered after an interrupted run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
     CANCELLED --> IN_PROGRESS : Retry
@@ -77,19 +75,6 @@ class BudgetSummary(CalculationModel):
 
 **What you don't need to write:**
 
-| Concern | Handled By |
-|---|---|
-| `self.save()` | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`) |
-| Error handling | Framework catches exceptions and stores the error details on the record |
-| State transitions | Lifecycle hooks manage the `IN_PROGRESS → terminal state` flow |
-| Logging context | [[reference/LexLogger API|LexLogger]] automatically links to the current calculation |
-| Concurrency | Runs inside `transaction.atomic()` by default |
-| Concern                                  | Handled By                                                                                                                                                      |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `self.save()`                            | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`)                                                           |
-| Error handling                           | Framework catches exceptions and sets `is_calculated = ERROR`                                                                                                   |
-| State transitions                        | Lifecycle hooks manage the `IN_PROGRESS → SUCCESS/ERROR` flow                                                                                                   |
-| Logging context                          | [[reference/LexLogger API                                                                                                                                       | LexLogger]] automatically links to the current calculation |
 | Concern                                  | Handled By                                                                                                                                                      |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `self.save()`                            | Framework saves automatically after `calculate()` returns (without bumping `edited_by` / `edited_at`)                                                           |
@@ -167,41 +152,24 @@ For triaging and recovering from calculations that are wedged in `IN_PROGRESS`, 
 
 `started_at` is anchored to a monotonic clock internally, so `age_seconds` stays correct even if the system wall-clock jumps.
 
-If the record is not in progress — or it's running synchronously with no worker task to revoke — `cancel()` returns a report saying it wasn't cancellable instead of forcing the state change.
-## Monitoring Active Calculations
-
-### `CalculationModel.list_in_progress()`
-
-Returns every currently active calculation, sorted oldest-first. Each row includes the record ID, a human-readable record label, when it started, how long it has been running, and whether it is cancellable.
+### Examples
 
 ```python
 from lex.core.models.CalculationModel import CalculationModel
 
+# Everything currently running, oldest first
 active = CalculationModel.list_in_progress()
-```
 
-### `CalculationModel.find_stuck(older_than_seconds: float)`
+# Only runs that have overstayed 15 minutes
+# (the threshold is inclusive, so 0 returns everything)
+stuck = CalculationModel.find_stuck(900)
 
-Returns the same report shape, but only for calculations whose runtime is at least the threshold you pass in.
-
-```python
-stuck = CalculationModel.find_stuck(900)  # 15 minutes or older
-```
-
-The threshold is inclusive, so `0` returns everything currently running.
-
-### `CalculationModel.cancel_stuck(older_than_seconds: float, *, reason=...)`
-
-Bulk-cancels stale calculations by reusing the normal cancellation flow for each matching record.
-
-```python
+# Bulk-cancel anything older than 30 minutes
 report = CalculationModel.cancel_stuck(
     1800,
     reason="Operator cleanup after a worker stall",
 )
 ```
-
-The return value tells you how many calculations were cancelled, skipped, or errored. Synchronous calculations are reported as `skipped_not_cancellable`, because there is no Celery task to revoke.
 
 ## Nested Calculations
 

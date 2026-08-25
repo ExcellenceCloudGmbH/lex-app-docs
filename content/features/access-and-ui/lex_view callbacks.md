@@ -8,15 +8,6 @@ If you only want an embedded page, call it without callback flags and it behaves
 
 If you want Python to react to what the user does in the embedded app, turn on one or more `on_*` flags.
 
-```python
-from lex.lex_app.streamlit.embed import lex_view
-```
-`lex_view()` lets you embed a Lex App page inside a Streamlit app.
-
-If you only want an embedded page, call it without callback flags and it behaves like before (plain iframe, returns `None`).
-
-If you want Python to react to user actions in the embedded app, turn on one or more `on_*` flags.
-
 ## Basic usage
 
 ```python
@@ -61,22 +52,6 @@ Guard your handler on `event and event["type"] == "..."` — `event` is `None` o
 ## Redirect flows (`flow=`)
 
 For multi-step workflows, pass a routing table with `flow=`. Each key is `"<resource>/<operation>"` (operation is `create` or `update`); each value is the route to open next. Targets support the `{resource}` and `{id}` template tokens.
-When callbacks are enabled, `lex_view()` returns the latest event dict (or `None` until the first event arrives).
-
-## Available callback flags
-
-- `on_create`
-- `on_update`
-- `on_delete`
-- `on_select`
-- `on_navigate`
-- `on_flow_step`
-
-Turn on only what you need. For example, `on_select=True` is opt-in so you don't trigger Streamlit reruns on every grid click unless you explicitly want that behavior.
-
-## Redirect flows (`flow=`)
-
-For multi-step flows, pass a routing table with `flow=`. Each key is `<resource>/<operation>` (`create` or `update`), and each value is the route to open next.
 
 ```python
 event = lex_view(
@@ -90,9 +65,6 @@ event = lex_view(
 ```
 
 You can also build the table declaratively with `Flow()`, which reads a little better for longer chains:
-You can use `{resource}` and `{id}` in targets.
-
-You can also build this declaratively with `Flow()`:
 
 ```python
 from lex.lex_app.streamlit.embed import Flow
@@ -111,11 +83,6 @@ For the simpler single-hop case you don't need a flow table at all — `redirect
 ## Choosing a serializer
 
 Use `serializer=` when the embedded view should shape its data with a specific DRF serializer registered on the model:
-```
-
-## Choosing a serializer
-
-Use `serializer=` when the embedded view should use a specific API serializer:
 
 ```python
 lex_view("investor", serializer="InvestorWithFundSerializer")
@@ -126,8 +93,3 @@ If the name isn't a serializer registered for that model, the embedded request r
 ## Existing embed options still work
 
 All the layout and routing options you already use remain available alongside the callbacks: `hide_toolbar`, `hide_actions`, `redirect_after` / `redirect_after_create` / `redirect_after_update`, `height`, `width`, `scrolling`, `extra_params`, and `base_url`. (In bidirectional mode `width` and `scrolling` are ignored — the component is always full width.)
-If the serializer name is unknown for that model, Lex App now returns HTTP `400` with a helpful validation error.
-
-## Existing embed options still work
-
-You can keep using existing options like `hide_toolbar`, `hide_actions`, `redirect_after_*`, `extra_params`, and `base_url` with `lex_view()`.

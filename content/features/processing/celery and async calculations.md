@@ -250,52 +250,6 @@ The cascade is inert whenever `CELERY_ACTIVE` is off or no Redis is reachable, a
 
 If the calculation is running synchronously in the web process, there's nothing to revoke, so instant cancel isn't available on that path.
 
-## Worker Shutdown & Recovery
-
-### Auto-shutdown after task completion
-
-In deployed (non-local) environments, a worker automatically requests a warm shutdown after finishing a task — but only if it has no other active or reserved work at that moment. This keeps the worker pool lean without risking premature shutdown when multiple tasks are queued on the same worker.
-
-The check is safe under any `--concurrency` and `--prefetch-multiplier` combination.
-
-### Task recovery
-
-The framework includes a background recovery system that monitors running tasks via heartbeats and requeues work from workers that have died unexpectedly.
-
-- Every running task emits a periodic heartbeat (every `LEX_TASK_HEARTBEAT_INTERVAL` seconds, default 5 s).
-- A supervisor sweep runs every `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` seconds (default 10 s) and looks for tasks whose heartbeat has gone stale.
-- A stale task is automatically requeued, up to `LEX_TASK_MAX_RETRIES` times (default 4). If the budget is exhausted the task is marked as failed so the caller's result is not left hanging.
-
-Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole system off during development (no real Redis-backed Celery required).
-
-## Cancelling a Running Calculation
-
-If a calculation is running on a Celery worker, the UI/API can cancel it immediately. The framework revokes the running task, marks the record as `CANCELLED`, and also stops any active child calculations that belong to the same calculation tree.
-
-If the calculation is running synchronously in the web process, there's nothing to revoke, so instant cancel isn't available on that path.
-
-In deployed environments, workers can now shut themselves down once they have no work left — including the case where a worker starts up but never receives a task. That helps autoscaled worker pools drain cleanly without extra operator cleanup. If you need to tune that behaviour, use `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` and `LEX_WORKER_IDLE_SHUTDOWN_SECONDS`.
-
-## Recovery worker (optional)
-
-If you've enabled task recovery for a multi-worker deployment, run a dedicated recovery process alongside your normal workers.
-
-- `lex-recovery-supervisor` runs the recovery sweep in its own loop
-- `lex-recovery-beat` runs a lightweight Celery worker with an embedded scheduler
-
-The embedded-beat option is handy when you want the sweep schedule visible in Django admin instead of hard-coded into the process. It listens only to a dedicated `recovery` queue, so the periodic sweep doesn't inflate the main worker queue your autoscaling setup watches.
-
-Recovered calculations are re-queued onto the normal work queue, not back onto `recovery`, so your standard workers still do the real calculation work.
-
-```bash
-IS_RUNNING_IN_CELERY=true CELERY_ACTIVE=true lex-recovery-beat
-```
-
-Keep your regular Celery workers running as usual — the recovery worker is only there to detect and re-dispatch stranded work.
-
-> [!tip]
-> Running a worker with `-B` turns it into a long-lived scheduler as well as a worker. In that setup, set `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=false` so it doesn't shut itself down after the first completed task.
-
 ## `WaitForTasks` and `FireAndForget`
 
 The framework provides two context managers for advanced dispatch control. You typically don't need these — the framework uses them internally — but they're available for custom task orchestration.

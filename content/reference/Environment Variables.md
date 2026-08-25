@@ -45,23 +45,6 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `LEX_CLUSTER_CANCEL_ENABLED`       | Whether cancelling a calculation cascades to descendant tasks on other worker pods via the Redis cancel index. Inert when `CELERY_ACTIVE` is off or no Redis is reachable. Default `true`. |
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | TTL (seconds) for the Redis cancel-index tree mapping a calculation to its descendant task IDs. Default `14400` (4 h). |
 | `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | TTL (seconds) for the cooperative cancel marker a task checks to self-abort. Default `3600` (1 h). |
-| Variable               | Purpose                                                                                                                                                                                                                                                          |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CELERY_ACTIVE`        | `true` to let the framework dispatch calculations to Celery workers when they're available. `@lex_shared_task` still works, but root `CalculationModel` runs no longer require it just to use Celery. See [[features/processing/celery and async calculations]]. |
-| `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`.                                                           |
-| Variable                           | Purpose                                                                                                                                                                                                |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CELERY_ACTIVE`                    | `true` to dispatch `@lex_shared_task`-decorated functions to Celery workers; otherwise tasks run synchronously in the current process. See [[features/processing/celery and async calculations]].      |
-| `IS_RUNNING_IN_CELERY`             | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`. |
-| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | `true` (default) to let deployed Celery workers shut themselves down once they have gone idle. Useful for autoscaled worker pools; usually left enabled.                                               |
-| `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` | Idle grace period, in seconds, before a deployed worker shuts itself down. Defaults to `30`.                                                                                                           |
-| `CELERY_ACTIVE`        | `true` to dispatch `@lex_shared_task`-decorated functions to Celery workers; otherwise tasks run synchronously in the current process. See [[features/processing/celery and async calculations]]. |
-| `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`. |
-| `LEX_CLUSTER_CANCEL_ENABLED` | `true` (default) to enable cross-worker cascade cancellation. When a parent calculation is cancelled, Lex also revokes discovered child tasks in the same tree. |
-| `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Redis TTL (default `14400`) for the cross-worker cancellation task tree. |
-| `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | Redis TTL (default `3600`) for cancellation markers that let late-starting tasks self-abort early. |
-| `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`; if you run a standalone recovery worker such as `lex-recovery-beat`, export it there too. |
-| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | Master switch for worker self-shutdown. Leave it `true` for one-task workers that should exit when they're done. Set it to `false` for long-lived workers — especially anything running Celery beat with `-B`, so it stays up between scheduled sweeps. |
 
 ## Streamlit
 
@@ -98,12 +81,6 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 | `LEX_LOG_LEVEL`         | Log level for the framework's own `lex.*` loggers. Set `DEBUG` to surface the framework's debug output **without** turning on the third-party DEBUG firehose. Default `INFO`. |
 | `LEX_SUPPRESS_INSECURE_WARNING` | Suppresses urllib3's `InsecureRequestWarning` (the Keycloak admin client can emit one per request against a self-signed dev endpoint). Set `False` to restore the warning while debugging TLS. Default `True`. |
 | `LEX_SUPPRESS_WARNINGS` | Suppresses Python warnings raised during app startup (`AppConfig.ready()`). Set `False` to restore them. Default `True`. |
-
-## Widget integrations
-
-| Variable                   | Purpose                                                                 |
-| -------------------------- | ----------------------------------------------------------------------- |
-| `QUACKBACK_WIDGET_SECRET`  | Shared secret used to sign short-lived SSO tokens for the Quackback widget endpoint (`POST /api/quackback-widget-token/`). |
 
 ## Where these get set
 
