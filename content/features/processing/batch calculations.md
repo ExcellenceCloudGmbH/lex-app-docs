@@ -241,6 +241,7 @@ The framework checks `CELERY_ACTIVE` and whether Celery is actually available. W
 The dispatcher has **multi-level fallback for dispatch failures**: if a single group can't be dispatched, that group is processed synchronously while others continue on Celery. If Celery itself is unreachable, the entire batch falls back to synchronous processing.
 
 A *calculation* error is different from a *dispatch* error. As soon as any model's `calculate()` or `save()` raises, the batch **aborts immediately** — the framework raises `CalculatedModelError` and stops processing the remaining models rather than skipping the failure and continuing. (Empty `None` slots are the only thing skipped.) This fail-fast behavior keeps a half-finished batch from silently committing partial results.
+The dispatcher has **multi-level fallback**: if a single task fails, that group is retried synchronously while others continue on Celery. If Celery itself goes down, the entire batch falls back to synchronous processing. In both async and sync processing, batches are now **fail-fast** — if one model errors, that batch stops immediately and raises.
 
 ## CalculatedModelMixin vs. CalculationModel
 
