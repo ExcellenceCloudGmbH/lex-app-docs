@@ -97,6 +97,35 @@ The file is a small YAML document at your project root. The most useful keys:
 | `lex migrate`        | Apply pending Django migrations               |
 | `lex makemigrations` | Create new migration files from model changes |
 | `lex sqlflush`       | Print SQL statements to flush the database    |
+| `lex rebase_incident_datetimes` | Re-anchor user-entered datetimes that were mis-stored during the TIME_ZONE incident (see below). |
+
+### `lex rebase_incident_datetimes`
+
+If your instance was running between the rc212 deployment and the v2.1.4 fix, user-entered datetime values may have been stored in UTC when they should have been stored in local time. This command corrects them.
+
+It's a **dry-run by default** — it prints what it would change without writing anything. Pass `--apply` to write the correction.
+
+```bash
+# Check what would be corrected (dry-run)
+lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00
+
+# Apply the correction
+lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
+```
+
+| Flag | Purpose |
+|---|---|
+| `--cutoff` | **Required.** ISO-8601 timestamp for when your instance upgraded to ≥rc212 (the moment the bug started). Rows created before this are left untouched. |
+| `--until` | ISO-8601 timestamp for when your instance deployed the v2.1.4 fix. Defaults to now, which is correct if you run the command at the same maintenance window as the upgrade. |
+| `--source-zone` | IANA zone the users' wall-clocks were in (default: `Europe/Berlin`). |
+| `--models` | Limit to specific models, e.g. `myapp.MyModel`. Default: all customer models. |
+| `--apply` | Write the correction. Without this flag the command is a dry-run. |
+
+> [!warning]
+> Set `--cutoff` carefully. A cutoff that is too early will re-anchor rows that were already correct and corrupt good data. When in doubt, use a later cutoff and re-run — an uncorrected row is easier to fix than a double-corrected one. Run exactly once per instance.
+
+> [!note]
+> Only applies to PostgreSQL deployments. Framework-managed timestamps (`created_at`, `edited_at`) are never touched.
 
 ## Async / Celery Commands
 
