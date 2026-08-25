@@ -49,6 +49,11 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `IS_RUNNING_IN_CELERY`             | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`. |
 | `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` | `true` (default) to let deployed Celery workers shut themselves down once they have gone idle. Useful for autoscaled worker pools; usually left enabled.                                               |
 | `LEX_WORKER_IDLE_SHUTDOWN_SECONDS` | Idle grace period, in seconds, before a deployed worker shuts itself down. Defaults to `30`.                                                                                                           |
+| `CELERY_ACTIVE`        | `true` to dispatch `@lex_shared_task`-decorated functions to Celery workers; otherwise tasks run synchronously in the current process. See [[features/processing/celery and async calculations]]. |
+| `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`. |
+| `LEX_CLUSTER_CANCEL_ENABLED` | `true` (default) to enable cross-worker cascade cancellation. When a parent calculation is cancelled, Lex also revokes discovered child tasks in the same tree. |
+| `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Redis TTL (default `14400`) for the cross-worker cancellation task tree. |
+| `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | Redis TTL (default `3600`) for cancellation markers that let late-starting tasks self-abort early. |
 
 ## Streamlit
 
