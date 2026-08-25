@@ -39,6 +39,8 @@ stateDiagram-v2
     IN_PROGRESS --> ERROR : Exception occurred
     IN_PROGRESS --> CANCELLED : User cancels
     IN_PROGRESS --> ABORTED : Framework recovers stuck run
+    IN_PROGRESS --> CANCELLED : Cancel requested
+    IN_PROGRESS --> ABORTED : Recovered after an interrupted run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
     CANCELLED --> IN_PROGRESS : Retry
@@ -66,6 +68,8 @@ If you're using Celery workers, cancelling is immediate: the framework revokes t
 | `ABORTED`        | The framework recovered a calculation that got stuck in progress      |
 
 If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died.
+| `CANCELLED`      | A user or operator stopped the calculation                            |
+| `ABORTED`        | The framework marked an interrupted run as no longer active           |
 
 ## What You Get Automatically
 
@@ -79,7 +83,27 @@ You don't need to define or manage any of the following — they're inherited fr
 - **Non-blocking trigger** — clicking **Calculate** returns the record in `IN_PROGRESS`, then the UI updates again when the run finishes
 - **Cancellation handling** — running Celery-backed calculations can be stopped cleanly from the UI/API
 - **[[features/processing/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
+- **Operator recovery helpers** — inspect active calculations, find long-running ones, and bulk-cancel stale Celery jobs when a worker gets wedged
 - **System-save attribution** — any records you save inside `calculate()` won't have their `edited_by` / `edited_at` stamped with the triggering user; those saves are treated as system-triggered, not direct user edits
+
+## Checking What's Still Running
+
+If you need to triage a backlog, `CalculationModel` gives you three classmethods that work with the framework's active-calculation tracking:
+
+```python
+from lex.core.models.CalculationModel import CalculationModel
+
+# Everything currently running, oldest first
+CalculationModel.list_in_progress()
+
+# Only calculations running for at least 10 minutes
+CalculationModel.find_stuck(600)
+
+# Cancel stale Celery-backed calculations older than 30 minutes
+CalculationModel.cancel_stuck(1800, reason="Operator cleanup")
+```
+
+The report includes when each calculation started, how long it has been running, and whether it can actually be cancelled. Synchronous calculations still show up in the list, but they come back as not cancellable because there's no worker task to revoke.
 
 > [!tip] Need to generate many records at once?
 > If your calculation creates one output per combination (e.g., one liability per award per upload), see [[features/processing/batch calculations|Batch Calculations]] — `CalculatedModelMixin` handles the combination generation, deduplication, and parallel dispatch for you.

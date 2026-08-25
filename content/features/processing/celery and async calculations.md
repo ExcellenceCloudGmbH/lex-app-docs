@@ -146,6 +146,12 @@ This matters for large combinatorial calculations. A parent that expands into, s
 | --------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CELERY_ACTIVE=true`        | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, all calculations run synchronously.                                                           |
 | `IS_RUNNING_IN_CELERY=true` | Worker command only                    | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
+| Variable                                | Where to Set                           | Purpose                                                                                                                                       |
+| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CELERY_ACTIVE=true`                    | `.env` file (main app **and** workers) | Enables the Celery dispatch path. Without this, all calculations run synchronously.                                                           |
+| `IS_RUNNING_IN_CELERY=true`             | Worker command only                    | Tells the framework the process is a Celery worker (skips app startup tasks like data loading). **Do not** set this in the main app's `.env`. |
+| `LEX_WORKER_IDLE_SHUTDOWN_ENABLED=true` | Worker env / deployment config         | Turns on worker self-shutdown when a deployed worker goes idle. Leave this on unless your platform needs workers to stay warm between tasks.  |
+| `LEX_WORKER_IDLE_SHUTDOWN_SECONDS=30`   | Worker env / deployment config         | How long an idle deployed worker waits before it shuts itself down. Useful if your autoscaling setup needs a longer grace period.             |
 
 Add `CELERY_ACTIVE=true` to your project's `.env` file so it's always active when you run the app (from the terminal or PyCharm):
 
@@ -258,6 +264,8 @@ Set `LEX_TASK_RECOVERY_ENABLED=false` in your local `.env` to turn the whole sys
 If a calculation is running on a Celery worker, the UI/API can cancel it immediately. The framework revokes the running task, marks the record as `CANCELLED`, and also stops any active child calculations that belong to the same calculation tree.
 
 If the calculation is running synchronously in the web process, there's nothing to revoke, so instant cancel isn't available on that path.
+
+In deployed environments, workers can now shut themselves down once they have no work left — including the case where a worker starts up but never receives a task. That helps autoscaled worker pools drain cleanly without extra operator cleanup. If you need to tune that behaviour, use `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` and `LEX_WORKER_IDLE_SHUTDOWN_SECONDS`.
 
 ## `WaitForTasks` and `FireAndForget`
 

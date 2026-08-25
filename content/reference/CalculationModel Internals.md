@@ -23,6 +23,8 @@ stateDiagram-v2
     IN_PROGRESS --> ERROR : Exception raised
     IN_PROGRESS --> CANCELLED : User cancelled
     IN_PROGRESS --> ABORTED : Startup recovery
+    IN_PROGRESS --> CANCELLED : Cancel requested
+    IN_PROGRESS --> ABORTED : Recovered after an interrupted run
     ERROR --> IN_PROGRESS : Retry
     SUCCESS --> IN_PROGRESS : Recalculate
     CANCELLED --> IN_PROGRESS : Retry
@@ -52,6 +54,8 @@ stateDiagram-v2
 | `ERROR`          | `CalculationModel.ERROR`          | An exception was raised — error details are stored on the record      |
 | `CANCELLED`      | `CalculationModel.CANCELLED`      | A user cancelled a running calculation                                |
 | `ABORTED`        | `CalculationModel.ABORTED`        | The framework recovered a calculation that was left stuck in progress |
+| `CANCELLED`      | `CalculationModel.CANCELLED`      | A user or operator stopped the calculation                         |
+| `ABORTED`        | `CalculationModel.ABORTED`        | The framework marked an interrupted run as no longer active        |
 
 The `is_calculated` field is **not editable** in the UI — it's managed entirely by the framework. When a user clicks **Calculate ▶️** in the frontend, the framework sets `is_calculated = IN_PROGRESS`, which triggers the `calculate_hook`.
 
@@ -164,6 +168,40 @@ For triaging and recovering from calculations that are wedged in `IN_PROGRESS`, 
 `started_at` is anchored to a monotonic clock internally, so `age_seconds` stays correct even if the system wall-clock jumps.
 
 If the record is not in progress — or it's running synchronously with no worker task to revoke — `cancel()` returns a report saying it wasn't cancellable instead of forcing the state change.
+## Monitoring Active Calculations
+
+### `CalculationModel.list_in_progress()`
+
+Returns every currently active calculation, sorted oldest-first. Each row includes the record ID, a human-readable record label, when it started, how long it has been running, and whether it is cancellable.
+
+```python
+from lex.core.models.CalculationModel import CalculationModel
+
+active = CalculationModel.list_in_progress()
+```
+
+### `CalculationModel.find_stuck(older_than_seconds: float)`
+
+Returns the same report shape, but only for calculations whose runtime is at least the threshold you pass in.
+
+```python
+stuck = CalculationModel.find_stuck(900)  # 15 minutes or older
+```
+
+The threshold is inclusive, so `0` returns everything currently running.
+
+### `CalculationModel.cancel_stuck(older_than_seconds: float, *, reason=...)`
+
+Bulk-cancels stale calculations by reusing the normal cancellation flow for each matching record.
+
+```python
+report = CalculationModel.cancel_stuck(
+    1800,
+    reason="Operator cleanup after a worker stall",
+)
+```
+
+The return value tells you how many calculations were cancelled, skipped, or errored. Synchronous calculations are reported as `skipped_not_cancellable`, because there is no Celery task to revoke.
 
 ## Nested Calculations
 
