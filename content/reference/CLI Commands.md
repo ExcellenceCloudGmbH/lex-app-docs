@@ -108,6 +108,7 @@ The file is a small YAML document at your project root. The most useful keys:
 
 > [!note]
 > If you use worker recovery, two standalone console scripts live outside the `lex` command tree: `lex-recovery-supervisor` (the always-on sweep loop) and `lex-recovery-beat` (the admin-scheduled recovery worker). See [[features/processing/celery and async calculations|Celery & async calculations]].
+If you're using worker recovery, there are also two standalone console scripts outside the `lex` command tree: `lex-recovery-supervisor` for the always-on sweep loop, and `lex-recovery-beat` for the admin-scheduled recovery worker described in [[features/processing/celery and async calculations|Celery & async calculations]].
 
 ## AI Commands
 

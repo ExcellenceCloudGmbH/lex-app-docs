@@ -270,6 +270,23 @@ If the calculation is running synchronously in the web process, there's nothing 
 
 In deployed environments, workers can now shut themselves down once they have no work left — including the case where a worker starts up but never receives a task. That helps autoscaled worker pools drain cleanly without extra operator cleanup. If you need to tune that behaviour, use `LEX_WORKER_IDLE_SHUTDOWN_ENABLED` and `LEX_WORKER_IDLE_SHUTDOWN_SECONDS`.
 
+## Recovery worker (optional)
+
+If you've enabled task recovery for a multi-worker deployment, run a dedicated recovery process alongside your normal workers.
+
+- `lex-recovery-supervisor` runs the recovery sweep in its own loop
+- `lex-recovery-beat` runs a lightweight Celery worker with an embedded scheduler
+
+The embedded-beat option is handy when you want the sweep schedule visible in Django admin instead of hard-coded into the process. It listens only to a dedicated `recovery` queue, so the periodic sweep doesn't inflate the main worker queue your autoscaling setup watches.
+
+Recovered calculations are re-queued onto the normal work queue, not back onto `recovery`, so your standard workers still do the real calculation work.
+
+```bash
+IS_RUNNING_IN_CELERY=true CELERY_ACTIVE=true lex-recovery-beat
+```
+
+Keep your regular Celery workers running as usual — the recovery worker is only there to detect and re-dispatch stranded work.
+
 ## `WaitForTasks` and `FireAndForget`
 
 The framework provides two context managers for advanced dispatch control. You typically don't need these — the framework uses them internally — but they're available for custom task orchestration.

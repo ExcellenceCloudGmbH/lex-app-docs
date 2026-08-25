@@ -54,6 +54,7 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `LEX_CLUSTER_CANCEL_ENABLED` | `true` (default) to enable cross-worker cascade cancellation. When a parent calculation is cancelled, Lex also revokes discovered child tasks in the same tree. |
 | `LEX_CLUSTER_CANCEL_TREE_TTL_SECONDS` | Redis TTL (default `14400`) for the cross-worker cancellation task tree. |
 | `LEX_CLUSTER_CANCEL_MARKER_TTL_SECONDS` | Redis TTL (default `3600`) for cancellation markers that let late-starting tasks self-abort early. |
+| `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`; if you run a standalone recovery worker such as `lex-recovery-beat`, export it there too. |
 
 ## Streamlit
 
