@@ -70,6 +70,21 @@ LexLogger().add_text("Current Configuration:") \
 
 LexLogger automatically resolves the current execution context. You don't need to pass IDs manually — it figures out which calculation is running and which model instance is executing.
 
+### Fan-out to Root and Current Records
+
+Each `LexLogger().log()` call fans out WebSocket and cache updates to **two** cache keys:
+
+| Key | Purpose |
+|---|---|
+| `{current_record}_{calculationId}` | Updates the panel for the current model instance being processed |
+| `{root_record}_{calculationId}` | Updates the panel for the root model instance at the top of the calculation hierarchy |
+
+This ensures that in a nested calculation hierarchy (parent → child), progress messages are visible at every level of the frontend without any extra code.
+
+### Context Resolution Fallback
+
+If the normal context resolution fails (e.g. `ContextResolutionError` is raised because no active operation context is present), LexLogger falls back to the current `ModelContext` stack — the LIFO stack of model instances pushed via `model_logging_context`. WebSocket routing still works in the fallback path; the `calculationId` is simply left empty in that case.
+
 ## Nested Calculations
 
 When a parent calculation triggers a child, use `model_logging_context` to maintain the log hierarchy:
