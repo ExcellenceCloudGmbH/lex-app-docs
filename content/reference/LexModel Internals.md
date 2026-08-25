@@ -176,3 +176,22 @@ The lean snapshot retains only the fields the framework can prove are needed: `e
 >     lex_initial_state_extra_fields = ("x",)
 > ```
 > or opt the whole model out with `lex_lean_initial_state = False` to restore the full snapshot.
+
+## DateTimeField Timezone Awareness
+
+When `USE_TZ = True`, every `DateTimeField` on a `LexModel` subclass is made timezone-aware the moment you assign a value — not only when it comes back from the database. If you assign a naive datetime, the framework automatically converts it to the project's default timezone (the `TIME_ZONE` setting), which is the same interpretation Django applies when it saves the value.
+
+```python
+from datetime import datetime
+
+obj = MyReport()
+obj.report_date = datetime(2026, 1, 15, 9, 0)  # naive in → aware out
+# obj.report_date is now tz-aware (e.g. UTC+01:00 for Europe/Berlin in winter)
+```
+
+Already-aware datetimes pass through unchanged — the framework never re-zones a value you've already pinned to a timezone.
+
+This keeps in-memory instances consistent with fetched querysets. Mixing the two — say, a freshly-created object alongside rows loaded from the database — won't produce a `TypeError: Cannot compare tz-naive and tz-aware timestamps` in pandas sorts or financial calculations.
+
+> [!note]
+> This behaviour only applies under `USE_TZ = True`. With `USE_TZ = False`, naive datetimes are stored and returned as-is and no conversion takes place.
