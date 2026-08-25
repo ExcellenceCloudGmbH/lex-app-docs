@@ -7,6 +7,7 @@ The grid is where you'll spend most of your time. It's an enterprise-grade datag
 Every model in your project gets a grid automatically. Open a model, and you'll see your data laid out in rows and columns with a full toolbar of capabilities above it.
 
 If the same model is open in another tab or window, ordinary record changes show up automatically. Create, edit, or delete a row elsewhere — including bulk edits and deletes — and open lists refresh on their own once the change is committed, without a manual reload.
+If the same model is open in another tab or window, ordinary record changes show up automatically. Create, edit, or delete a row elsewhere, and open lists refresh without a manual reload.
 
 ## What You Can Do
 
