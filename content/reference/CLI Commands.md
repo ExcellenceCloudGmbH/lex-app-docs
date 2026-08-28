@@ -116,8 +116,10 @@ The file is a small YAML document at your project root. The most useful keys:
 | `lex ai-dashboard` | Open a local web dashboard to switch MCP mode, update credentials (GitHub token, remote API key, remote MCP URL), and inspect server status |
 | `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser (including the Prompt Builder and the Lex AI behavior map) |
+| `lex ai-worktree` | Manage a parallel git worktree for AI-assisted development |
+| `lex ai-issue-report` | Generate a raw AI issue report bundle for support triage |
 
-`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder). It also refreshes the AI docs folder in your project (`docs/`) from the version shipped with your installed `lex-app` package.
+`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (`.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder).
 
 `lex setup-with-ai` and `lex ai-verify` use the directory you pass via `--project-root` (or your current directory) directly — they don't walk up to a parent folder automatically.
 
@@ -128,6 +130,10 @@ The file is a small YAML document at your project root. The most useful keys:
 `lex ai-faq` opens an in-browser FAQ that now includes an interactive **Prompt Builder** — pick a scenario (add a feature, revise a plan, start a new project, or auto-generate docs for an existing project) and it crafts the prompt for you — alongside a visual **Lex AI behavior map** that walks through each workflow as a step-by-step timeline.
 
 `lex ai-verify` checks the AI asset files for the active MCP mode and restores any that are missing or out of date. It resolves the active mode from the CLI `--mode` flag, then the override file, then your `.env`, then `mcp.json`, defaulting to `forward`. Pass `--silent` to suppress all output on success — useful in automated or MCP pre-flight contexts.
+
+`lex ai-worktree` sets up a parallel git worktree so an AI agent can work on a branch without disturbing your current workspace.
+
+All `lex ai-*` commands (other than `setup-with-ai` and `ai-update`) are implemented by the installed `lex-mcp-local` package, which owns their flags and help text. This means new AI commands become available as soon as you run `lex ai-update` — no `lex-app` upgrade required. If a command isn't available, `lex ai-update` is the first thing to try.
 
 ## Usage Pattern
 
