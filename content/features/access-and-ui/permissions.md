@@ -126,6 +126,8 @@ By default, permission methods fall back to Keycloak scopes. After running `lex 
 
 Only models defined in your project are synced — Django built-ins (`auth`, `admin`, etc.), Lex framework models, and any third-party package models are automatically excluded.
 
+Lex App also ignores Keycloak's built-in client-management roles during this sync. If an older version created policies for those roles, rerun `lex Init` after upgrading and it will clean up the stale policies for you.
+
 You can also use Keycloak scopes directly in your custom logic:
 
 ```python

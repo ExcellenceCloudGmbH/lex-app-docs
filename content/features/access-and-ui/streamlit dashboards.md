@@ -69,6 +69,8 @@ Streamlit dashboards run as a separate process alongside your Lex App applicatio
 > [!tip]
 > We recommend running Streamlit from your IDE (e.g. PyCharm) using the `lex streamlit` command, which handles environment configuration automatically.
 
+For production-style deployments, give the Streamlit proxy a fixed `SESSION_SECRET`. If you run more than one proxy replica, also use a shared `TOKEN_REDIS_URL` / `REDIS_URL` so users don't lose their dashboard session when a request lands on a different replica.
+
 ## Tips
 
 - Use `st.cache_data` for expensive queries to keep dashboards responsive
@@ -78,13 +80,34 @@ Streamlit dashboards run as a separate process alongside your Lex App applicatio
 
 ## Federated Authentication
 
-When a dashboard is embedded in the Lex App frontend, the user's access token is passed securely to Streamlit via URL parameters. This enables:
+When a dashboard is embedded in the Lex App frontend, the user's access token is handed to the Streamlit proxy on the iframe's first request. The proxy immediately turns it into a session cookie and redirects to the same view without the token, so it doesn't sit in the address bar, browser history, or `Referer` headers. This enables:
 
 - **No re-authentication** — the user doesn't need to log in again for Streamlit
 - **Identity traceability** — actions in the dashboard are linked to the user's Keycloak identity
 - **Access control** — the dashboard can use the token to call the Lex App API with the user's permissions
+- **Longer-lived dashboards** — the proxy refreshes tokens and keeps disconnected Streamlit sessions around long enough for normal re-authentication or network blips
 
-The token exchange is handled automatically by the `StreamlitIframe` component — no developer configuration needed beyond defining the dashboard methods on your models.
+The token exchange is handled automatically — no developer configuration needed beyond defining the dashboard methods on your models.
+
+### Loading and Caching
+
+Streamlit's frontend is a large, code-split bundle. The proxy serves those Streamlit package assets directly, compressed and cacheable, and leaves anything specific to your app authenticated — the dashboard page, WebSocket data, uploads, and `/media/` files.
+
+> [!note]
+> If a dashboard ever reports `Failed to fetch dynamically imported module`, it usually means the browser has a stale cached page that points at files from an older Streamlit release. A hard reload resolves it.
+
+### Staying Signed In
+
+Access tokens are short-lived, and dashboards often stay open longer than a token lasts. Lex App renews the token in the background through the proxy, without reloading the dashboard, so widgets and `st.session_state` keep their state.
+
+Sessions still follow Keycloak's maximum lifetime, and revoked Keycloak sessions stop working immediately. When renewal really can't continue, the embedded dashboard asks the surrounding app to re-authenticate and returns the user to the same dashboard view.
+
+Two deployment settings decide whether dashboard sessions survive restarts and load balancing:
+
+- `SESSION_SECRET` must be set and identical on every proxy replica. Without it, any restart or second replica logs everyone out.
+- `TOKEN_REDIS_URL` (or `REDIS_URL`) is required when you run more than one proxy replica. The in-memory token store is only safe for a single process.
+
+See [[reference/Environment Variables]] for the full list, including `SESSION_SAMESITE` for cross-site iframe deployments.
 
 ## In the Frontend
 
