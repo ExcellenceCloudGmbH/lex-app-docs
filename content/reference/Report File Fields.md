@@ -28,7 +28,7 @@ code that calls the helper through `XLSXField` continues to work too.
 
 Both fields default to a `max_length` of `300`, which leaves room for nested
 report paths and generated filenames. Pass `max_length=` when you need a
-different column width.
+different database column length.
 
 `XLSXField.create_excel_file_from_dfs()` accepts a file name, a list of
 DataFrames, and optional sheet names, formatting, comments, and index settings.
