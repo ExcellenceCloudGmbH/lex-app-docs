@@ -122,6 +122,11 @@ When validation fails, the error message appears directly in the frontend UI —
 > [!note]
 > Computed serializer-only fields work well for display, exports, and detail views. But if a field only exists in the serializer — for example via `SerializerMethodField()` — you can't use it as a row-group or pivot column in the grid. If you need grouping or pivoting, use a real model field.
 
+> [!warning] Credential-shaped fields
+> Fields such as `password`, `secret`, and `*_token` are never included in API
+> responses, even when a serializer exposes all fields. Keep credentials out of
+> model responses rather than relying on the frontend to hide them.
+
 > [!tip] Serializer validation vs. `pre_validation()`
 > Serializer validation and [[features/data-pipeline/lifecycle hooks#`pre_validation()` — Guard Before Save|pre_validation()]] both block invalid data before it's saved — but they run at different layers. Serializer validation runs in the **API layer** (when data arrives via REST), while `pre_validation()` runs in the **model layer** (on every `save()`, regardless of source). If a rule should apply no matter how the model is saved — API, management command, hook, calculation — put it in `pre_validation()`. If it's specific to the REST API (e.g., formatting, permission-aware checks), use a serializer.
 
