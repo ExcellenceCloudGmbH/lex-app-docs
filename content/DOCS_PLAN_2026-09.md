@@ -121,9 +121,9 @@ The `v2.2.0` interface work is larger than any single PR touched.
       harmful as the phantom API this replaced. If the performance need is real, it wants
       a designed public API, not a documentation change.
 
-## Phase 3 — Discharge the May audit
+## Phase 3 — Discharge the May audit ✅
 
-Verify each item against the current tree first; several are already fixed.
+Verified each item against the current tree first, which mattered: most were already fixed.
 
 - [x] `lex create_db` present in `reference/CLI Commands.md` (fixed since audit)
 - [x] `lex start` flags documented (fixed since audit)
@@ -131,13 +131,31 @@ Verify each item against the current tree first; several are already fixed.
 - [x] `reference/Environment Variables.md` exists (fixed since audit)
 - [x] `lex generate-configs` — already corrected on main; the page names the real
       `lex-generate-configs` binary and says the subcommand does not exist
-- [ ] `streamlit_main` signature — one canonical form across all three pages
-- [ ] Streamlit launch command — one canonical command site-wide
-- [ ] `PROJECT_GROUPS` forward-reference in tutorial Part 2
-- [ ] `permissions.md` helper/factory tables vs `LexModel Internals.md`
-- [ ] Remaining Django management commands in the CLI reference
-- [ ] `📸 TODO` / `SCREENSHOT` placeholders shipping in published pages
-- [ ] `installation.md` vs tutorial Part 1 on `lex setup` artefacts
+- [x] `streamlit_main` signature — **already consistent.** Every page uses
+      `(self, user=None)`; only the audit doc still shows the old form, as its own record.
+- [x] Streamlit launch command — **already canonical.** `lex streamlit` everywhere; the
+      `streamlit run lex_app/...` form survives only inside the audit doc.
+- [x] `PROJECT_GROUPS` — **resolved since the audit.** `reference/lex_config.md` documents
+      it properly, and Part 2's pointer to Part 4 is now about role-based permissions,
+      which Part 4 does cover.
+- [x] `permissions.md` vs `LexModel Internals.md` — **already reconciled.** Both list all
+      six factories including `deny_all`.
+- [x] Django management commands — **already added.** All nine checked
+      (`sync_keycloak`, `bootstrap_keycloak`, `lex_migrate`, both `backfill_*`,
+      `detect_model_changes`, `normalize_is_calculated`, `celery-workers`, `flower`).
+- [x] `installation.md` vs tutorial Part 1 — **already agreed.** Both list `.run/`
+      (Init, Start, Streamlit), `.vscode/launch.json`, `.env`, `migrations/`.
+- [x] `📸` placeholders — **not placeholders, and worse than the audit thought.** The six
+      remaining are real callouts with real image references, and **five of them were
+      broken on the live site**: written as `../images/record-detail/…` from
+      `content/interface/record-detail/`, which resolves to `content/interface/images/`
+      while the files live at `content/images/`. Repointed to `../../images/`. The sixth,
+      `record-detail-toolbar.jpeg`, was never added at all — the callout is commented out
+      with a note for whoever takes the screenshot, so readers stop seeing a broken image.
+
+**Audit verdict:** of the eleven Phase 3 items, nine were already fixed between May and
+September. The audit was worth re-reading anyway — checking the last one found five broken
+images that nobody had reported.
 
 ## Phase 4 — Hygiene
 
@@ -160,12 +178,15 @@ Verify each item against the current tree first; several are already fixed.
       run reported 22 pages, all false positives: escaped pipes (`\|`) inside tables
       and Python literals inside code fences. The checker was wrong, not the docs.
 
-## Phase 5 — Verify
+## Phase 5 — Verify ✅
 
 - [x] Every wikilink resolves (263 checked, excluding the upstream Quartz manual)
-- [ ] No page claims an API that is absent from the framework source
-- [ ] Close the fourteen drafts as superseded, referencing the commit that
-      replaced each
+- [x] No page claims an API that is absent from the framework source — the
+      `suspend_bitemporal()` phantom was caught before it landed, and `theme=` is now
+      documented as accepted-but-ignored rather than working
+- [x] Closed all fourteen drafts as superseded, each with the verdict and the
+      superseding commit in a comment
+- [x] All 5 local images resolve; 270 wikilinks resolve; the site deploys green
 
 ## Still open: the two dependabot PRs
 

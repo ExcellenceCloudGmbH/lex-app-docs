@@ -23,7 +23,7 @@ The Audit Log tab displays a grid of all API operations that affected the curren
 | **Actions** | Quick view link to inspect the full entry |
 
 > [!example]- 📸 Screenshot — Audit log with expanded JSON payload
-> ![Audit Log tab showing operations grid with expandable JSON payload](../images/record-detail/audit-log-tab.jpeg)
+> ![Audit Log tab showing operations grid with expandable JSON payload](../../images/record-detail/audit-log-tab.jpeg)
 
 ## The Status Lifecycle
 
