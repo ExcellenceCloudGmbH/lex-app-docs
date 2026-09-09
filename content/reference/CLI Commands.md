@@ -146,8 +146,9 @@ lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
 | `lex ai-verify` | Verify that required AI asset files are present and restore any that are missing or have drifted |
 | `lex ai-faq` | Open the LEX AI FAQ page in your browser (including the Prompt Builder and the Lex AI behavior map) |
 | `lex ai-issue-report` | Generate a zip bundle of the current AI setup for support triage |
+| `lex ai-worktree` | Manage a parallel git worktree for AI-assisted development |
 
-`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (docs, `.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder). It also refreshes the AI docs folder in your project (`docs/`) from the version shipped with your installed `lex-app` package.
+`lex setup-with-ai` prompts for a GitHub token and a remote MCP API key, then writes the necessary entries to your `.env` and `mcp.json` (including `LEX_MCP_ANALYTICS_BACKEND=remote`). It also verifies that all required AI asset directories (`.github`, etc.) are present and restores any that are missing. If no project markers are found, it uses the directory you ran the command from (it won't jump up to your home folder).
 
 `lex setup-with-ai` and `lex ai-verify` use the directory you pass via `--project-root` (or your current directory) directly — they don't walk up to a parent folder automatically.
 
@@ -163,6 +164,10 @@ lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
 
 > [!note]
 > `lex ai-update`, `lex ai-verify`, `lex ai-dashboard`, `lex ai-faq`, and `lex ai-issue-report` require the `lex-mcp-local` package, which `lex setup-with-ai` installs for you. Run one of them before completing setup and it will tell you to run `lex setup-with-ai` first.
+
+`lex ai-worktree` sets up a parallel git worktree so an AI agent can work on a branch without disturbing your current workspace.
+
+All `lex ai-*` commands (other than `setup-with-ai` and `ai-update`) are implemented by the installed `lex-mcp-local` package, which owns their flags and help text. This means new AI commands become available as soon as you run `lex ai-update` — no `lex-app` upgrade required. If a command isn't available, `lex ai-update` is the first thing to try.
 
 ## Usage Pattern
 
