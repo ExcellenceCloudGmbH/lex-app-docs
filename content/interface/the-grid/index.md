@@ -31,6 +31,11 @@ Reshape your data without changing it. Group rows by any column to create collap
 ### [[interface/the-grid/saved views|Saved Views]]
 Once you've set up the perfect combination of filters, sorting, grouping, and column layout, save it. Switch between multiple views instantly — your "Q1 Travel Expenses" view or the "Manager Summary" view — without rebuilding each time.
 
+### [[interface/the-grid/table settings|Table Settings]]
+
+Tune the table to how you work — row density, pinned columns, and how numbers are
+formatted. Saved for you, on that table.
+
 ### [[interface/the-grid/density and display|Density & Display]]
 Adjust how tightly data is packed. **Compact** shows maximum rows for scanning large datasets. **Comfortable** gives each row breathing room for detailed review. Choose what fits your task.
 
@@ -45,7 +50,7 @@ Above every grid is a toolbar that gives you quick access to key actions:
 | Control | What It Does |
 |---|---|
 | **View Selector** | Switch between saved views or create new ones |
-| **Density** | Toggle between Compact, Standard, and Comfortable |
+| **Settings** (gear) | Density, display and column options, and per-column number formats — see [[interface/the-grid/table settings\|Table Settings]] |
 | **As-Of** | Time-travel to see data as it existed at any point in the past |
 | **Export** | Download the current view as Excel or CSV |
 | **Calculate** | Trigger calculations on selected records (for calculation models) |
@@ -65,6 +70,13 @@ before you submit, and numeric model fields are treated as numbers for editing
 and filtering.
 
 Those edits also refresh other open lists for the same model, so you don't need to ask teammates to reload before they see the updated row.
+
+## Creating a Record
+
+**Add Record** opens a panel over the list, on the same layout editing uses, so you keep
+your place, your filters and your scroll position instead of navigating away and back.
+The full-page create route still exists and is still reachable — deep links and links
+from a failed create both point at it — so nothing that relied on it has changed.
 
 > [!example]- 🎬 Video — Inline editing with live validation
 > <video controls width="100%">

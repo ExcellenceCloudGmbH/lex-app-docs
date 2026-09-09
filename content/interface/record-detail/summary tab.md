@@ -4,6 +4,17 @@ title: Summary Tab
 
 The Summary tab is the first thing you see when opening a record. Every field is displayed as a labeled card — clean, readable, and organized by the layout you choose.
 
+## What Leads the Page
+
+The record's own content is at the top, under its own heading. The framework's
+bookkeeping — `Id`, `Created At`, `Edited At`, `Created By`, `Edited By` — is collected
+into a collapsed **Record details** section instead.
+
+That ordering is the point. Those five fields used to come first, because that is the
+order the model's metadata arrives in, which meant the most valuable rows on screen
+described the plumbing and the record's own content began below the fold. They are
+demoted, not hidden: open **Record details** and they are all there.
+
 ## Field Cards
 
 Each field gets its own card with a label and value. Fields are rendered intelligently based on their type:
