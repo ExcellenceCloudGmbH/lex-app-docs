@@ -157,3 +157,33 @@ Verify each item against the current tree first; several are already fixed.
 - [ ] No page claims an API that is absent from the framework source
 - [ ] Close the fourteen drafts as superseded, referencing the commit that
       replaced each
+
+## Still open: the two dependabot PRs
+
+[#89](https://github.com/ExcellenceCloudGmbH/lex-app-docs/pull/89) (15 GitHub Actions
+bumps, `+22/-22`) and
+[#70](https://github.com/ExcellenceCloudGmbH/lex-app-docs/pull/70) (23 production
+dependency bumps, `+1248/-697` — `package.json` and the lockfile). Both open since May.
+Deliberately **not merged**, for a reason worth writing down rather than leaving as an
+omission.
+
+**They cannot be validated locally.** `npm ci` fails here on `sharp@0.34.5`, which falls
+back to building from source and needs `node-gyp`:
+
+```
+npm error sharp: Attempting to build from source via node-gyp
+npm error sharp: Please add node-gyp to your dependencies
+```
+
+So `npx quartz build` never runs, and 23 production dependency bumps on a Quartz **fork**
+are exactly the change that can take the published site down. Merging them unverified
+trades a security warning for an outage.
+
+**What would settle it:** the repo's own `Build Preview` workflow. On both PRs that check
+currently reports **`skipping`** — so the one job that would prove the site still builds
+is not running on the PRs that most need it. Worth fixing before either is merged; after
+that, #89 (Actions only, no effect on the site build) is the safe one to take first.
+
+Separately, the push to this repo reports **41 Dependabot vulnerabilities on the default
+branch** (31 high). That is the real argument for getting these two landed — but it is an
+argument for making the build check work, not for merging blind.
