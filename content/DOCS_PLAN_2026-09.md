@@ -132,10 +132,15 @@ Verify each item against the current tree first; several are already fixed.
 
 ## Phase 4 — Hygiene
 
-- [x] Removed the customer-specific material — the PFE markdown, `pfe_permissions.py`
-      and three customer PDFs, none referenced by any page (`d8098d45`). **They remain in
-      git history**; a real purge needs `filter-repo` and a force push, which is the
-      repo owner's call.
+- [x] **Customer-specific material — corrected finding.** The PFE permissions doc,
+      `pfe_permissions.py` and three customer PDFs are **local untracked files on one
+      machine. They were never committed to this repository.** An earlier note here (and
+      PR #170's description) said they were tracked in a public repo; that was wrong. They
+      entered the consolidation branch only because a `git add -A content/` in commit
+      `5a135e2c` swept them up, and were removed again before merge — which is why the
+      merge shows zero deletions. `git cat-file` confirms none of the five existed on
+      `main` at `f1feb34e`. Nothing was ever exposed. They remain on disk locally and are
+      worth deleting there, but that is housekeeping, not disclosure.
 - [x] `ignorePatterns` — `workshop`, `quartz_style_docs`, `DOCS_AUDIT_*` and `PFE - *`
       were already there; added `DOCS_PLAN_*.md` (`d8098d45`)
 - [ ] Root-level duplicate tree (`features/`, `interface/`, `migration/`,
