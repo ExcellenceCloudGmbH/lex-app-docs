@@ -27,6 +27,7 @@ const config: QuartzConfig = {
       "quartz_style_docs",
       // Audit backlogs and customer-specific notes shouldn't publish.
       "DOCS_AUDIT_*.md",
+      "DOCS_PLAN_*.md",
       "PFE - *.md",
     ],
     defaultDateType: "modified",
