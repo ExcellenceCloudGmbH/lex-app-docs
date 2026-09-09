@@ -62,21 +62,12 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 | ------------------- | -------------------------------------------------------------------- |
 | `SENDGRID_API_KEY`  | API key used to send the PDF test report (`lex pytest --report-and-email`) and any project-level transactional mail. |
 
-<<<<<<< Updated upstream
 ## Widget integrations
 
 | Variable                   | Purpose                                                                 |
 | -------------------------- | ----------------------------------------------------------------------- |
 | `QUACKBACK_WIDGET_SECRET`  | Shared secret used to sign the short-lived HS256 SSO token the frontend mints at `POST /api/quackback-widget-token` to identify the logged-in user to the embedded Quackback feedback widget. Leave unset to disable token minting. |
 
-## Logging & warnings
-
-| Variable                | Purpose                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| `LEX_LOG_LEVEL`         | Log level for the framework's own `lex.*` loggers. Set `DEBUG` to surface the framework's debug output **without** turning on the third-party DEBUG firehose. Default `INFO`. |
-| `LEX_SUPPRESS_INSECURE_WARNING` | Suppresses urllib3's `InsecureRequestWarning` (the Keycloak admin client can emit one per request against a self-signed dev endpoint). Set `False` to restore the warning while debugging TLS. Default `True`. |
-| `LEX_SUPPRESS_WARNINGS` | Suppresses Python warnings raised during app startup (`AppConfig.ready()`). Set `False` to restore them. Default `True`. |
-=======
 ## Logging & warnings
 
 | Variable                        | Default | Purpose                                                                                       |
@@ -88,7 +79,6 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 
 > [!tip]
 > `LEX_LOG_LEVEL` and `LOG_LEVEL` are independent. For day-to-day debugging of your own app and the framework, reach for `LEX_LOG_LEVEL=DEBUG` first — it keeps the console readable. Drop down to `LOG_LEVEL=DEBUG` only when you suspect the issue is in a third-party library.
->>>>>>> Stashed changes
 
 ## Where these get set
 

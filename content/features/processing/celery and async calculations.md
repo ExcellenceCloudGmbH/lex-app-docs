@@ -199,6 +199,8 @@ The framework includes a background recovery system that monitors running tasks 
 
 Recovery is **off by default**. Turn it on with `LEX_TASK_RECOVERY_ENABLED=true` only in environments where you also run a recovery driver (`lex-recovery-supervisor` or `lex-recovery-beat`). In local development and CI, you usually leave it off.
 
+When a callback or recovery sweep moves a calculation to a terminal status, that change is recorded in history like any other, including the recovery reason.
+
 #### Running the recovery driver
 
 In a multi-worker deployment the sweep runs in its own process alongside your normal workers. Two standalone console scripts are available (note: these are separate executables, not `lex` subcommands):
