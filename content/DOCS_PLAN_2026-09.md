@@ -89,28 +89,37 @@ exists on `main`; I had listed the directory while still on the old branch and
 read a stale tree. The link is restored. The lesson is the same one the release
 work kept teaching: check the state you are actually shipping against.
 
-## Phase 2 — Gaps the releases exposed
+## Phase 2 — Gaps the releases exposed ✅
 
 The `v2.2.0` interface work is larger than any single PR touched.
 
-- [ ] **Table settings panel** — density, status bar, header wrapping, time in
-      date columns, column filter button, row-index column, selection and
-      calculation-status pinning. Per user, per table, no Save step.
-- [ ] **Column formats** — number / currency / percentage, currency choice,
-      decimals, the backend-declared default and *Reset to backend defaults*.
+- [x] **Table settings panel** — new page `interface/the-grid/table settings.md`
+      (`afe580b4`), with defaults read off `DEFAULT_DISPLAY_SETTINGS`.
+- [x] **Column formats** — documented on the same page, including the
+      application-declared default the dropdown names and *Reset to backend defaults*.
 - [x] **The Streamlit widget API** — the flat `lex_*` calls, the `lex_widgets()`
       block, the canonical import and the `main()` contract are documented on the
       dashboards page (`2fa491f5`). `lex_view` has its own page, now extended with
       `STAY`, the `FlowError` rule and the superseded `theme=` argument (`d8214561`).
-- [ ] **Export from the toolbar** — the selection contract (nothing selected
-      exports the view as shown; rows selected exports exactly those).
-- [ ] **Cell range selection** and the status-bar aggregation.
+- [x] **Export from the toolbar** — selection contract stated on
+      `exporting data.md` (`afe580b4`).
+- [x] **Cell range selection** and the status-bar sum/average/count (`afe580b4`).
 - [x] **Log-tree export scopes** — `include_descendants=true` documented (`2fa491f5`).
-- [ ] **Record page layout** — the record leads; audit fields collapse into
-      *Record details*.
-- [ ] **Create-in-a-drawer** — create and edit share one layout over the list.
-- [ ] Correct guidance for **suppressing bitemporal writes** using the three
-      guards that actually exist (replaces the BUG-020 phantom).
+- [x] **Record page layout** — added to `record-detail/summary tab.md` (`afe580b4`).
+- [x] **Create-in-a-drawer** — documented on `the-grid/index.md`, including that the
+      full-page create route is still reachable (`afe580b4`).
+- [x] **Suppressing bitemporal writes — decided NOT to document, and that is the
+      finding.** Having established that `suspend_bitemporal()` does not exist
+      (BUG-020), the obvious next step was to document the three guards that do.
+      Reading them says otherwise: `suppress_main_table_sync` is for "bulk history
+      maintenance", `suppress_history_valid_to_chaining` for "while valid_to links are
+      being repaired", `suppress_meta_sys_to_chaining` for "bulk backfills". All three
+      exist for the framework's own backfill and repair commands, and one warns it "can
+      cause unintended side-effects when timestamps are not currently valid".
+      **There is no user-facing way to skip history for performance.** Presenting these
+      as one would invite calls into framework internals from `calculate()` — nearly as
+      harmful as the phantom API this replaced. If the performance need is real, it wants
+      a designed public API, not a documentation change.
 
 ## Phase 3 — Discharge the May audit
 
