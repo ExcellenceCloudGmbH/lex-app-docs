@@ -48,9 +48,26 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 
 ## Streamlit
 
-| Variable                | Purpose                                                                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------- |
-| `IS_STREAMLIT_ENABLED`  | `true` to enable the Streamlit toolbar icon in the frontend. See [[features/access-and-ui/streamlit dashboards]]. |
+| Variable                                  | Purpose                                                                                  |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `IS_STREAMLIT_ENABLED`                    | `true` to enable the Streamlit toolbar icon in the frontend. See [[features/access-and-ui/streamlit dashboards]]. |
+| `STREAMLIT_URL` / `BASE_URL`              | Public URL used by the embedded dashboard proxy. When this is HTTPS, Lex App defaults to secure cross-site cookies for the iframe. |
+| `LEX_PROXY_PORT`                          | Port exposed by the local Streamlit proxy when running `lex streamlit`. Default `8501`. |
+| `LEX_PROXY_INTERNAL_URL`                  | Full base URL the dashboard uses to reach the proxy when it is not `http://127.0.0.1:$LEX_PROXY_PORT`. |
+| `UPSTREAM` / `STREAMLIT_UPSTREAM`         | Internal Streamlit server URL behind the proxy. Default `http://localhost:8080`. |
+| `UPSTREAM_TIMEOUT_SECONDS`                | Timeout for proxy requests to Streamlit. Default `30`. |
+| `SESSION_SECRET`                          | Signing key for dashboard session cookies. Optional: when unset, the key is derived from `DJANGO_SECRET_KEY`, which every deployment already has and which is stable across restarts and identical on every replica. `SESSION_KEY` and `SESSION_SECRET_KEY` are accepted aliases. |
+| `SESSION_SAMESITE`                        | Cookie SameSite mode for the dashboard proxy: `none`, `lax`, or `strict`. Defaults to `none` on HTTPS and `lax` otherwise. |
+| `SESSION_HTTPS_ONLY`                      | Whether dashboard cookies are marked `Secure`. Defaults to `true` for HTTPS public URLs. Required when `SESSION_SAMESITE=none`. |
+| `TOKEN_REDIS_URL` / `REDIS_URL`           | Shared token store for dashboard sessions. Use this when running more than one proxy replica, or when you want sessions to survive proxy restarts. |
+| `LEX_PROXY_REPLICAS`                      | Number of Streamlit proxy replicas. When greater than `1`, Lex App requires a shared Redis token store instead of process-local memory. |
+| `LEX_STREAMLIT_DISCONNECTED_SESSION_TTL`  | How long Streamlit keeps a disconnected session around for reconnects. Default `600` seconds. |
+| `LEX_INTERNAL_AUTH_SECRET`                | Shared secret for the proxy-to-Streamlit token refresh channel. `lex streamlit` sets this automatically; set it yourself only when running the two processes separately. |
+| `REACT_APP_URL` / `LEX_FRONTEND_URL`      | Optional origin allowed to hand the proxy a renewed dashboard token. Normally derived from `DOMAIN_HOSTED`; set one only when the frontend is served from a different host. |
+| `STRIP_AUTH_TOKEN_FROM_URL`               | `true` to redirect the dashboard's first request to the same URL without its `auth_token`. Default `true`. |
+| `STATIC_ASSET_MAX_AGE`                    | `max-age` for Streamlit package assets served by the proxy. Default one year. |
+| `STATIC_GZIP_MIN_SIZE` / `STATIC_GZIP_LEVEL` | Compression floor and zlib level for Streamlit assets served by the proxy. Defaults `500` and `6`. |
+| `JWKS_CACHE_TTL` / `JWKS_RETRY_BACKOFF_SECONDS` | How long Keycloak signing keys are cached (default `3600`), and how long to wait before retrying a failed refresh while continuing to serve cached keys (default `30`). |
 
 ## Keycloak / OIDC
 
