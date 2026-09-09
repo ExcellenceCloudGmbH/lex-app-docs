@@ -7,6 +7,12 @@ Lex App reads its runtime configuration from environment variables — usually l
 > [!note]
 > This index covers the variables the framework reads directly. Your project's Django settings may layer additional ones on top. If a variable isn't listed here, check `lex_app/settings.py` in the installed package.
 
+## Timezone
+
+| Variable        | Purpose                                                                                                                                                                                                         |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LEX_TIME_ZONE` | IANA timezone used as the display and naive-input zone (e.g. `Europe/Berlin`, `America/New_York`). Storage is always UTC — this controls how the server renders datetimes and interprets naive user input. Default `Europe/Berlin`. |
+
 ## Async / Celery
 
 | Variable               | Purpose                                                                                       |
