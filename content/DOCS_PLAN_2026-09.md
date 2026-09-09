@@ -66,22 +66,28 @@ the gaps the releases exposed, then discharge the audit, then verify.
 One commit per release, oldest first. Verdicts are from reading each diff
 against the framework source.
 
-| PR | Release | Verdict | Action |
+| PR | Release | Verdict | Landed as |
 |---|---|---|---|
-| #143 | `rc217` | | |
-| #145 | `rc219` | | |
-| #147 | `rc220` | **committed `node_modules/`** — 2.7M lines, 100 files, for 4 lines of real content | lift content by hand; never merge |
-| #149 | `2.1.1` | | |
-| #151 | `2.1.2` | | |
-| #153 | `2.1.3` | overlaps the Phase 0 cherry-pick | reconcile |
-| #155 | `2.1.4` | | |
-| #157 | `2.1.5` | | |
-| #159 | `2.1.6` | | |
-| #161 | `2.1.7` | | |
-| #163 | `2.1.8` | | |
-| #165 | `2.1.9` | **`v2.1.9` no longer exists** — it never published to PyPI and its release and tag were deleted; the changes shipped in `2.1.10` | retarget to `2.1.10` |
-| #167 | `2.1.11` | | |
-| #169 | `2.2.0` | 4 verified errors: deep import path, wrong light background hex, wrong dark palette, broken wikilink | correct, then land |
+| #143 | `rc217` | correct — `result.get()` is wrapped in `allow_join_result()` | `5a135e2c` |
+| #145 | `rc219` | **corrects a live error**: recovery defaults to `false`, docs said `true` | `eb860f21` |
+| #147 | `rc220` | committed `node_modules/` (2.7M lines); content lifted by hand, one mechanism claim reworded | `90732e8b` |
+| #149 | `2.1.1` | thinner duplicate of recovered work; all three behaviours pinned by cluster 15g | `11a6820e` |
+| #151 | `2.1.2` | correct — clearable file fields + `keepdb` reuse | `a5326383` |
+| #153 | `2.1.3` | correct — FK companions, `as_of` on lists, naive-as-UTC | `8807a216` |
+| #155 | `2.1.4` | correct down to every flag of `rebase_incident_datetimes` | `395ff3a2` |
+| #157 | `2.1.5` | correct — guard is `USE_TZ and is_naive` | `8381a433` |
+| #159 | `2.1.6` | correct; `--align-mcp-mode` unverifiable (lives in `lex-mcp-local`) | `ad0a1e6a` |
+| #161 | `2.1.7` | correct, but overlapped #159 — later release wins, #159's additions kept | `38d54b44` |
+| #163 | `2.1.8` | correct **including its removals** (the bundled docs folder) | `4fd3341b` |
+| #165 | ~~`2.1.9`~~ → `2.1.10` | **two stale rows**: `SESSION_SECRET` isn't required, `LEX_ALLOW_EPHEMERAL_SESSION_SECRET` doesn't exist | `a133b94a` |
+| #167 | `2.1.11` | correct — including the callable-on-value fix at `XLSX_field.py:213` | `de47ec81` |
+| #169 | `2.2.0` | three real errors: deep import path, wrong light hex, wrong dark palette | `2fa491f5` |
+
+**A fourth suspected error in #169 was my own mistake.** I judged the
+`[[lex_view callbacks]]` wikilink broken and replaced it with prose. The page
+exists on `main`; I had listed the directory while still on the old branch and
+read a stale tree. The link is restored. The lesson is the same one the release
+work kept teaching: check the state you are actually shipping against.
 
 ## Phase 2 — Gaps the releases exposed
 
@@ -92,13 +98,14 @@ The `v2.2.0` interface work is larger than any single PR touched.
       calculation-status pinning. Per user, per table, no Save step.
 - [ ] **Column formats** — number / currency / percentage, currency choice,
       decimals, the backend-declared default and *Reset to backend defaults*.
-- [ ] **The Streamlit widget API** — a reference page for `lex_calculation`,
-      `lex_calculation_log`, `lex_calculation_log_tree`, `lex_widgets()` and
-      `lex_view`, with the canonical flat import and the `main()` contract.
+- [x] **The Streamlit widget API** — the flat `lex_*` calls, the `lex_widgets()`
+      block, the canonical import and the `main()` contract are documented on the
+      dashboards page (`2fa491f5`). `lex_view` has its own page, now extended with
+      `STAY`, the `FlowError` rule and the superseded `theme=` argument (`d8214561`).
 - [ ] **Export from the toolbar** — the selection contract (nothing selected
       exports the view as shown; rows selected exports exactly those).
 - [ ] **Cell range selection** and the status-bar aggregation.
-- [ ] **Log-tree export scopes** — a step, or a step and everything under it.
+- [x] **Log-tree export scopes** — `include_descendants=true` documented (`2fa491f5`).
 - [ ] **Record page layout** — the record leads; audit fields collapse into
       *Record details*.
 - [ ] **Create-in-a-drawer** — create and edit share one layout over the list.
@@ -113,7 +120,8 @@ Verify each item against the current tree first; several are already fixed.
 - [x] `lex start` flags documented (fixed since audit)
 - [x] `reference/lex_config.md` exists (fixed since audit)
 - [x] `reference/Environment Variables.md` exists (fixed since audit)
-- [ ] `lex generate-configs` — audit says it does not exist; confirm and correct
+- [x] `lex generate-configs` — already corrected on main; the page names the real
+      `lex-generate-configs` binary and says the subcommand does not exist
 - [ ] `streamlit_main` signature — one canonical form across all three pages
 - [ ] Streamlit launch command — one canonical command site-wide
 - [ ] `PROJECT_GROUPS` forward-reference in tutorial Part 2
@@ -124,18 +132,23 @@ Verify each item against the current tree first; several are already fixed.
 
 ## Phase 4 — Hygiene
 
-- [ ] Remove `content/PFE - Lund User Calculation Permissions.md` — customer-specific,
-      no frontmatter, and it must not be in a public docs repo
-- [ ] `ignorePatterns` for `quartz_style_docs`, `DOCS_AUDIT_*`, `DOCS_PLAN_*`
+- [x] Removed the customer-specific material — the PFE markdown, `pfe_permissions.py`
+      and three customer PDFs, none referenced by any page (`d8098d45`). **They remain in
+      git history**; a real purge needs `filter-repo` and a force push, which is the
+      repo owner's call.
+- [x] `ignorePatterns` — `workshop`, `quartz_style_docs`, `DOCS_AUDIT_*` and `PFE - *`
+      were already there; added `DOCS_PLAN_*.md` (`d8098d45`)
 - [ ] Root-level duplicate tree (`features/`, `interface/`, `migration/`,
       `reference/`, `index.md`, …) — strays outside `content/`, delete
-- [ ] Stray binaries under `content/images/record-detail/` (three customer PDFs
-      and a `.py` file)
-- [ ] Broken wikilinks, repo-wide check
+- [x] Stray binaries under `content/images/record-detail/` — removed with the rest
+      of the customer material (`d8098d45`)
+- [x] Broken wikilinks — **263 internal links checked, none broken**. The first
+      run reported 22 pages, all false positives: escaped pipes (`\|`) inside tables
+      and Python literals inside code fences. The checker was wrong, not the docs.
 
 ## Phase 5 — Verify
 
-- [ ] Every wikilink resolves to a real page or heading
+- [x] Every wikilink resolves (263 checked, excluding the upstream Quartz manual)
 - [ ] No page claims an API that is absent from the framework source
 - [ ] Close the fourteen drafts as superseded, referencing the commit that
       replaced each
