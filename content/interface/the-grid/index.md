@@ -60,6 +60,10 @@ The grid stays live: when a record changes — whether you edited it, a colleagu
 
 Fields you don't have [[features/access-and-ui/permissions|permission]] to edit appear as read-only — the grid respects your access level down to individual cells.
 
+Choice fields use a picker instead of free text, required fields are marked
+before you submit, and numeric model fields are treated as numbers for editing
+and filtering.
+
 Those edits also refresh other open lists for the same model, so you don't need to ask teammates to reload before they see the updated row.
 
 > [!example]- 🎬 Video — Inline editing with live validation

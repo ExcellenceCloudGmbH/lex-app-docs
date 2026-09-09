@@ -68,6 +68,7 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `STATIC_ASSET_MAX_AGE`                    | `max-age` for Streamlit package assets served by the proxy. Default one year. |
 | `STATIC_GZIP_MIN_SIZE` / `STATIC_GZIP_LEVEL` | Compression floor and zlib level for Streamlit assets served by the proxy. Defaults `500` and `6`. |
 | `JWKS_CACHE_TTL` / `JWKS_RETRY_BACKOFF_SECONDS` | How long Keycloak signing keys are cached (default `3600`), and how long to wait before retrying a failed refresh while continuing to serve cached keys (default `30`). |
+| `LEX_THEME_FOLLOW`      | Keep embedded Streamlit pages in the same light/dark mode as Lex App. Enabled by default; set to `0`, `false`, `no`, or `off` to let Streamlit control its own theme. |
 
 ## Keycloak / OIDC
 

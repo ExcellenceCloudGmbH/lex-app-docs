@@ -71,12 +71,42 @@ Streamlit dashboards run as a separate process alongside your Lex App applicatio
 
 For production-style deployments, give the Streamlit proxy a fixed `SESSION_SECRET`. If you run more than one proxy replica, also use a shared `TOKEN_REDIS_URL` / `REDIS_URL` so users don't lose their dashboard session when a request lands on a different replica.
 
+## Embedding Lex App in a Dashboard
+
+When your dashboard needs Lex App controls, you can embed them directly instead
+of rebuilding the UI in Streamlit. Put your dashboard code in
+`_streamlit_structure.py` at your project root and expose a `main()` function.
+
+Use one of the flat `lex_*` calls for a single control:
+
+```python
+from lex.lex_app.streamlit import lex_calculation
+
+lex_calculation("salesreport", pk=1, title="Sales report")
+```
+
+For several controls on one page, group them in one `lex_widgets()` block. They
+share one embedded runtime, and keys are derived automatically from the call
+site:
+
+```python
+from lex.lex_app.streamlit import lex_widgets
+
+with lex_widgets() as page:
+    page.calculation("salesreport", pk=1)
+    page.calculation_log_tree("salesreport", pk=1)
+```
+
+Use [[features/access-and-ui/lex_view callbacks|`lex_view()`]] when you want to
+embed a complete Lex App route, such as a table or record form.
+
 ## Tips
 
 - Use `st.cache_data` for expensive queries to keep dashboards responsive
 - Use `st.columns()` for side-by-side layouts
 - Any Streamlit widget works — `st.plotly_chart()`, `st.map()`, `st.selectbox()`, etc.
 - Record-level dashboards have full access to `self` and can query related models
+- Keep `st.*` calls inside `main()` (or another function it calls); the dashboard module is imported before Streamlit renders the page.
 
 ## Federated Authentication
 
