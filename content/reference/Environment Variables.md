@@ -7,6 +7,12 @@ Lex App reads its runtime configuration from environment variables — usually l
 > [!note]
 > This index covers the variables the framework reads directly. Your project's Django settings may layer additional ones on top. If a variable isn't listed here, check `lex_app/settings.py` in the installed package.
 
+## Timezone
+
+| Variable        | Purpose                                                                                                                                                                                                         |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LEX_TIME_ZONE` | IANA timezone used as the display and naive-input zone (e.g. `Europe/Berlin`, `America/New_York`). Storage is always UTC — this controls how the server renders datetimes and interprets naive user input. Default `Europe/Berlin`. |
+
 ## Async / Celery
 
 | Variable               | Purpose                                                                                       |
@@ -29,7 +35,7 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 
 | Variable                          | Purpose                                                                                       |
 | --------------------------------- | --------------------------------------------------------------------------------------------- |
-| `LEX_TASK_RECOVERY_ENABLED`       | Master switch for the heartbeat/dead-worker recovery system. Set `false` in local dev and CI where there's no real Redis-backed Celery. Default `true`. |
+| `LEX_TASK_RECOVERY_ENABLED`       | Master switch for the heartbeat/dead-worker recovery system. Default `false` — turn it on only in deployments where you also run `lex-recovery-supervisor` or `lex-recovery-beat`. |
 | `LEX_TASK_HEARTBEAT_INTERVAL`     | How often (seconds) a running task emits a liveness heartbeat. Default `5`. |
 | `LEX_TASK_HB_TTL_MULTIPLIER`      | A task is considered dead after `HEARTBEAT_INTERVAL × TTL_MULTIPLIER` seconds without a heartbeat. Default `3`. |
 | `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` | How often (seconds) the supervisor sweeps for dead workers and requeues their tasks. Default `10`. |
@@ -42,9 +48,27 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 
 ## Streamlit
 
-| Variable                | Purpose                                                                                  |
-| ----------------------- | ---------------------------------------------------------------------------------------- |
-| `IS_STREAMLIT_ENABLED`  | `true` to enable the Streamlit toolbar icon in the frontend. See [[features/access-and-ui/streamlit dashboards]]. |
+| Variable                                  | Purpose                                                                                  |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `IS_STREAMLIT_ENABLED`                    | `true` to enable the Streamlit toolbar icon in the frontend. See [[features/access-and-ui/streamlit dashboards]]. |
+| `STREAMLIT_URL` / `BASE_URL`              | Public URL used by the embedded dashboard proxy. When this is HTTPS, Lex App defaults to secure cross-site cookies for the iframe. |
+| `LEX_PROXY_PORT`                          | Port exposed by the local Streamlit proxy when running `lex streamlit`. Default `8501`. |
+| `LEX_PROXY_INTERNAL_URL`                  | Full base URL the dashboard uses to reach the proxy when it is not `http://127.0.0.1:$LEX_PROXY_PORT`. |
+| `UPSTREAM` / `STREAMLIT_UPSTREAM`         | Internal Streamlit server URL behind the proxy. Default `http://localhost:8080`. |
+| `UPSTREAM_TIMEOUT_SECONDS`                | Timeout for proxy requests to Streamlit. Default `30`. |
+| `SESSION_SECRET`                          | Signing key for dashboard session cookies. Optional: when unset, the key is derived from `DJANGO_SECRET_KEY`, which every deployment already has and which is stable across restarts and identical on every replica. `SESSION_KEY` and `SESSION_SECRET_KEY` are accepted aliases. |
+| `SESSION_SAMESITE`                        | Cookie SameSite mode for the dashboard proxy: `none`, `lax`, or `strict`. Defaults to `none` on HTTPS and `lax` otherwise. |
+| `SESSION_HTTPS_ONLY`                      | Whether dashboard cookies are marked `Secure`. Defaults to `true` for HTTPS public URLs. Required when `SESSION_SAMESITE=none`. |
+| `TOKEN_REDIS_URL` / `REDIS_URL`           | Shared token store for dashboard sessions. Use this when running more than one proxy replica, or when you want sessions to survive proxy restarts. |
+| `LEX_PROXY_REPLICAS`                      | Number of Streamlit proxy replicas. When greater than `1`, Lex App requires a shared Redis token store instead of process-local memory. |
+| `LEX_STREAMLIT_DISCONNECTED_SESSION_TTL`  | How long Streamlit keeps a disconnected session around for reconnects. Default `600` seconds. |
+| `LEX_INTERNAL_AUTH_SECRET`                | Shared secret for the proxy-to-Streamlit token refresh channel. `lex streamlit` sets this automatically; set it yourself only when running the two processes separately. |
+| `REACT_APP_URL` / `LEX_FRONTEND_URL`      | Optional origin allowed to hand the proxy a renewed dashboard token. Normally derived from `DOMAIN_HOSTED`; set one only when the frontend is served from a different host. |
+| `STRIP_AUTH_TOKEN_FROM_URL`               | `true` to redirect the dashboard's first request to the same URL without its `auth_token`. Default `true`. |
+| `STATIC_ASSET_MAX_AGE`                    | `max-age` for Streamlit package assets served by the proxy. Default one year. |
+| `STATIC_GZIP_MIN_SIZE` / `STATIC_GZIP_LEVEL` | Compression floor and zlib level for Streamlit assets served by the proxy. Defaults `500` and `6`. |
+| `JWKS_CACHE_TTL` / `JWKS_RETRY_BACKOFF_SECONDS` | How long Keycloak signing keys are cached (default `3600`), and how long to wait before retrying a failed refresh while continuing to serve cached keys (default `30`). |
+| `LEX_THEME_FOLLOW`      | Keep embedded Streamlit pages in the same light/dark mode as Lex App. Enabled by default; set to `0`, `false`, `no`, or `off` to let Streamlit control its own theme. |
 
 ## Keycloak / OIDC
 
@@ -70,11 +94,15 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 
 ## Logging & warnings
 
-| Variable                | Purpose                                                                                   |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| `LEX_LOG_LEVEL`         | Log level for the framework's own `lex.*` loggers. Set `DEBUG` to surface the framework's debug output **without** turning on the third-party DEBUG firehose. Default `INFO`. |
-| `LEX_SUPPRESS_INSECURE_WARNING` | Suppresses urllib3's `InsecureRequestWarning` (the Keycloak admin client can emit one per request against a self-signed dev endpoint). Set `False` to restore the warning while debugging TLS. Default `True`. |
-| `LEX_SUPPRESS_WARNINGS` | Suppresses Python warnings raised during app startup (`AppConfig.ready()`). Set `False` to restore them. Default `True`. |
+| Variable                        | Default | Purpose                                                                                       |
+| ------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| `LOG_LEVEL`                     | `INFO`  | Application-wide log level. Raising it to `DEBUG` turns on debug output everywhere — including third-party libraries — so the console gets noisy. Use it when you want *everything*. |
+| `LEX_LOG_LEVEL`                 | `INFO`  | Log level for the **Lex framework only** (`lex.*` loggers). Set it to `DEBUG` to see the framework's own debug output without the third-party noise `LOG_LEVEL=DEBUG` would pull in. |
+| `LEX_SUPPRESS_INSECURE_WARNING` | `True`  | Hides urllib3's `InsecureRequestWarning`, which otherwise prints on every request the framework makes to the auth host when TLS verification is off. Set it to `False` if you're debugging certificates and want the warning back. |
+| `LEX_SUPPRESS_WARNINGS`         | `True`  | Quiets Python's warning system at startup (e.g. Django's "Accessing the database during app initialization" `RuntimeWarning`) so local logs stay clean. Set it to `False` to restore Python's default warning behaviour while debugging. |
+
+> [!tip]
+> `LEX_LOG_LEVEL` and `LOG_LEVEL` are independent. For day-to-day debugging of your own app and the framework, reach for `LEX_LOG_LEVEL=DEBUG` first — it keeps the console readable. Drop down to `LOG_LEVEL=DEBUG` only when you suspect the issue is in a third-party library.
 
 ## Where these get set
 
@@ -91,4 +119,3 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 - [[reference/CLI Commands]] — every command that reads these variables.
 - [[reference/lex_config.md|lex_config.py]] — the Python-side configuration that complements these env vars.
 - [[installation]] — how `.env` is generated by `lex setup`.
-

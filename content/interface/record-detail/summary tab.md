@@ -65,3 +65,12 @@ This is especially useful for:
 Click the **Edit** button in the toolbar to switch to the edit form. All editable fields become input fields — text boxes, dropdowns, date pickers — pre-populated with the current values. Fields you don't have [[features/access-and-ui/permissions|permission]] to modify appear as read-only.
 
 After saving, you return to the Summary tab with the updated values reflected immediately.
+
+### File fields
+
+A file field shows the current attachment with controls to work with it:
+
+- **Download** the existing file, or **replace** it by choosing a new one.
+- **Remove** it by clearing the field and saving — the attachment is deleted and the field
+  is left empty. (Leaving a file field untouched keeps the current file; only an explicit
+  remove or replace changes it.)

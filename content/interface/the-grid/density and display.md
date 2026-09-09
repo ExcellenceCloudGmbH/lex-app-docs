@@ -17,7 +17,6 @@ Maximum density. Rows are tightly packed — you see the most data on screen at 
 - Models with many records (hundreds or thousands)
 - Identifying outliers at a glance
 
-<!-- 📸 SCREENSHOT: Grid in compact mode showing many rows of data -->
 
 ### Standard
 
@@ -28,7 +27,6 @@ The balanced default. Rows have enough space for comfortable reading while still
 - Models with longer text fields or descriptions
 - Mixed use — some scanning, some reading
 
-<!-- 📸 SCREENSHOT: Same grid in standard mode -->
 
 ### Comfortable
 
@@ -39,7 +37,6 @@ Maximum breathing room. Each row has generous space, making it easy to read mult
 - Models with rich text, notes, or long descriptions
 - Presentations or screen-sharing sessions
 
-<!-- 📸 SCREENSHOT: Same grid in comfortable mode -->
 
 ## Remembering Your Preference
 

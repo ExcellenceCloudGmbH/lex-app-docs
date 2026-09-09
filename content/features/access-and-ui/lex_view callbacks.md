@@ -82,6 +82,27 @@ flow = (
 lex_view("investor", on_flow_step=True, flow=flow)
 ```
 
+### Staying put after a save
+
+For repeated entry — enter a record, clear the form, enter the next — route to `STAY`
+instead of a path:
+
+```python
+from lex.lex_app.streamlit.embed import STAY, Flow
+
+flow = Flow().after_update("cashflow", STAY)
+```
+
+`STAY` means *don't navigate; stay on this form and clear it*. It exists as a constant
+rather than a bare string so a typo is an error where you wrote it, instead of a redirect
+that quietly never happens.
+
+> [!note] Only `create` and `update` can be routed
+> Writing a `delete` rule raises `FlowError` immediately. The app does emit a
+> record-deleted event, but it has no delete-redirect resolver — so such a rule would be
+> accepted, serialised, shipped, and then ignored. Rejecting it at the call site turns a
+> silent no-op into a message you can act on.
+
 For the simpler single-hop case you don't need a flow table at all — `redirect_after`, `redirect_after_create`, and `redirect_after_update` each take a single route (with the same `{resource}` / `{id}` tokens).
 
 ## Choosing a serializer
@@ -97,3 +118,14 @@ If the name isn't a serializer registered for that model, the embedded request r
 ## Existing embed options still work
 
 All the layout and routing options you already use remain available alongside the callbacks: `hide_toolbar`, `hide_actions`, `redirect_after` / `redirect_after_create` / `redirect_after_update`, `height`, `width`, `scrolling`, `extra_params`, and `base_url`. (In bidirectional mode `width` and `scrolling` are ignored — the component is always full width.)
+
+## Light and dark
+
+You don't need to pass anything. The embedded page takes its light/dark mode from the
+host page and stays in step with Lex App in both directions, without a reload — see
+[[interface/themes|Themes]].
+
+> [!warning] The `theme` argument is superseded
+> `lex_view()` still accepts `theme="light"` / `theme="dark"`, but the embedded app no
+> longer reads it — it follows the host page instead. Passing it has no effect; it is
+> kept so existing call sites don't break.
