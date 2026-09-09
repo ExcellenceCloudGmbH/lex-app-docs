@@ -85,6 +85,7 @@ When a dashboard is embedded in the Lex App frontend, the user's access token is
 - **Access control** — the dashboard can use the token to call the Lex App API with the user's permissions
 
 The token exchange is handled automatically by the `StreamlitIframe` component — no developer configuration needed beyond defining the dashboard methods on your models.
+The session keeps refreshing while the dashboard is open, including across normal Streamlit script reruns.
 
 ## In the Frontend
 
