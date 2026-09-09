@@ -159,7 +159,7 @@ LexLogger output is rendered in the frontend in real-time:
 - **Calculation Log Panel** — a slide-out drawer during calculation showing live Markdown-rendered output as the calculation progresses, including background calculations after an initial HTTP `202` response
 - **Execution tree** — the left pane lists every node — model instances *and* the string sections above — so you can click straight to the part of the log you care about
 - **Collapsible sections** — in the consolidated log, any section can be folded away; collapsing a heading hides its whole sub-tree, so you can focus on one phase of a long run at a time
-- **PDF Export** — the calculation log for any record can be exported as a PDF that renders just like the on-screen view — headings, tables, and code blocks intact — useful for compliance documentation and auditing
+- **PDF Export** — the calculation log for any record can be exported as a PDF that renders just like the on-screen view: headings, tables, fenced code blocks and even strikethrough survive the export, which makes it usable as compliance evidence
 - **Rich Rendering** — headings, tables, DataFrames, and code blocks are all rendered with proper formatting and syntax highlighting
 
 See the [[interface/record-detail/index|Record Detail]] page for how logs appear in context.
