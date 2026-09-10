@@ -78,7 +78,10 @@ def frontmatter_aliases(text: str) -> list[str]:
         return []
     block = text[3:end]
     out: list[str] = []
-    m = re.search(r"^aliases:\s*(.*)$", block, re.M)
+    # `[^\S\n]*` not `\s*`: \s matches the newline, so the greedy form ran
+    # past the end of the `aliases:` line and captured the first list item
+    # as though it were an inline value — yielding `- "getting started`.
+    m = re.search(r"^aliases:[^\S\n]*(.*)$", block, re.M)
     if not m:
         return out
     inline = m.group(1).strip()
