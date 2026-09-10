@@ -29,7 +29,7 @@ History fields (via [django-simple-history](https://django-simple-history.readth
 > `created_at` and `edited_at` are stored in UTC and served by the API with an explicit
 > `Z` designator (e.g. `2026-07-14T11:43:00Z`). Parse them as UTC and convert to local
 > time for display — the application already does this for you. This is the same contract
-> the [[features/tracking/bitemporal history#The REST API|`as_of` history queries]] follow.
+> the [[history-and-audit/bitemporal history#The REST API|`as_of` history queries]] follow.
 
 ## Lifecycle Hooks
 
@@ -154,7 +154,7 @@ def permission_read(self, user_context):
 | `streamlit_class_main(cls)` | Table-level (`@classmethod`) | Override for model-wide dashboard |
 
 > [!warning]
-> Always import `streamlit` **inside** these methods, not at the top of the file. See [[tutorial/Part 5 — Streamlit Dashboards]] for details.
+> Always import `streamlit` **inside** these methods, not at the top of the file. See [[start-here/tutorial/Part 5 — Streamlit Dashboards]] for details.
 
 ## History Tracking Control
 

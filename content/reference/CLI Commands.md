@@ -4,6 +4,13 @@ title: CLI Commands
 
 Lex App ships with a `lex` CLI tool for managing your application. Here's every command at a glance.
 
+![What `lex --help` prints — ten commands, not the whole set](../images/cli/lex-help.svg)
+
+> [!important] This page is longer than `lex --help` on purpose
+> `--help` lists only the commands the CLI implements itself. Everything below
+> that is a Django management command works but does not appear there, because
+> printing it would mean starting Django just to render help.
+
 ## Everyday Commands
 
 | Command         | What It Does                                                  |
@@ -129,12 +136,12 @@ lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
 
 | Command              | What It Does                                                       |
 | -------------------- | ------------------------------------------------------------------ |
-| `lex celery`         | Run a raw Celery command (forwards everything after it to `celery`). Used to start workers — see [[features/processing/celery and async calculations|Celery & async calculations]] for the full worker invocation. |
+| `lex celery`         | Run a raw Celery command (forwards everything after it to `celery`). Used to start workers — see [[calculations/celery and async calculations|Celery & async calculations]] for the full worker invocation. |
 | `lex celery-workers` | Start the standard worker pool with the framework's default settings |
 | `lex flower`         | Launch [Flower](https://flower.readthedocs.io/), the Celery monitoring dashboard, against the configured broker |
 
 > [!note]
-> If you use worker recovery, two standalone console scripts live outside the `lex` command tree: `lex-recovery-supervisor` (the always-on sweep loop) and `lex-recovery-beat` (the admin-scheduled recovery worker). See [[features/processing/celery and async calculations|Celery & async calculations]].
+> If you use worker recovery, two standalone console scripts live outside the `lex` command tree: `lex-recovery-supervisor` (the always-on sweep loop) and `lex-recovery-beat` (the admin-scheduled recovery worker). See [[calculations/celery and async calculations|Celery & async calculations]].
 
 ## AI Commands
 
