@@ -38,5 +38,8 @@ The `CalculationModel` base class gives you a built-in state machine (`NOT_CALCU
 ### [[calculations/celery and async calculations|Celery & Async Calculations]]
 When a calculation triggers many children, the framework can dispatch them to [Celery](https://docs.celeryq.dev/) workers in parallel. If Celery isn't available, the framework falls back to synchronous processing automatically — your code doesn't change either way.
 
+### [[calculations/scheduled calculations|Scheduled Calculations]]
+Run a calculation later rather than now — tonight at 18:00, or in six hours — and have every further trigger join the same pending run instead of queueing another. For the case where someone is still entering data but the report is only needed tomorrow.
+
 ### [[calculations/logging|Logging]]
 `LexLogger` produces rich, Markdown-formatted log entries during calculations. Tables, headings, DataFrames, code blocks — all stored in the database and displayed in the frontend's calculation log panel. Context-aware: it automatically links logs to the correct calculation and model instance.

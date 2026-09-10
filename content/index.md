@@ -47,6 +47,7 @@ Each section is something you will need at some point, in roughly the order you 
 | [[calculations/index\|Calculations]] | Calculation models, batch generation, Celery, scheduling, logging |
 | [[history-and-audit/index\|History & audit]] | Change history, bitemporal queries, audit logs |
 | [[access-and-dashboards/index\|Access & dashboards]] | Permissions, Streamlit dashboards, widgets, embedding |
+| [[ship-and-operate/index\|Ship & operate]] | Deploying, configuration, upgrading, monitoring, troubleshooting |
 | [[using-the-app/index\|Using the app]] | The grid, record pages, saved views, exports — for the people who use what you built |
 | [[reference/index\|Reference]] | CLI commands, environment variables, class internals |
 

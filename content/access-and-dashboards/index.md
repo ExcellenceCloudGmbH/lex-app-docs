@@ -27,3 +27,6 @@ Attach interactive [Streamlit](https://docs.streamlit.io/) visualizations to you
 
 ### [[access-and-dashboards/lex_view callbacks|lex_view Callbacks]]
 Embed Lex App screens inside Streamlit and react to user actions — create, update, select, navigation — directly in Python. Useful for guided multi-step workflows and Streamlit-driven control panels.
+
+### [[access-and-dashboards/widgets|Widgets]]
+Put the application's own controls on a dashboard — the real Calculate button, its status and its live log, wired to a real record. Not a re-implementation: the same control the grid uses, with the same permissions.
