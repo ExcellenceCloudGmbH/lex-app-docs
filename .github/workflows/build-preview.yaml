@@ -1,43 +1,66 @@
 name: Build Preview Deployment
 
+# Proves the site still builds before a pull request is merged.
+#
+# It had never run once. Three separate faults, all inherited from upstream
+# Quartz when this repo was vendored from it:
+#
+#   1. `if: github.repository == 'jackyzha0/quartz'` — upstream's own guard,
+#      never true here, so every run reported SKIPPED and read as green.
+#   2. `npx quartz build -d docs` — upstream keeps its manual in `docs/`.
+#      This repo has no `docs/`; the content is in `content/`, which is what
+#      `quartz.config.ts` already points at, so the flag is simply dropped.
+#   3. Actions pinned at @v6/@v5 from a newer upstream. `deploy.yml` is the
+#      workflow that demonstrably builds this site, so the runner and action
+#      versions here are aligned with it rather than guessed.
+
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 jobs:
   build-preview:
-    if: ${{ github.repository == 'jackyzha0/quartz' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Build Preview
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # git history, for CreatedModifiedDate
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Cache dependencies
-        uses: actions/cache@v5
+      - uses: actions/setup-python@v5
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          python-version: "3.12"
 
-      - run: npm ci
+      # Cheap, and they catch two things a successful build does not: Quartz
+      # renders an unresolvable [[link]] as plain text, and an Explorer sortFn
+      # that cannot survive serialisation throws in the browser rather than at
+      # build time. Run first, so either is reported in seconds instead of
+      # after a full site build.
+      - name: Check internal links
+        run: python scripts/check_links.py
 
-      - name: Check types and style
-        run: npm run check
+      - name: Check the Explorer sortFn is self-contained
+        run: python scripts/check_explorer_sortfn.py
 
+      - name: Install dependencies
+        run: npm ci
+
+      # Deliberately NOT `npm run check`. That is `tsc --noEmit && prettier .
+      # --check`, and prettier reports 74 unformatted files under content/ —
+      # pages written by hand, with their own line breaks, and not excluded by
+      # .prettierignore. Gating on it would make this check permanently red
+      # for formatting and useless as a build signal. Format the content in
+      # its own change if that is wanted.
       - name: Build Quartz
-        run: npx quartz build -d docs -v
+        run: npx quartz build
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: preview-build
           path: public
