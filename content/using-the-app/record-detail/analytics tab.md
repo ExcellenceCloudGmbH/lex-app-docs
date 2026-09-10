@@ -47,10 +47,17 @@ All of these run live – they compute from the current data, so they're always 
 
 <!-- 📸 TODO: the Analytics tab showing an embedded Streamlit dashboard.
 
-     Same blocker as access-and-dashboards/widgets: the e2e project has no
-     dashboard, and the capture harness does not start `lex streamlit`, so
-     this tab currently renders an empty embed. A figure of that would show
-     the feature not working. -->
+     BLOCKED on authentication, not on a dashboard. The e2e project now has
+     one (Fund.streamlit_main), and the capture harness can start
+     `lex streamlit` on request — both were added for this. What stops it is
+     that the Streamlit proxy authenticates with a Keycloak JWT while the
+     harness signs in with a Django admin session, so the embed renders
+     "Authentication Failed".
+
+     Wiring JWT issuance into the fixture is real auth work that the security
+     specs have a stake in; it is not a screenshot task. The capture exists
+     and is skipped (`docshots.spec.ts`, "the Analytics tab") — when someone
+     does that work, the test passes and the figure appears. -->
 
 ## When the Analytics Server Is Offline
 
