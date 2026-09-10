@@ -9,9 +9,23 @@ import * as Component from "./quartz/components"
  * to the default, the sections read: access, calculations, history, migrating,
  * model, reference, ship, start-here, using. "Start here" ninth.
  *
- * The whole ranking has to live INSIDE the function. Explorer serialises this
- * with `sortFn.toString()` and re-evaluates it in the browser, so anything it
- * closes over is undefined by the time it runs.
+ * ── Two rules this function must obey ────────────────────────────────────
+ *
+ * Explorer serialises this with `sortFn.toString()` into a data attribute and
+ * the client runs `new Function("return " + str)()`. That evaluates in global
+ * scope, so the body must reference NOTHING outside itself.
+ *
+ *   1. No closure over outer variables. Hence ORDER declared inside.
+ *   2. **No inner function declarations, not even an arrow assigned to a
+ *      const.** This is the one that actually broke the sidebar. esbuild runs
+ *      with --keep-names, which rewrites `const rank = (n) => …` into
+ *      `const rank = __name((n) => …, "rank")`. `__name` is a bundle-scope
+ *      helper that does not exist where the string is evaluated, so the first
+ *      comparison threw ReferenceError, `trie.sort()` died and the Explorer
+ *      rendered empty. Verified against esbuild directly: a body with an
+ *      inner arrow emits `__name` inside it; a body without one does not.
+ *
+ * So: straight-line code only. It is repetitive on purpose.
  */
 const explorerOptions = {
   sortFn: (a: any, b: any) => {
@@ -26,12 +40,10 @@ const explorerOptions = {
       // inside using-the-app
       "navigation", "the-grid", "record-detail", "themes",
     ]
-    const rank = (n: any) => {
-      const i = ORDER.indexOf(n.slugSegment)
-      return i === -1 ? ORDER.length : i
-    }
-    const ra = rank(a)
-    const rb = rank(b)
+    const ia = ORDER.indexOf(a.slugSegment)
+    const ib = ORDER.indexOf(b.slugSegment)
+    const ra = ia === -1 ? ORDER.length : ia
+    const rb = ib === -1 ? ORDER.length : ib
     if (ra !== rb) return ra - rb
 
     // Unranked siblings keep Quartz's own behaviour: folders first, then
