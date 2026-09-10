@@ -1,5 +1,5 @@
 ---
-title: Data Pipeline
+title: "Model Your Data"
 aliases:
   - "features/data-pipeline/index"
 ---

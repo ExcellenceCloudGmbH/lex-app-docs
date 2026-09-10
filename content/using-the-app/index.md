@@ -1,5 +1,5 @@
 ---
-title: The Interface
+title: "Using the App"
 aliases:
   - "interface/index"
 ---
@@ -37,7 +37,7 @@ A stable, professional sidebar organizes your models into groups. Global search 
 
 ## How It Connects
 
-The interface sits on top of the [[features/index|building blocks]]. Every feature you see here — the grid, the audit log, the history timeline — is powered by a backend building block that a developer configured. As a user, you get all of this out of the box without writing a line of code.
+The interface sits on top of the [[home|what the framework gives you]]. Every feature you see here — the grid, the audit log, the history timeline — is powered by a backend building block that a developer configured. As a user, you get all of this out of the box without writing a line of code.
 
 | What You See | What Powers It |
 |---|---|

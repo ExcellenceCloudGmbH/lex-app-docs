@@ -1,5 +1,5 @@
 ---
-title: Processing
+title: "Calculations"
 aliases:
   - "features/processing/index"
 ---

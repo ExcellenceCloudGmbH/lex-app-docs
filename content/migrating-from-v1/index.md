@@ -1,5 +1,5 @@
 ---
-title: Migration Guide
+title: "Migrating from V1"
 aliases:
   - "migration/index"
 ---

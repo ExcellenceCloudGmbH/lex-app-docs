@@ -174,4 +174,4 @@ grep -rn "ModificationRestriction\|modification_restriction" --include="*.py" .
 - [ ] `permission_*` methods added directly to models
 - [ ] `lex Init` run to sync permissions to Keycloak
 
-Congratulations — your V1 project code is fully refactored! For ongoing development, explore the [[features/index|building blocks]] and the [[reference/index|reference section]].
+Congratulations — your V1 project code is fully refactored! For ongoing development, explore the [[home|what the framework gives you]] and the [[reference/index|reference section]].

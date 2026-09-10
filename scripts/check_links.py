@@ -147,6 +147,7 @@ def main() -> int:
 
     pages = sorted(p for p in CONTENT.rglob("*.md") if not is_ignored(p))
     known, counts = build_index(pages)
+    root_pages = {p.stem for p in pages if p.parent == CONTENT}
 
     broken: list[tuple[str, int, str]] = []
     ambiguous: list[tuple[str, int, str]] = []
@@ -165,7 +166,10 @@ def main() -> int:
                     continue            # [[#anchor]] — same page
                 if t not in known:
                     broken.append((rel, lineno, t))
-                elif "/" not in t and counts.get(t, 0) > 1:
+                elif "/" not in t and counts.get(t, 0) > 1 and t not in root_pages:
+                    # Quartz resolves a bare name by SHORTEST path, so a
+                    # root-level page wins outright over any nested page of
+                    # the same name. `[[index]]` is the home page, always.
                     ambiguous.append((rel, lineno, t))
             for m in MDLINK.finditer(line):
                 href = m.group(1).split()[0].strip("<>")

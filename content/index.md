@@ -1,6 +1,7 @@
 ---
 title: Lex App
 aliases:
+  - "home"
   - "getting started"
   - "features/index"
 ---

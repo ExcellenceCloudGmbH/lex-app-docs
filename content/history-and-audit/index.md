@@ -1,5 +1,5 @@
 ---
-title: Tracking & Audit
+title: "History & Audit"
 aliases:
   - "features/tracking/index"
 ---

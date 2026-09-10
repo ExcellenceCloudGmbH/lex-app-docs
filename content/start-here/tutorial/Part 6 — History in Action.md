@@ -123,7 +123,7 @@ And here's how much code that took:
 
 Now that you've completed the tutorial, explore the rest of the documentation:
 
-- [[features/index|All building blocks]] — everything Lex App gives you out of the box
+- [[home|All building blocks]] — everything Lex App gives you out of the box
 - [[calculations/calculation models|Calculations]] — deep-dive into the state machine and [Celery](https://docs.celeryq.dev/) support
 - [[history-and-audit/bitemporal history|Bitemporal History]] — understand the two-level architecture
 - [[access-and-dashboards/streamlit dashboards|Streamlit Dashboards]] — build more complex visualizations

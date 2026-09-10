@@ -1,5 +1,5 @@
 ---
-title: Access & UI
+title: "Access & Dashboards"
 aliases:
   - "features/access-and-ui/index"
 ---
