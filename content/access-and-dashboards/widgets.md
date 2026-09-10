@@ -6,9 +6,18 @@ A Streamlit dashboard can host the application's *own* controls. Not a screensho
 
 Use this when a dashboard is where the work happens: a report page where the reader should be able to re-run the calculation they are looking at, without leaving for the grid and coming back.
 
-<!-- 📸 TODO: screenshot of a Streamlit page with a Calculate control and its
-     live log embedded beside a chart. Save as
-     images/access-and-dashboards/widgets-on-a-dashboard.png -->
+<!-- 📸 TODO: a Streamlit page with a Calculate control and its live log
+     embedded beside a chart.
+
+     BLOCKED, not forgotten. The capture harness (docshots.spec.ts in
+     process-admin-general-client) can reach any screen the e2e project has,
+     and that project has no Streamlit dashboard at all. Unblocking needs:
+       1. a dashboard in e2e/e2e_project that calls lex_widgets(), and
+       2. `lex streamlit` added to playwright.config.ts's webServer list —
+          the harness starts only Django and Vite today, so an embedded
+          dashboard renders as a failed iframe.
+     Neither is risky (no spec asserts the sidebar), but both touch shared
+     test config, which is why this is a note and not a half-done figure. -->
 
 ## One widget
 

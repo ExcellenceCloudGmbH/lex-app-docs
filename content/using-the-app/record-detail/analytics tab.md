@@ -45,8 +45,12 @@ Because dashboards are powered by Streamlit, the possibilities are wide. Common 
 
 All of these run live – they compute from the current data, so they're always up to date.
 
-> [!example]- 📸 Screenshot — Analytics tab with Streamlit dashboard
-> ![Analytics tab showing a record-level Streamlit dashboard](../../images/record-detail/analytics-tab.jpeg)
+<!-- 📸 TODO: the Analytics tab showing an embedded Streamlit dashboard.
+
+     Same blocker as access-and-dashboards/widgets: the e2e project has no
+     dashboard, and the capture harness does not start `lex streamlit`, so
+     this tab currently renders an empty embed. A figure of that would show
+     the feature not working. -->
 
 ## When the Analytics Server Is Offline
 
