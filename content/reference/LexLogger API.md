@@ -105,4 +105,4 @@ with model_logging_context("Processing"):
 
 Strings and model instances nest freely with each other.
 
-See [[features/processing/logging]] for more examples and usage patterns.
+See [[calculations/logging]] for more examples and usage patterns.

@@ -108,7 +108,7 @@ class HeavyReport(CalculationModel):
 > [!note]
 > Set `CELERY_ACTIVE=true` in your project's `.env` file to enable Celery dispatch. You also need a running Redis instance (or [Memurai](https://www.memurai.com/get-memurai) on Windows) as the message broker.
 
-See [[features/processing/celery and async calculations]] for the full setup guide — environment variables, running workers, and the `WaitForTasks` / `FireAndForget` context managers.
+See [[calculations/celery and async calculations]] for the full setup guide — environment variables, running workers, and the `WaitForTasks` / `FireAndForget` context managers.
 
 ## Cancelling a Running Calculation
 
@@ -149,7 +149,7 @@ class ParentReport(CalculationModel):
 
 ## Batch Generation with CalculatedModelMixin
 
-When you need to generate **many records** from dimensional combinations (e.g., one liability per award per upload), use `CalculatedModelMixin` instead. It provides a combination engine, duplicate handling, and parallel dispatch — see [[reference/CalculatedModelMixin Internals]] for the API reference and [[features/processing/batch calculations]] for the full guide.
+When you need to generate **many records** from dimensional combinations (e.g., one liability per award per upload), use `CalculatedModelMixin` instead. It provides a combination engine, duplicate handling, and parallel dispatch — see [[reference/CalculatedModelMixin Internals]] for the API reference and [[calculations/batch calculations]] for the full guide.
 
 ## Inherited Features
 
@@ -159,7 +159,7 @@ Since `CalculationModel` extends `LexModel`, your calculation models also get:
 - `pre_validation()` / `post_validation()` hooks
 - All `permission_*()` methods
 - `streamlit_main()` / `streamlit_class_main()` for dashboards
-- Full [[features/tracking/bitemporal history|bitemporal history]] (unless listed in `untracked_models`)
+- Full [[history-and-audit/bitemporal history|bitemporal history]] (unless listed in `untracked_models`)
 
 ## Quick Reference
 

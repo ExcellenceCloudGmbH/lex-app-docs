@@ -11,7 +11,7 @@ title: "CalculatedModelMixin Internals"
 from lex.core.mixins.CalculatedModelMixin import CalculatedModelMixin
 ```
 
-For the conceptual guide with examples and patterns, see [[features/processing/batch calculations]].
+For the conceptual guide with examples and patterns, see [[calculations/batch calculations]].
 
 ## Class Attributes
 
@@ -124,7 +124,7 @@ Since `CalculatedModelMixin` extends `LexModel`, your batch models also get:
 - `created_by` / `edited_by` tracking
 - `pre_validation()` / `post_validation()` hooks
 - All `permission_*()` methods
-- Full [[features/tracking/bitemporal history|bitemporal history]] (unless listed in `untracked_models`)
+- Full [[history-and-audit/bitemporal history|bitemporal history]] (unless listed in `untracked_models`)
 
 ## Error Hierarchy
 

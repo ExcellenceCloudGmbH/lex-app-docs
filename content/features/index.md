@@ -16,14 +16,14 @@ Every Lex App project follows the Extract → Transform → Load pattern. Your f
 
 ## Building Blocks by Category
 
-### [[features/data-pipeline/index|Data Pipeline]]
-How data enters and is structured — [[features/data-pipeline/serializers|serializers]], [[features/data-pipeline/lifecycle hooks|lifecycle hooks]], and [[features/data-pipeline/model structure|model structure]].
+### [[model-your-data/index|Data Pipeline]]
+How data enters and is structured — [[model-your-data/serializers|serializers]], [[model-your-data/lifecycle hooks|lifecycle hooks]], and [[model-your-data/model structure|model structure]].
 
-### [[features/processing/index|Processing]]
-How business logic runs — [[features/processing/calculations|calculations]], [[features/processing/celery and async calculations|Celery async dispatch]], and [[features/processing/logging|LexLogger]] for rich calculation output.
+### [[calculations/index|Processing]]
+How business logic runs — [[calculations/calculation models|calculations]], [[calculations/celery and async calculations|Celery async dispatch]], and [[calculations/logging|LexLogger]] for rich calculation output.
 
-### [[features/tracking/index|Tracking & Audit]]
-Every action leaves a trail — [[features/tracking/audit logs|audit logs]] for operation tracking and [[features/tracking/bitemporal history|bitemporal history]] for data over time.
+### [[history-and-audit/index|Tracking & Audit]]
+Every action leaves a trail — [[history-and-audit/audit logs|audit logs]] for operation tracking and [[history-and-audit/bitemporal history|bitemporal history]] for data over time.
 
-### [[features/access-and-ui/index|Access & UI]]
-Who sees what and how it's presented — [[features/access-and-ui/permissions|permissions]] and [[features/access-and-ui/streamlit dashboards|Streamlit dashboards]].
+### [[access-and-dashboards/index|Access & UI]]
+Who sees what and how it's presented — [[access-and-dashboards/permissions|permissions]] and [[access-and-dashboards/streamlit dashboards|Streamlit dashboards]].

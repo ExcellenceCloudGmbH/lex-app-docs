@@ -6,7 +6,7 @@ Lex App is an [open-source](https://github.com/ExcellenceCloudGmbH/lex-app) [Pyt
 
 ## Who Is This For?
 
-If you're a **new developer**, start with [[installation]] and then try the [[tutorial/index|TeamBudget Tutorial]] to build a real app. If you're a **business analyst**, you'll want to focus on [[features/processing/calculations|calculations]], [[features/access-and-ui/permissions|permissions]], and [[features/access-and-ui/streamlit dashboards|dashboards]]. If you're **migrating from V1**, head to the [[migration/refactoring/index|Refactoring Series]] first.
+If you're a **new developer**, start with [[start-here/installation]] and then try the [[start-here/tutorial/index|TeamBudget Tutorial]] to build a real app. If you're a **business analyst**, you'll want to focus on [[calculations/calculation models|calculations]], [[access-and-dashboards/permissions|permissions]], and [[access-and-dashboards/streamlit dashboards|dashboards]]. If you're **migrating from V1**, head to the [[migrating-from-v1/refactoring/index|Refactoring Series]] first.
 
 ## Quick Start
 
@@ -24,7 +24,7 @@ lex Init
 lex start --reload --loop asyncio lex_app.asgi:application
 ```
 
-For the full walkthrough, continue to [[installation]].
+For the full walkthrough, continue to [[start-here/installation]].
 
 ## Prerequisites
 

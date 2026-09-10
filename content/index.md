@@ -15,19 +15,19 @@ flowchart LR
     (Reports/)"]
 ```
 
-**Upload models** ingest raw data — CSV files, Excel sheets, API payloads. **Input models** hold your business entities and domain logic. **Report models** compute summaries, run analytics, and surface results through interactive [Streamlit](https://docs.streamlit.io/) dashboards. Every step is tracked with [[features/tracking/bitemporal history|bitemporal history]], every action logged, every permission enforced.
+**Upload models** ingest raw data — CSV files, Excel sheets, API payloads. **Input models** hold your business entities and domain logic. **Report models** compute summaries, run analytics, and surface results through interactive [Streamlit](https://docs.streamlit.io/) dashboards. Every step is tracked with [[history-and-audit/bitemporal history|bitemporal history]], every action logged, every permission enforced.
 
 ## Get Started
 
-1. [[installation|Install Lex App]] and set up your environment
-2. [[project structure|Understand the project structure]] and the ETL folder convention
-3. Work through the [[tutorial/index|TeamBudget Tutorial]] to build a real app
+1. [[start-here/installation|Install Lex App]] and set up your environment
+2. [[start-here/project structure|Understand the project structure]] and the ETL folder convention
+3. Work through the [[start-here/tutorial/index|TeamBudget Tutorial]] to build a real app
 4. Explore [[features/index|all building blocks]] or dive into the [[reference/index|reference]]
 
 ## Explore the Interface
 
-Already using Lex App? Explore the [[interface/index|user interface documentation]] — the [[interface/the-grid/index|data grid]], [[interface/record-detail/index|record detail]], [[interface/the-grid/saved views|saved views]], [[interface/themes|themes]], and more.
+Already using Lex App? Explore the [[using-the-app/index|user interface documentation]] — the [[using-the-app/the-grid/index|data grid]], [[using-the-app/record-detail/index|record detail]], [[using-the-app/the-grid/saved views|saved views]], [[using-the-app/themes|themes]], and more.
 
 ## Migrating from V1?
 
-If you're moving an existing project from `generic_app`, follow the [[migration/refactoring/index|step-by-step refactoring series]]. It covers everything from import updates to database migration.
+If you're moving an existing project from `generic_app`, follow the [[migrating-from-v1/refactoring/index|step-by-step refactoring series]]. It covers everything from import updates to database migration.
