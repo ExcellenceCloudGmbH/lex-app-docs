@@ -30,8 +30,7 @@ Each field gets its own card with a label and value. Fields are rendered intelli
 | **Foreign Key** | Linked name of the related record, clickable |
 | **JSON** | Formatted, expandable view |
 
-> [!example]- 📸 Screenshot — Summary tab with field cards
-> ![Summary tab showing field cards in a 2-column layout](../../images/record-detail/summary-tab.jpeg)
+![The Summary tab, showing the record's own fields](../../images/record-detail/summary-tab.svg)
 
 ## Column Layout
 

@@ -49,9 +49,22 @@ The web interface is a built bundle vendored into the `lex-app` package, and a h
 
 **Upgrading `lex-app` does not upgrade the interface.** The two are versioned and deployed independently, and an older interface serving a newer backend is a supported, common state. A feature that spans both — a new control that calls a new endpoint — arrives only when both sides have moved.
 
-<!-- 📸 TODO: diagram of a deployed installation — frontend pod, backend pod,
-     workers, Redis, PostgreSQL — showing that the frontend is independently
-     versioned. Save as images/ship-and-operate/deployment-topology.png -->
+```mermaid
+flowchart TB
+    U["Browser"] --> FE["Frontend pod
+    its own image, its own version"]
+    U --> BE["Backend pod
+    lex start"]
+    FE -. "REST + websocket" .-> BE
+    BE --> DB[("PostgreSQL")]
+    BE --> RD[("Redis")]
+    WK["Celery workers"] --> DB
+    WK --> RD
+    ST["Streamlit"] --> BE
+```
+
+The dotted line is the one to remember: the interface talks to the backend
+over the API, and the two are upgraded independently.
 
 ## Related
 

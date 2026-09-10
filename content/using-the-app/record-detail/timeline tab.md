@@ -21,8 +21,7 @@ Above the visualization, a summary strip shows:
 
 The **As Of** control and **Visible Versions** badge let you adjust which versions are displayed. Use the zoom controls to focus on a specific time range.
 
-> [!example]- 📸 Screenshot — Timeline with version bars
-> ![Timeline tab showing Valid Time Visualization with version bars](../../images/record-detail/timeline-tab.jpeg)
+![The Timeline tab, showing each version as a bar on a time axis](../../images/record-detail/timeline-tab.svg)
 
 ## Two Time Dimensions
 

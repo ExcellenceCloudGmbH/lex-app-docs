@@ -24,8 +24,7 @@ The Audit Log tab displays a grid of all API operations that affected the curren
 | **Calculation Record** | The related record (e.g., "Marketing — 1") |
 | **Actions** | Quick view link to inspect the full entry |
 
-> [!example]- 📸 Screenshot — Audit log with expanded JSON payload
-> ![Audit Log tab showing operations grid with expandable JSON payload](../../images/record-detail/audit-log-tab.jpeg)
+![The Audit Log tab, showing who changed what and when](../../images/record-detail/audit-log-tab.svg)
 
 ## The Status Lifecycle
 
