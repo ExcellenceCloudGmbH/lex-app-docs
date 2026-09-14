@@ -18,6 +18,9 @@ Lex App reads its runtime configuration from environment variables — usually l
 | Variable               | Purpose                                                                                       |
 | ---------------------- | --------------------------------------------------------------------------------------------- |
 | `CELERY_ACTIVE`        | `true` to let the framework dispatch calculations to Celery workers when they're available. `@lex_shared_task` still works, but root `CalculationModel` runs no longer require it just to use Celery. Otherwise tasks run synchronously in the current process. See [[calculations/celery and async calculations]]. |
+| `FLOWER_ADDRESS`       | Interface [Flower](https://flower.readthedocs.io/) binds to when you run `lex flower`. Default `127.0.0.1` — change it to `0.0.0.0` to reach the dashboard from outside the container. |
+| `FLOWER_PORT`          | Port Flower listens on. Default `5555`. |
+| `FLOWER_URL_PREFIX`    | Sub-path Flower is served under, when it sits behind a reverse proxy rather than at the root. Empty by default. |
 | `IS_RUNNING_IN_CELERY` | Set to `true` inside Celery worker processes so the framework knows it's executing a queued task rather than a web request. Set automatically when you launch via `lex celery` / `lex celery-workers`; if you run a standalone recovery worker such as `lex-recovery-beat`, export it there too. |
 
 ## Calculation threading
@@ -77,8 +80,26 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `KEYCLOAK_REALM`        | Name of the Keycloak realm the framework targets when syncing models, fields, and groups. |
 | `KEYCLOAK_REALM_NAME`   | Display name of the realm (used during bootstrap). Falls back to `KEYCLOAK_REALM` if unset. |
 | `OIDC_RP_CLIENT_ID`     | Your project's OIDC client ID — the identifier the browser logs in against.               |
+| `KEYCLOAK_URL`          | Base URL of the Keycloak server, e.g. `https://auth.excellence-cloud.de`. Read by the admin client, the dashboard proxy and the frontend config endpoint. Required — there is no default. |
+| `OIDC_RP_CLIENT_SECRET` | Client secret for the confidential OIDC client. Required for `lex init` to talk to the Keycloak admin API. |
+| `OIDC_RP_CLIENT_UUID`   | Keycloak's *internal* UUID for that client — not the client ID. Used to address the client's authorization endpoints directly; `lex init --bootstrap` fills it in for you. |
+| `KEYCLOAK_CLIENT_ID`    | Client ID handed to the browser at runtime (served as `REACT_APP_KEYCLOAK_CLIENT_ID`). Usually the same value as `OIDC_RP_CLIENT_ID`. |
+| `KEYCLOAK_INTERNAL_CLIENT_ID` | Client ID used for server-to-server calls to the platform API, as opposed to the one the browser logs in with. |
+| `KEYCLOAK_AUTHZ_REQUEST_TIMEOUT` | Timeout, in seconds, for calls to Keycloak's authorization endpoints. Raise it if `lex init` times out against a slow or distant realm. |
+| `INSTANCE_CONTROLLER_BASE_URL` | Base URL of the instance-controller service that `lex init --bootstrap` opens in the browser. |
+| `KEYCLOAK_SETUP_CALLBACK_URL` | URL that bootstrap flow calls back with the credentials it obtained. Both of these have working defaults — set them only against a self-hosted controller. |
+| `OIDC_ISSUER`           | Expected `iss` claim when the dashboard proxy validates a token. Defaults to the realm URL derived from `KEYCLOAK_URL` and `KEYCLOAK_REALM`; set it only when the issuer the tokens carry differs from the URL you reach Keycloak on (a split-horizon DNS setup, typically). |
 
-Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin credentials) are read at the Django-settings layer. `lex setup` writes a complete set into your `.env` — start from that file rather than constructing the list by hand.
+`lex setup` writes a starting set of these into `.env` and `lex init --bootstrap`
+fills in the ones the browser flow can discover. Start from that file rather
+than constructing the list by hand.
+
+> [!warning] Four of these are load-bearing together
+> OIDC is enabled only when `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `OIDC_RP_CLIENT_ID`
+> **and** `OIDC_RP_CLIENT_SECRET` are all set. Miss one and authentication is
+> switched off silently — the app starts, serves pages, and never asks anyone to
+> log in. If a deployment is unexpectedly open, check all four before anything
+> else.
 
 ## Mail
 
@@ -103,6 +124,145 @@ Additional `KEYCLOAK_*` / `OIDC_*` variables (server URL, client secret, admin c
 
 > [!tip]
 > `LEX_LOG_LEVEL` and `LOG_LEVEL` are independent. For day-to-day debugging of your own app and the framework, reach for `LEX_LOG_LEVEL=DEBUG` first — it keeps the console readable. Drop down to `LOG_LEVEL=DEBUG` only when you suspect the issue is in a third-party library.
+
+## Database
+
+The app builds its `DATABASES["default"]` by picking one of several
+preconfigured blocks. `DATABASE_DEPLOYMENT_TARGET` chooses the block; the rest
+fill it in.
+
+| Variable | Purpose |
+|---|---|
+| `DATABASE_DEPLOYMENT_TARGET` | Which connection profile to use: `local` (SQLite file, for a machine with no PostgreSQL), `default` (PostgreSQL on `localhost`), `GCP`, `DOCKER-COMPOSE`, or `K8S`. Default `default`. The three deployed profiles are identical apart from `K8S`, which disables TLS on the connection because the sidecar terminates it. |
+| `DATABASE_NAME`   | Database name. Read by the `GCP`, `DOCKER-COMPOSE` and `K8S` profiles; the `default` profile derives the name from your repository name instead. |
+| `DATABASE_DOMAIN` | Database host for those same three profiles. |
+| `POSTGRES_USERNAME` | Database user. Default `django`. |
+| `POSTGRES_PASSWORD` | Database password. |
+
+> [!note]
+> If one of these is missing, the connection is built with the literal string
+> `envvar_not_existing` in its place, and the failure surfaces as a connection
+> error naming a host or database you have never heard of. That string in a
+> stack trace means "an env var was not set", not "DNS is broken".
+
+## Redis
+
+| Variable | Purpose |
+|---|---|
+| `REDIS_HOST` | Host of the Redis instance. Used for the cache, the Celery result backend, and the cluster cancel index. |
+| `REDIS_USERNAME` / `REDIS_PASSWORD` | Credentials for it. |
+
+All three are combined into a `redis://` URL — there is no separate URL
+variable for the app itself. (The dashboard proxy has its own
+`TOKEN_REDIS_URL` / `REDIS_URL`, listed under Streamlit above, because it can
+run as a separate process against a different instance.)
+
+## Deployment identity
+
+| Variable | Purpose |
+|---|---|
+| `DEPLOYMENT_ENVIRONMENT` | Presence flag: set to anything on a deployed instance, leave unset on a developer machine. When set, `lex start` runs `collectstatic` first, the audit-log cache switches to its shared backend, and the framework is allowed to call the platform API. Unset, all three are skipped. |
+| `LEX_ENVIRONMENT_TAG` | Set to `dev` to turn Django's `DEBUG` on. Any other value — including unset — leaves it off. This is the only switch for `DEBUG`; there is no `DJANGO_DEBUG`. |
+| `KUBERNETES_ENGINE` | Anything other than `NONE` tells the framework it is running under Kubernetes, which changes how static files are served. Default `NONE`. |
+| `K8S_NAMESPACE` | Namespace, used to build storage paths for uploaded files. |
+| `INSTANCE_RESOURCE_IDENTIFIER` | The name that distinguishes this instance from every other one sharing infrastructure. It becomes the Celery queue name, the cache-key prefix, the Redis key prefix for recovery and cancellation, and part of the upload path. Two instances that share a Redis or a broker **must** have different values here. Defaults vary by call site (`celery`, `local`) — set it explicitly on anything deployed. |
+| `PROJECT_ROOT` | Absolute path to your project. Everything that resolves a project-relative path — `lex_config.py`, `initial_data`, migrations — starts here. Defaults to the current working directory, which is why `lex` commands behave differently depending on where you run them. |
+| `PROJECT_DISPLAY_NAME` | Name shown in the frontend's title bar. Defaults to the repository name. |
+| `DOMAIN_BASE` | Hostname of the platform API the framework calls for transactional mail and client-role lookups. |
+| `PUBLIC_URL` | Fallback public URL for the dashboard when `STREAMLIT_PUBLIC_URL` is unset. |
+| `LEX_API_KEY` | API key for those platform API calls, and the key the framework's own health endpoint expects. See [[ship-and-operate/monitoring and health]]. |
+
+## File storage
+
+| Variable | Purpose |
+|---|---|
+| `STORAGE_TYPE` | Where uploaded files go: `SHAREPOINT`, `GCS`, or `LEGACY`/unset for local disk. |
+| `GS_BUCKET_NAME` | Bucket name when `STORAGE_TYPE=GCS`. |
+| `SHAREPOINT_URL` | Site URL when `STORAGE_TYPE=SHAREPOINT`. Default `local`. |
+| `SHAREPOINT_APP_CLIENT_ID` | Azure app registration client ID for SharePoint access. |
+| `SHAREPOINT_API_TENANT_NAME` | Azure tenant name. |
+| `SHAREPOINT_API_CERTIFICATE_PATH` | Path to the certificate used to authenticate as that app. |
+| `SHAREPOINT_API_CERTIFICATE_THUMBPRINT` | Thumbprint of that certificate. Azure requires both the file and its thumbprint. |
+| `FILE_PREVIEW_LINK_BASE` | Base URL used to build the in-browser preview link for a stored document. |
+
+## Celery tuning
+
+Distinct from the recovery knobs above: these bound a task's own execution
+rather than what happens when a worker dies.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `CELERY_TASK_TIMEOUT`    | `3600` | Hard time limit, in seconds, for a single task. |
+| `CELERY_MAX_RETRIES`     | `3`    | Retries for a task that raises. |
+| `CELERY_RETRY_DELAY`     | `60`   | Seconds between those retries. |
+| `CELERY_VALIDATE_CONFIG` | `True` | Whether the worker checks its broker and backend configuration at startup. Leave it on: the check turns a class of silent misconfiguration into a startup error. |
+
+## Dashboard proxy: tokens and sessions
+
+These govern how the [[access-and-dashboards/streamlit dashboards|dashboard proxy]]
+handles the tokens it holds on a user's behalf. The defaults are correct for a
+normal deployment.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `TOKEN_IDLE_TTL_SECONDS` | `28800` (8 h) | How long a dashboard session survives with no activity before its tokens are dropped. |
+| `TOKEN_EXPIRY_SKEW_SECONDS` | `30` | How far before real expiry a token is treated as expired, so a refresh happens before a request fails. |
+| `TOKEN_REDIS_PREFIX` | `st_proxy_tokens:` | Key prefix for the token store. Change it when two deployments share one Redis. |
+| `ST_ACCESS_COOKIE_MAX_AGE` | `600` | Lifetime of the proxy's access cookie. |
+| `JWT_ALG` | `RS256` | Algorithm the proxy requires when validating tokens. |
+| `JWT_LEEWAY_SECONDS` | `2` | Clock-skew tolerance for `exp` and `nbf`. |
+| `TRUSTED_PROXY_HOSTS` | `*` | Hosts the proxy accepts forwarded headers from. Narrow this if the proxy is reachable from outside your ingress. |
+| `UPSTREAM_KEEPALIVE_EXPIRY_SECONDS` | `2` | How long an idle upstream connection to Streamlit is kept open. |
+| `LEX_PROXY_SHUTDOWN_TIMEOUT` | `5` | Seconds `lex streamlit` waits for the proxy thread to stop before giving up on a clean shutdown. |
+| `STREAMLIT_PUBLIC_URL` | — | Public URL of the dashboard. Falls back to `PUBLIC_URL`. |
+| `LEX_STREAMLIT_BASE_URL_PATH` / `STREAMLIT_SERVER_BASE_URL_PATH` | — | Sub-path the dashboard is mounted under, when it is not at the root. The first wins if both are set. |
+| `LEX_STREAMLIT_QUACKBACK` | on | The feedback launcher on dashboard pages. Opt **out** with `0`, `false`, `no`, or `off` — a deployment that already shows the widget in the main app normally wants it here too. |
+| `SET_ST_ACCESS_COOKIE` | `true` | Whether the proxy sets its short-lived access cookie at all. |
+| `PERSIST_JWT_AUTH_TO_SESSION` | `true` | Whether a validated token is written into the session, so later requests skip revalidation. |
+| `JWT_VERIFY_ISSUER` | `false` | Whether the `iss` claim is checked against `OIDC_ISSUER`. Off by default because a mismatch between the internal and external Keycloak URL is common and non-fatal; turn it on once you have confirmed the issuer your tokens actually carry. |
+| `OIDC_VERIFY_SSL` | `true` | TLS verification on calls to Keycloak. Only turn this off against a local server with a self-signed certificate. |
+| `UPSTREAM_USE_SYSTEM_PROXY` | `false` | Whether HTTP calls to Streamlit honour the system proxy variables. Off by default: an `HTTP_PROXY` meant for outbound traffic will otherwise swallow a loopback connection. |
+| `WS_UPSTREAM_USE_SYSTEM_PROXY` | `false` | The same switch for WebSocket connections, which is separate because the two use different clients. |
+| `UPSTREAM_MAX_CONNECTIONS` | `100` | Connection-pool ceiling for the proxy's calls to Streamlit. |
+| `UPSTREAM_MAX_KEEPALIVE` | `20` | How many of those may stay idle in the pool. |
+| `LEX_SERVE_STATIC_LOCALLY` | `true` | Whether the proxy serves Streamlit's static assets itself instead of passing them upstream. |
+| `LEX_PROXY_ACCESS_LOG` | `true` | Access logging for the proxy. |
+| `LEX_PROXY_ACCESS_LOG_STATIC` | `false` | Whether that log includes static-asset requests. Off by default — they dominate the volume and say nothing. |
+
+## Audit logging
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `INITIAL_DATA_AUDIT_LOGGING` | on | Whether loading initial data writes audit-log entries. Accepts `true`/`1`/`yes`/`on`/`enabled` and their negatives. See [[history-and-audit/audit logs]]. |
+
+> [!warning]
+> A value this variable does not recognise — `maybe`, a stray quote, a typo —
+> raises at startup rather than falling back to the default. That is deliberate:
+> a misspelled switch that silently keeps auditing on is worse than one that
+> stops and tells you. The error names the variable and lists the accepted
+> values.
+
+## Behaviour switches
+
+Two knobs that change how the framework behaves rather than what it connects to.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LEX_METADATA_CACHE_SECONDS` | `30` | How long a browser may reuse the model-structure response. This is the staleness budget for a permission change: a revoked permission can stay visible in the model tree for at most this long. Set `0` where that is unacceptable — the tree is then re-fetched on every navigation. |
+| `LEX_SYNC_STREAMING_EXPANSION` | `true` | Whether synchronous batch expansion streams combinations one at a time (the memory-safe path) or materialises them all first. Set `false` for a one-line rollback to the old behaviour without a redeploy. See [[calculations/batch calculations]]. |
+
+## Used only by the history backfill script
+
+`lex/backfill_history_sql.py` is a standalone script that connects on its own
+rather than through Django, so it reads a different set of names. These have no
+effect on the application.
+
+| Variable | Default |
+|---|---|
+| `DB_HOST` | `localhost` |
+| `DB_USER` | `postgres` |
+| `DB_PASSWORD` | `postgres` |
+| `DB_NAME` | a hard-coded name — always set this one explicitly |
 
 ## Where these get set
 

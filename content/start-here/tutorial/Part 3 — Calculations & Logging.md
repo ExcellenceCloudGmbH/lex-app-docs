@@ -166,11 +166,11 @@ Select **"Init"** from the run configuration dropdown in PyCharm → click ▶�
 > **Linux / macOS:**
 > ```bash
 > set -a; source .env; set +a
-> lex Init
+> lex init
 > ```
 > **Windows PowerShell:**
 > ```powershell
-> lex Init
+> lex init
 > ```
 
 ## Try It Out

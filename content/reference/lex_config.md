@@ -11,8 +11,8 @@ title: "lex_config.py — project settings"
 
 | Key                       | Purpose                                                                              | Documented in                                                                  |
 | ------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `INITIAL_DATA`            | Path to the JSON file the framework loads on `lex Init` to seed your database        | [[model-your-data/initial data]]                                        |
-| `PROJECT_GROUPS`          | List of [Keycloak](https://www.keycloak.org/documentation) group names to create on `lex Init` | [[start-here/tutorial/Part 4 — Validation & Permissions]], [[access-and-dashboards/permissions]] |
+| `INITIAL_DATA`            | Path to the JSON file the framework loads on `lex init` to seed your database        | [[model-your-data/initial data]]                                        |
+| `PROJECT_GROUPS`          | List of [Keycloak](https://www.keycloak.org/documentation) group names to create on `lex init` | [[start-here/tutorial/Part 4 — Validation & Permissions]], [[access-and-dashboards/permissions]] |
 | `TAB_DISPLAY_NAMES`       | Friendly labels for the tabs in the record-detail view                               | [[using-the-app/record-detail/index]]                                              |
 | `DEFAULT_SERIALIZER_NAME` | Name of the serializer the framework picks when no explicit one is requested         | [[model-your-data/serializers]]                                         |
 
@@ -22,7 +22,7 @@ title: "lex_config.py — project settings"
 INITIAL_DATA = "Tests/test_data.json"
 ```
 
-The path (relative to the project root) of the JSON fixture loaded when you run `lex Init` or `lex create_db`. Use it to seed reference data — categories, lookup tables, demo records — so a fresh database isn't empty. See [[model-your-data/initial data]] for the file format and the bulk-load behaviour.
+The path (relative to the project root) of the JSON fixture loaded when you run `lex init` or `lex create_db`. Use it to seed reference data — categories, lookup tables, demo records — so a fresh database isn't empty. See [[model-your-data/initial data]] for the file format and the bulk-load behaviour.
 
 ## `PROJECT_GROUPS`
 
@@ -30,7 +30,7 @@ The path (relative to the project root) of the JSON fixture loaded when you run 
 PROJECT_GROUPS = ["team_budget", "finance", "hr_manager"]
 ```
 
-A flat list of [Keycloak](https://www.keycloak.org/documentation) group names. On `lex Init`, the framework makes sure each group exists in the configured Keycloak realm so your permission methods can check membership via `user_context.groups`. You don't assign users to groups here — that happens in the Keycloak admin UI or via your IdP — `PROJECT_GROUPS` just guarantees the groups exist.
+A flat list of [Keycloak](https://www.keycloak.org/documentation) group names. On `lex init`, the framework makes sure each group exists in the configured Keycloak realm so your permission methods can check membership via `user_context.groups`. You don't assign users to groups here — that happens in the Keycloak admin UI or via your IdP — `PROJECT_GROUPS` just guarantees the groups exist.
 
 ## `TAB_DISPLAY_NAMES`
 

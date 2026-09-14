@@ -13,6 +13,7 @@ This section is about the framework's side of that. How your organisation provis
 | [[ship-and-operate/upgrading\|Upgrading]] | Moving an application to a newer `lex-app`, including the migrations it may require |
 | [[ship-and-operate/monitoring and health\|Monitoring & health]] | The endpoints to probe, the queues to watch, where the logs go |
 | [[ship-and-operate/troubleshooting\|Troubleshooting]] | Symptoms that have actually happened, and what each one turned out to be |
+| [[ship-and-operate/backup and restore\|Backup & restore]] | What the framework backs up, what it does not, and the order to put things back |
 
 ## The shape of an installation
 

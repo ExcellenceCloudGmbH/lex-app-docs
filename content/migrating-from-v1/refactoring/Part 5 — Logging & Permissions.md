@@ -154,7 +154,7 @@ For more on the permission system, see [[access-and-dashboards/permissions]].
 
 ### Sync to Keycloak
 
-After adding permission methods, run `lex Init` to sync your models to Keycloak. You can then manage group assignments at [Excellence Cloud](https://excellence-cloud.de).
+After adding permission methods, run `lex init` to sync your models to Keycloak. You can then manage group assignments at [Excellence Cloud](https://excellence-cloud.de).
 
 ## Verify
 
@@ -172,6 +172,6 @@ grep -rn "ModificationRestriction\|modification_restriction" --include="*.py" .
 - [ ] All `ModificationRestriction` classes deleted
 - [ ] `modification_restriction = ...` lines removed from models
 - [ ] `permission_*` methods added directly to models
-- [ ] `lex Init` run to sync permissions to Keycloak
+- [ ] `lex init` run to sync permissions to Keycloak
 
 Congratulations — your V1 project code is fully refactored! For ongoing development, explore the [[home|what the framework gives you]] and the [[reference/index|reference section]].

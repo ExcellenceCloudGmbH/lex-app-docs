@@ -209,7 +209,7 @@ If any condition fails, the auto-load is silently skipped.
 > To re-trigger the load after data already exists, drop and recreate the database:
 > ```bash
 > lex create_db
-> lex Init
+> lex init
 > lex start
 > ```
 
