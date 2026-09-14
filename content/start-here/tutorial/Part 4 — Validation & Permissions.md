@@ -103,11 +103,11 @@ Select **"Init"** in PyCharm → click ▶️ to sync your model permissions to 
 > **Linux / macOS:**
 > ```bash
 > set -a; source .env; set +a
-> lex Init
+> lex init
 > ```
 > **Windows PowerShell:**
 > ```powershell
-> lex Init
+> lex init
 > ```
 
 ## How It Looks

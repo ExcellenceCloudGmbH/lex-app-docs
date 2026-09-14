@@ -60,7 +60,7 @@ OIDC_RP_CLIENT_UUID=your_client_uuid
 
 ## Initialize the Application
 
-`lex Init` is the primary initialization command. It does three things:
+`lex init` is the primary initialization command. It does three things:
 
 1. **Applies migrations** — creates/updates database tables from your models
 2. **Syncs to Keycloak** — registers your project models as "Resources" and permissions as "Scopes"
@@ -81,11 +81,11 @@ PyCharm automatically loads your `.env` file.
 set -a; source .env; set +a
 
 # Then initialize
-lex Init
+lex init
 ```
 
 > [!tip]
-> If your Keycloak credentials are still missing, run `lex Init --bootstrap` instead. It opens the browser-based setup flow and then continues with the normal init steps.
+> If your Keycloak credentials are still missing, run `lex init --bootstrap` instead. It opens the browser-based setup flow and then continues with the normal init steps.
 
 > [!note]- Windows (PowerShell)
 >
@@ -98,11 +98,11 @@ lex Init
 > }
 >
 > # Initialize
-> lex Init
+> lex init
 > ```
 
 > [!important]
-> **When to run `lex Init` again:** Whenever you add a new model, new field, or change permission methods — any change that creates a new migration file.
+> **When to run `lex init` again:** Whenever you add a new model, new field, or change permission methods — any change that creates a new migration file.
 
 ## Start the Dev Server
 
@@ -138,9 +138,9 @@ Your application is now running at `http://localhost:8000`.
 > - Check that `OIDC_RP_CLIENT_ID` and `OIDC_RP_CLIENT_SECRET` are correct
 > - Confirm your client exists on [Excellence Cloud](https://excellence-cloud.de)
 
-> [!warning]- "`lex Init` refuses to sync this client"
+> [!warning]- "`lex init` refuses to sync this client"
 >
-> - In local development, `lex Init` expects a **confidential** Keycloak client with a `localhost` redirect URI
-> - If you're intentionally using a different setup, rerun with `lex Init --skip-client-preflight`
+> - In local development, `lex init` expects a **confidential** Keycloak client with a `localhost` redirect URI
+> - If you're intentionally using a different setup, rerun with `lex init --skip-client-preflight`
 
 Got everything set up? Learn about the [[start-here/project structure]] or jump straight to [[start-here/running your app]].

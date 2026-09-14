@@ -124,11 +124,11 @@ class ExpenseReport(LexModel):
 
 ## Keycloak Integration
 
-By default, permission methods fall back to Keycloak scopes. After running `lex Init`, your project models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [Excellence Cloud](https://excellence-cloud.de).
+By default, permission methods fall back to Keycloak scopes. After running `lex init`, your project models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [Excellence Cloud](https://excellence-cloud.de).
 
 Only models defined in your project are synced — Django built-ins (`auth`, `admin`, etc.), Lex framework models, and any third-party package models are automatically excluded.
 
-Lex App also ignores Keycloak's built-in client-management roles during this sync. If an older version created policies for those roles, rerun `lex Init` after upgrading and it will clean up the stale policies for you.
+Lex App also ignores Keycloak's built-in client-management roles during this sync. If an older version created policies for those roles, rerun `lex init` after upgrading and it will clean up the stale policies for you.
 
 You can also use Keycloak scopes directly in your custom logic:
 
@@ -149,7 +149,7 @@ def permission_read(self, user_context: UserContext) -> PermissionResult:
 > | Granularity | Model-level only                         | Field-level and row-level        |
 > | Keycloak    | Manual integration                       | Built-in scope resolution        |
 >
-> Remove `ModificationRestriction` class definitions, remove `modification_restriction = MyRestriction()`, and add `permission_*` methods directly to your model. Run `lex Init` to sync to Keycloak.
+> Remove `ModificationRestriction` class definitions, remove `modification_restriction = MyRestriction()`, and add `permission_*` methods directly to your model. Run `lex init` to sync to Keycloak.
 
 ## Authentication Architecture
 
@@ -195,7 +195,7 @@ Permissions are enforced across 6 scopes:
 | **delete** | Whether a user can delete records         |
 | **list**   | Whether a user can view the model's table |
 
-These scopes are synced to Keycloak when you run `lex Init`, enabling centralized policy management.
+These scopes are synced to Keycloak when you run `lex init`, enabling centralized policy management.
 
 ## In the Frontend
 

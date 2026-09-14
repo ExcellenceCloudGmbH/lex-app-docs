@@ -161,7 +161,7 @@ Syncing models to Keycloak... OK
 > **Linux / macOS:**
 > ```bash
 > set -a; source .env; set +a
-> lex Init
+> lex init
 > ```
 > **Windows PowerShell:**
 > ```powershell
@@ -170,7 +170,7 @@ Syncing models to Keycloak... OK
 >         [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
 >     }
 > }
-> lex Init
+> lex init
 > ```
 > PyCharm's run configurations auto-load `.env` for you — this is why we recommend using PyCharm.
 

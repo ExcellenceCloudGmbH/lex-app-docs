@@ -16,13 +16,13 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | Command         | What It Does                                                  |
 | --------------- | ------------------------------------------------------------- |
 | `lex setup`     | Generate `.run/`, `.vscode/launch.json`, `.env`, and `migrations/` for a new project |
-| `lex Init`      | Apply migrations + sync models/permissions to Keycloak        |
+| `lex init`      | Apply migrations + sync models/permissions to Keycloak        |
 | `lex start`     | Start the development server                                  |
 | `lex streamlit` | Start the [Streamlit](https://docs.streamlit.io/) dashboard server |
 | `lex create_db` | Create the project database from the configured `DATABASE_*` env vars |
 | `lex --version` | Print the installed `lex-app` version                         |
 
-`lex Init` has two setup-focused flags worth knowing:
+`lex init` has two setup-focused flags worth knowing:
 
 - `--bootstrap` — open the browser bootstrap flow if Keycloak credentials are missing
 - `--skip-client-preflight` — bypass the local Keycloak client safety check when you're intentionally managing that setup yourself
@@ -87,9 +87,18 @@ The file is a small YAML document at your project root. The most useful keys:
 
 | Command                  | What It Does                                              |
 | ------------------------ | --------------------------------------------------------- |
-| `lex Init`               | Sync models to Keycloak (also applies migrations)         |
-| `lex sync_keycloak`      | Sync models, fields and permissions to Keycloak without running migrations |
-| `lex bootstrap_keycloak` | Run the first-time Keycloak realm/client bootstrap flow (same flow `lex Init --bootstrap` opens) |
+| `lex init`               | Sync models to Keycloak (also applies migrations)         |
+| `lex sync_keycloak`      | Sync models, fields and permissions to Keycloak without running migrations. Reads the JSON that `lex detect_model_changes` writes. |
+| `lex detect_model_changes` | Detect model adds, deletes and renames via the migration autodetector, and check which models Keycloak is missing. Writes JSON for `lex sync_keycloak` — the two together are what `lex init` runs internally. |
+| `lex bootstrap_keycloak` | Run the first-time Keycloak realm/client bootstrap flow (same flow `lex init --bootstrap` opens) |
+| `lex register_keycloak_resources` | Register every Django model as a Keycloak UMA resource, create a client role per resource scope, and wire up the role policies and scope permissions |
+| `lex delete_keycloak_resources`   | The inverse: remove the UMA resources, client roles and scope permissions previously registered for each model |
+| `lex keycloak_backup`    | Back up, list and restore Keycloak authorization configuration — see [[ship-and-operate/backup and restore]] |
+| `lex createprofiles`     | Create a `Profile` row for any user missing one. Run it after importing users directly into the database rather than through the normal login flow. |
+
+Most projects only ever need `lex init`. The rest are the pieces it is built
+from, useful when you want one step without the others — a permission sync with
+no migration, or a re-register after editing the realm by hand.
 
 > [!note]
 > The standalone `lex-generate-configs` console script (note the hyphen, not `lex generate-configs`) regenerates the PyCharm run configurations under `.run/` and VS Code launch configurations under `.vscode/launch.json`. You usually don't need to call it directly — `lex setup` and `lex setup-with-ai` run it for you. There is no `lex generate-configs` subcommand.
@@ -102,7 +111,42 @@ The file is a small YAML document at your project root. The most useful keys:
 | `lex migrate`        | Apply pending Django migrations               |
 | `lex makemigrations` | Create new migration files from model changes |
 | `lex sqlflush`       | Print SQL statements to flush the database    |
+| `lex lex_migrate`    | `makemigrations` then `migrate` in one step. `--no-makemigrations` applies existing migration files only — which is what you want on a deployed instance, where migration files should come from the release, not from the running container. |
 | `lex rebase_incident_datetimes` | Re-anchor user-entered datetimes that were mis-stored during the TIME_ZONE incident (see below). |
+
+### Migration snapshots and rollback
+
+Take a snapshot before a migration you are not sure about, and you have a way back.
+
+| Command | What It Does |
+|---|---|
+| `lex capture_migration_state` | Write the current migration target of every app to a JSON file (default `.lex_migration_state_before.json`). |
+| `lex rollback_migration_state` | Migrate every app back to the targets in that file. `--dry-run` prints the plan without applying it. |
+| `lex capture_db_tables` | Snapshot the physical table names in the database (default `.lex_tables_before.json`), for diffing after a migration. |
+| `lex generate_legacy_freeze_manifest` | Diff a `capture_db_tables` snapshot against the current V2 model tables to produce the list of legacy tables nothing owns any more. |
+| `lex full_migration_workflow` | Run the whole V1→V2 migration sequence with one stable interface, from any working directory. See [[migrating-from-v1/index|Migrating from V1]]. |
+
+> [!warning]
+> `rollback_migration_state` reverses **schema** migrations. It does not restore
+> data a migration deleted or transformed. Take a database backup as well — see
+> [[ship-and-operate/backup and restore]].
+
+### One-off data backfills
+
+These exist for instances that predate a feature and need their historical rows
+filled in. They are idempotent, chunked, and dry-run capable — run them with
+`--dry-run` first and read the report.
+
+| Command | What It Does |
+|---|---|
+| `lex backfill_bitemporal_history` | Build `History` and `MetaHistory` rows for records that existed before bitemporal history was switched on. `--timestamp` sets the single `valid_from`/`sys_from` used for every backfilled row. See [[history-and-audit/bitemporal history]]. |
+| `lex backfill_audit_logging` | Populate the audit-logging tables from the legacy V1 archive tables. Refuses to run if the audit tables already hold rows unless you pass `--force`. See [[history-and-audit/audit logs]]. |
+| `lex normalize_is_calculated` | Convert boolean-ish `is_calculated` values on `CalculationModel` subclasses to the current `SUCCESS` / `NOT_CALCULATED` states. Needed once, on instances that predate the state machine. |
+
+Common flags across all three: `--dry-run` (report, write nothing),
+`--chunk-size` (rows per iteration, default `500`), and for the two backfills
+`--reason`, which is recorded on every row they create so the backfill is
+distinguishable from real user activity later.
 
 ### `lex rebase_incident_datetimes`
 
@@ -139,6 +183,7 @@ lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
 | `lex celery`         | Run a raw Celery command (forwards everything after it to `celery`). Used to start workers — see [[calculations/celery and async calculations|Celery & async calculations]] for the full worker invocation. |
 | `lex celery-workers` | Start the standard worker pool with the framework's default settings |
 | `lex flower`         | Launch [Flower](https://flower.readthedocs.io/), the Celery monitoring dashboard, against the configured broker |
+| `lex run_recovery_supervisor` | Run the worker-recovery loop in the foreground: detect workers that stopped sending heartbeats and requeue the tasks they were holding. `--once` does a single sweep and exits, which is the form to use from cron. `--interval` overrides `LEX_TASK_SUPERVISOR_SCAN_INTERVAL`. |
 
 > [!note]
 > If you use worker recovery, two standalone console scripts live outside the `lex` command tree: `lex-recovery-supervisor` (the always-on sweep loop) and `lex-recovery-beat` (the admin-scheduled recovery worker). See [[calculations/celery and async calculations|Celery & async calculations]].
@@ -176,6 +221,25 @@ lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
 
 All `lex ai-*` commands (other than `setup-with-ai` and `ai-update`) are implemented by the installed `lex-mcp-local` package, which owns their flags and help text. This means new AI commands become available as soon as you run `lex ai-update` — no `lex-app` upgrade required. If a command isn't available, `lex ai-update` is the first thing to try.
 
+## Commands this page leaves out
+
+Four management commands ship with the framework and are deliberately not
+documented above. They are listed here so the omission is a decision rather
+than a gap:
+
+| Command | Why not |
+|---|---|
+| `lex Init2` | An older variant of `lex init`. Nothing in the framework calls it and it is not maintained. Use `lex init`. |
+| `lex keycloak_init_bak` / `lex keycloak_rollback_bak` | Superseded by `lex register_keycloak_resources` and `lex delete_keycloak_resources`. The `_bak` suffix is what it looks like. |
+| `lex bootstrap_callback_server` | An internal helper that `lex bootstrap_keycloak` starts to receive the browser callback. Running it directly does nothing useful. |
+
+> [!note]
+> `lex --help` prints only the ten commands the CLI implements itself; the
+> Django passthrough commands do not appear there, because listing them would
+> mean starting Django just to render help. This page is the complete list, and
+> CI checks that it stays complete — a new management command with no entry here
+> fails the build.
+
 ## Usage Pattern
 
 We recommend using the IDE run configurations generated by `lex setup` — both PyCharm (`.run/`) and VS Code (`.vscode/launch.json`) — which auto-load `.env` for you. If you prefer the terminal:
@@ -187,7 +251,7 @@ We recommend using the IDE run configurations generated by `lex setup` — both 
 set -a; source .env; set +a
 
 # Then run any lex command
-lex Init
+lex init
 lex start
 ```
 
@@ -202,7 +266,7 @@ Get-Content .env | ForEach-Object {
 }
 
 # Then run any lex command
-lex Init
+lex init
 lex start
 ```
 

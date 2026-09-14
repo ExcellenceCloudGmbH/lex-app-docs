@@ -457,11 +457,11 @@ Select **"Init"** from the run configuration dropdown in PyCharm → click ▶�
 > **Linux / macOS:**
 > ```bash
 > set -a; source .env; set +a
-> lex Init
+> lex init
 > ```
 > **Windows PowerShell:**
 > ```powershell
-> lex Init
+> lex init
 > ```
 
 ## Import Sample Data
@@ -557,7 +557,7 @@ INITIAL_DATA = "Tests/test_data.json"
 `INITIAL_DATA` tells the framework where to find your seed data file. The path is relative to your project root.
 
 > [!note]
-> `lex_config.py` is also where you define `PROJECT_GROUPS` — the list of [Keycloak](https://www.keycloak.org/documentation) groups your project will create on `lex Init`. It's only a list of group names; you'll wire up the role-based permissions themselves in [[start-here/tutorial/Part 4 — Validation & Permissions|Part 4]]. Add the entry now:
+> `lex_config.py` is also where you define `PROJECT_GROUPS` — the list of [Keycloak](https://www.keycloak.org/documentation) groups your project will create on `lex init`. It's only a list of group names; you'll wire up the role-based permissions themselves in [[start-here/tutorial/Part 4 — Validation & Permissions|Part 4]]. Add the entry now:
 > ```python title="lex_config.py"
 > INITIAL_DATA = "Tests/test_data.json"
 > PROJECT_GROUPS = ["team_budget"]
