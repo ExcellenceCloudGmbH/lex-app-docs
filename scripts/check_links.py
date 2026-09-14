@@ -152,6 +152,7 @@ def main() -> int:
     broken: list[tuple[str, int, str]] = []
     ambiguous: list[tuple[str, int, str]] = []
     missing_assets: list[tuple[str, int, str]] = []
+    bad_prefix: list[tuple[str, int, str]] = []
     total = 0
 
     for page in pages:
@@ -175,7 +176,21 @@ def main() -> int:
                 href = m.group(1).split()[0].strip("<>")
                 if href.startswith(("http://", "https://", "mailto:", "#", "data:")):
                     continue
-                target = (page.parent / href.split("#")[0]).resolve()
+                # Resolved from the CONTENT ROOT, not from the page. Quartz's
+                # transformLink returns joinSegments(pathToRoot(slug), path):
+                # it works out the climb to the root itself and appends the
+                # path from there. A `../` written in the markdown is kept as
+                # an extra prefix and added to the one Quartz already made, so
+                # the emitted src lands above the site's base path and 404s.
+                #
+                # That is not hypothetical: eleven of the twelve figures were
+                # broken on the live site from #176 until this was found, and
+                # this checker agreed with them because it resolved the same
+                # wrong way.
+                if href.startswith("../") or href.startswith("./"):
+                    bad_prefix.append((rel, lineno, href))
+                    continue
+                target = (CONTENT / href.split("#")[0]).resolve()
                 if not target.exists():
                     missing_assets.append((rel, lineno, href))
 
@@ -188,13 +203,18 @@ def main() -> int:
     report("Broken wikilinks", broken)
     report("Ambiguous bare wikilinks (resolve to more than one page)", ambiguous)
     report("Missing local files referenced from markdown", missing_assets)
+    report(
+        "Image paths must be written from the content root, with no leading ../ "
+        "(Quartz adds the climb itself; a hand-written one overshoots the base path)",
+        bad_prefix,
+    )
 
     print(
         f"\n{len(pages)} pages, {total} wikilinks — "
         f"{len(broken)} broken, {len(ambiguous)} ambiguous, "
-        f"{len(missing_assets)} missing files."
+        f"{len(missing_assets)} missing files, {len(bad_prefix)} bad image prefixes."
     )
-    return 1 if (broken or missing_assets) else 0
+    return 1 if (broken or missing_assets or bad_prefix) else 0
 
 
 if __name__ == "__main__":
