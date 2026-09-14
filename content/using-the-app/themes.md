@@ -33,7 +33,7 @@ Dark mode isn't just a color inversion — every component is individually style
 
 Click the **theme toggle** icon in the application header bar, next to the search field. The switch is instant — no reload required. Your preference is remembered across sessions.
 
-![The application in dark mode, with the theme toggle in the header bar](../images/app/dark-mode.svg)
+![The application in dark mode, with the theme toggle in the header bar](images/app/dark-mode.svg)
 
 
 > [!tip]

@@ -23,7 +23,7 @@ The sidebar collapses to icons on smaller screens, giving you more room for the 
 > [!tip]
 > If you're a developer configuring the sidebar, see [[model-your-data/model structure]] for the `model_structure.yaml` reference.
 
-![The sidebar, its search box, and the breadcrumb trail](../images/navigation/sidebar-and-breadcrumbs.svg)
+![The sidebar, its search box, and the breadcrumb trail](images/navigation/sidebar-and-breadcrumbs.svg)
 
 ## Breadcrumbs
 

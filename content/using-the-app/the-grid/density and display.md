@@ -14,9 +14,9 @@ and pick one of three row heights:
 The same five funds, at the two extremes. Compact fits every one of them above
 the fold; Comfortable shows two and leaves room to read them.
 
-![The grid at Compact density — five rows visible](../../images/the-grid/density-compact.svg)
+![The grid at Compact density — five rows visible](images/the-grid/density-compact.svg)
 
-![The same grid at Comfortable density — two rows in the same space](../../images/the-grid/density-comfortable.svg)
+![The same grid at Comfortable density — two rows in the same space](images/the-grid/density-comfortable.svg)
 
 ### Compact
 
