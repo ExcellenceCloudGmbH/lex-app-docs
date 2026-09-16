@@ -43,6 +43,11 @@ from pathlib import Path
 WIKILINK = re.compile(r"\[\[([^\]]+)\]\]")
 MDIMAGE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)")
 VIDEO = re.compile(r"<video|\.mp4")
+# Counted from the RAW page, before fences are stripped: a mermaid diagram
+# is a fenced block, and stripping code to count words also deletes every
+# diagram in the tree. Missing this said 42 pages carried no visual when
+# 30 of them carried a rendered diagram.
+MERMAID = re.compile(r"^\s*```mermaid", re.M)
 CODEFENCE = re.compile(r"^\s*```")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
 FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.S)
@@ -58,6 +63,7 @@ class Metrics:
     figures: int = 0            # distinct image files referenced
     figure_refs: int = 0        # embeds, so a figure used twice counts twice
     videos: int = 0
+    diagrams: int = 0           # mermaid blocks, which Quartz renders natively
     illustrated: int = 0        # pages carrying at least one figure or video
     broken_links: int = 0
     ambiguous: int = 0
@@ -131,6 +137,9 @@ def measure(content: Path, rev: str) -> Metrics:
         if fm and DRAFT.search(fm.group(0)):
             continue
         m.pages += 1
+        # Before strip(), which removes fenced blocks.
+        mermaid = len(MERMAID.findall(raw))
+        m.diagrams += mermaid
         body = strip(raw)
         m.words += len(body.split())
         if content.joinpath(p.relative_to(content)).parent != content:
@@ -164,6 +173,8 @@ def measure(content: Path, rev: str) -> Metrics:
 
         if VIDEO.search(body):
             m.videos += len(re.findall(r"<video", body)) or 1
+            has_visual = True
+        if mermaid:
             has_visual = True
         if has_visual:
             m.illustrated += 1
@@ -308,6 +319,7 @@ def main() -> int:
             ("Distinct figures", b.figures, a.figures, True),
             ("Figure embeds", b.figure_refs, a.figure_refs, True),
             ("Videos", b.videos, a.videos, True),
+            ("Mermaid diagrams", b.diagrams, a.diagrams, True),
             ("Broken wikilinks", b.broken_links, a.broken_links, False),
             ("Ambiguous wikilinks", b.ambiguous, a.ambiguous, False),
             ("Missing image files", b.missing_images, a.missing_images, False),
