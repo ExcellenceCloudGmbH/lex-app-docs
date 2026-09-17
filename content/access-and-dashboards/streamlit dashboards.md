@@ -13,6 +13,46 @@ There are two levels of dashboards:
 | **Table-level** | `streamlit_class_main(cls)` | When viewing the model's table (list view) |
 | **Record-level** | `streamlit_main(self)` | When viewing a specific record (detail view) |
 
+## How it fits together
+
+Dashboards and the application talk **both ways**, and the page is easier to
+read once you know which direction you are in.
+
+```mermaid
+flowchart LR
+    subgraph app["Lex App"]
+        G["A table or a record"]
+        A["Analytics tab"]
+    end
+    subgraph st["Your Streamlit dashboard"]
+        M["streamlit_main /<br/>streamlit_class_main"]
+        V["lex_view(…)"]
+        W["lex_widgets(…)"]
+    end
+    G --> A
+    A -- "opens it with model and pk" --> M
+    V -- "embeds a route" --> G
+    W -- "embeds a control" --> G
+```
+
+**Downward**, lex-app opens your dashboard. The Analytics tab on a record, and
+the chart icon on a table, both point at the Streamlit process with the model
+and primary key in the query string; the framework calls your
+`streamlit_main` or `streamlit_class_main` with them. You write Streamlit; the
+framework decides when it is shown.
+
+**Upward**, your dashboard opens lex-app. `lex_view` embeds one of the
+application's routes — a table, a form, a record — and `lex_widgets` embeds one
+of its controls. These are the same components the application renders, not
+copies, so a filter applied in an embedded table is the same filter, saved to
+the same view.
+
+A standalone app is the third case: no model, no pk, and the framework calls
+your project's `_streamlit_structure.main()` instead. It has no host page
+around it, so it is where you would put a dashboard that spans several models.
+
+Everything else on this page is one of those three, in detail.
+
 ## Table-Level Dashboard
 
 A `@classmethod` that receives the model class. Use it for aggregate views — summaries, charts across all records, filtered tables.
