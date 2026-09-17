@@ -85,6 +85,13 @@ The frontend links to the first two branches with `?model=fund&pk=42` and
 described above. The third is your own standalone app: a
 `_streamlit_structure.py` beside your models, with a `main()`, is all it takes.
 
+![A standalone Streamlit app: the project's own pages, lex-app's theme and sign-in, and the project's data](images/streamlit/overview.png)
+
+Nothing about the frame is the project's own work — the navigation rail, the
+theme, the signed-in user and the way out all come from lex-app. What the
+project wrote is the column of metrics, the chart, and the Calculate control
+sitting beside them.
+
 Streamlit dashboards run as a separate process alongside your Lex App application. See [[start-here/running your app]] for how to start the Streamlit server.
 
 > [!tip]
@@ -93,6 +100,11 @@ Streamlit dashboards run as a separate process alongside your Lex App applicatio
 For production-style deployments, give the Streamlit proxy a fixed `SESSION_SECRET`. If you run more than one proxy replica, also use a shared `TOKEN_REDIS_URL` / `REDIS_URL` so users don't lose their dashboard session when a request lands on a different replica.
 
 ## Embedding Lex App in a Dashboard
+
+![lex_view embedding the application's own table inside a Streamlit page](images/streamlit/lex-view.png)
+
+That is the application's grid, not a copy of it: the same saved views, the
+same filters, the same export, inside a Streamlit page.
 
 When your dashboard needs Lex App controls, you can embed them directly instead
 of rebuilding the UI in Streamlit. Put your dashboard code in

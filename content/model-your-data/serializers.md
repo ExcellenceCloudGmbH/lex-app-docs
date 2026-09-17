@@ -234,6 +234,17 @@ so instead of quietly returning the wrong shape.
 > whatever `api_serializers` says. That is deliberate — an allowlist, so a
 > column added to the user model is never published by accident.
 
+A serializer is not only an API concern. Anything that renders the model through
+the API renders it through the serializer you ask for — including a table
+embedded in a dashboard:
+
+![The declared serializer, the lex_view call that asks for it, and the narrowed table below](images/streamlit/serializer.png)
+
+Same route, same rows, six columns instead of a dozen: the framework's audit
+fields are gone and the foreign key arrives as a currency code, because that is
+what `FundSummarySerializer` declares. See
+[[access-and-dashboards/streamlit dashboards|Streamlit dashboards]].
+
 > [!note] The `id` field is always present
 > When you override `api_serializers["default"]`, the framework always includes the model's primary key as `id` in the serialized output — even if your `Meta.fields` omits it. Row navigation, edit URLs, and the CRUD loading overlay all depend on this field.
 
