@@ -8,10 +8,10 @@ Lex App lets you attach interactive [Streamlit](https://docs.streamlit.io/) dash
 
 There are two levels of dashboards:
 
-| Level | Method | When It Shows |
-|---|---|---|
-| **Table-level** | `streamlit_class_main(cls)` | When viewing the model's table (list view) |
-| **Record-level** | `streamlit_main(self)` | When viewing a specific record (detail view) |
+| Level            | Method                      | When It Shows                                |
+| ---------------- | --------------------------- | -------------------------------------------- |
+| **Table-level**  | `streamlit_class_main(cls)` | When viewing the model's table (list view)   |
+| **Record-level** | `streamlit_main(self)`      | When viewing a specific record (detail view) |
 
 ## Table-Level Dashboard
 
@@ -90,7 +90,7 @@ Streamlit dashboards run as a separate process alongside your Lex App applicatio
 > [!tip]
 > We recommend running Streamlit from your IDE (e.g. PyCharm) using the `lex streamlit` command, which handles environment configuration automatically.
 
-For production-style deployments, give the Streamlit proxy a fixed `SESSION_SECRET`. If you run more than one proxy replica, also use a shared `TOKEN_REDIS_URL` / `REDIS_URL` so users don't lose their dashboard session when a request lands on a different replica.
+For production-style deployments, a stable `DJANGO_SECRET_KEY` is enough for the Streamlit proxy unless you want to override it with `SESSION_SECRET`. If you run more than one proxy replica, also use a shared `TOKEN_REDIS_URL` / `REDIS_URL` so users don't lose their dashboard session when a request lands on a different replica.
 
 ## Embedding Lex App in a Dashboard
 
@@ -158,8 +158,7 @@ Two deployment settings decide whether dashboard sessions survive restarts and l
 - Session cookies are signed with a key derived from `DJANGO_SECRET_KEY` unless you set `SESSION_SECRET` explicitly. Because that key is already stable across restarts and identical on every replica, dashboard sessions survive a redeploy without any extra configuration. Set `SESSION_SECRET` only when you want to control the value yourself.
 - `TOKEN_REDIS_URL` (or `REDIS_URL`) is required when you run more than one proxy replica. The in-memory token store is only safe for a single process.
 
-The token exchange is handled automatically by the `StreamlitIframe` component — no developer configuration needed beyond defining the dashboard methods on your models.
-The session keeps refreshing while the dashboard is open, including across normal Streamlit script reruns.
+The token exchange is handled automatically by the `StreamlitIframe` component — no developer configuration needed beyond defining the dashboard methods on your models. The session keeps refreshing while the dashboard is open, including across normal idle periods and Streamlit script reruns.
 See [[reference/Environment Variables]] for the full list, including `SESSION_SAMESITE` for cross-site iframe deployments.
 
 ## In the Frontend
@@ -175,4 +174,4 @@ See [[using-the-app/record-detail/analytics tab|Analytics Tab]] for the full use
 
 ## Going the Other Way: Embedding Lex App in Streamlit
 
-The sections above embed Streamlit *inside* Lex App. You can also do the reverse — embed a Lex App page inside a Streamlit script with `lex_view()`, and have Python react to create/update/select/navigation events. See [[access-and-dashboards/lex_view callbacks]].
+The sections above embed Streamlit _inside_ Lex App. You can also do the reverse — embed a Lex App page inside a Streamlit script with `lex_view()`, and have Python react to create/update/select/navigation events. See [[access-and-dashboards/lex_view callbacks]].
