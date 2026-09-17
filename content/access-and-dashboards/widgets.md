@@ -75,6 +75,12 @@ Widget count is free; block count is not. Both sides above render the same three
 controls, and the right-hand one boots three React applications that contend for
 the same network and main thread.
 
+![One block, three widgets: the control at SUCCESS, the live log streaming a table, and the execution tree](images/streamlit/widgets.png)
+
+One block, three widgets, after the run. The control carries the status, the
+live log has the calculation's own `LexLogger` output in it, and the execution
+tree and consolidated log below are the same run seen two other ways.
+
 `lex_widgets()` and the flat calls are the same code path — the flat form enters and exits the block in one call. There is one manifest builder and one host, so the two cannot drift apart in what they think a widget is.
 
 ## Shaping a control
