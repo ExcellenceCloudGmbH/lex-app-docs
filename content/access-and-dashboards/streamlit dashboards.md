@@ -125,6 +125,20 @@ The frontend links to the first two branches with `?model=fund&pk=42` and
 described above. The third is your own standalone app: a
 `_streamlit_structure.py` beside your models, with a `main()`, is all it takes.
 
+> [!tip] Start from the one that ships
+> You do not have to write that file from scratch.
+> `lex/lex_app/streamlit/examples/_streamlit_structure.py` in the installed
+> package is a complete, maintained reference dashboard — one control, several
+> controls, a log with room, a row composed with Streamlit columns, reading a
+> result back, a whole page, and a multi-step flow. Copy it to
+> `<your_repo>/_streamlit_structure.py` and delete what you do not need.
+>
+> It also states the two rules that catch people first: `main()` is the only
+> name the framework looks for, and every `st.*` call must be **inside** a
+> function — the module is imported at startup, before there is a script run to
+> draw into, and anything at module level renders nothing and logs "missing
+> ScriptRunContext".
+
 ![A standalone Streamlit app: the project's own pages, lex-app's theme and sign-in, and the project's data](images/streamlit/overview.png)
 
 Nothing about the frame is the project's own work — the navigation rail, the
