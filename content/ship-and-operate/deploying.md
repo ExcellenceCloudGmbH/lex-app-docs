@@ -6,14 +6,14 @@ What a Lex App installation runs, and what each process needs. How you schedule 
 
 ## The processes
 
-| Process | Command | Needed when |
-|---|---|---|
-| **Web** | `lex start --loop asyncio lex_app.asgi:application --host 0.0.0.0 --port 8000` | Always |
-| **Celery workers** | `lex celery-workers --count N` | The application has calculations that dispatch asynchronously |
-| **Streamlit** | `lex streamlit` | The application has dashboards |
-| **Recovery supervisor** | `lex-recovery-supervisor` | Long-running calculations that must survive a worker dying |
-| **Recovery beat** | `lex-recovery-beat` | Alongside the supervisor |
-| **Flower** | `lex flower` | Optional; a web view of the Celery queues |
+| Process                 | Command                                                                        | Needed when                                                   |
+| ----------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| **Web**                 | `lex start --loop asyncio lex_app.asgi:application --host 0.0.0.0 --port 8000` | Always                                                        |
+| **Celery workers**      | `lex celery-workers --count N`                                                 | The application has calculations that dispatch asynchronously |
+| **Streamlit**           | `lex streamlit`                                                                | The application has dashboards                                |
+| **Recovery supervisor** | `lex-recovery-supervisor`                                                      | Long-running calculations that must survive a worker dying    |
+| **Recovery beat**       | `lex-recovery-beat`                                                            | Alongside the supervisor                                      |
+| **Flower**              | `lex flower`                                                                   | Optional; a web view of the Celery queues                     |
 
 Drop `--reload` for anything that is not a developer's laptop.
 
@@ -21,7 +21,7 @@ Drop `--reload` for anything that is not a developer's laptop.
 
 ## Migrations at deploy time
 
-`lex_migrate` runs `makemigrations`, then `migrate`, then `createcachetable`. Generating migrations at deploy time is deliberate: an application's models live in its own repository, and a framework upgrade can require a migration in *your* app that nobody wrote by hand.
+`lex_migrate` runs `makemigrations`, then `migrate`, then `createcachetable`. Generating migrations at deploy time is deliberate: an application's models live in its own repository, and a framework upgrade can require a migration in _your_ app that nobody wrote by hand.
 
 ```bash
 lex_migrate                     # makemigrations + migrate + createcachetable
@@ -45,17 +45,15 @@ Liveness and readiness are a different question and can be tight; see [[ship-and
 
 ## The interface
 
-The web interface is a built bundle vendored into the `lex-app` package, and a hosted installation serves it from a **separate pod**. That has one consequence worth internalising:
+The web interface now lives in a separate Python package, `lex-app-frontend`, which `lex-app` installs alongside the backend and serves from the web process.
 
-**Upgrading `lex-app` does not upgrade the interface.** The two are versioned and deployed independently, and an older interface serving a newer backend is a supported, common state. A feature that spans both — a new control that calls a new endpoint — arrives only when both sides have moved.
+**Upgrading `lex-app` normally upgrades the interface too.** The release pins a matching `lex-app-frontend`, so `pip install lex-app==...` brings both. You only need to think about the interface version separately if you deliberately override that frontend package.
 
 ```mermaid
 flowchart TB
-    U["Browser"] --> FE["Frontend pod
-    its own image, its own version"]
-    U --> BE["Backend pod
-    lex start"]
-    FE -. "REST + websocket" .-> BE
+    U["Browser"] --> BE["Web pod
+    lex start
+    serves API + frontend bundle"]
     BE --> DB[("PostgreSQL")]
     BE --> RD[("Redis")]
     WK["Celery workers"] --> DB
@@ -63,8 +61,7 @@ flowchart TB
     ST["Streamlit"] --> BE
 ```
 
-The dotted line is the one to remember: the interface talks to the backend
-over the API, and the two are upgraded independently.
+If you do override `lex-app-frontend`, treat that as a separate deployment choice and test the pair together.
 
 ## Related
 
