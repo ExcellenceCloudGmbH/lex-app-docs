@@ -111,7 +111,7 @@ This is where Lex App goes beyond standard history. The framework creates a **se
 | `history_object` | `ForeignKey` | Points back to the Level 1 history row |
 | `meta_history_type` | `CharField(1)` | `+` Created · `~` Changed · `-` Deleted |
 | `meta_task_name` | `CharField` | Celery task name (for scheduled activations) |
-| `meta_task_status` | `CharField` | Task status: `NONE`, `SCHEDULED`, `ACTIVE` |
+| `meta_task_status` | `CharField` | Task status: `NONE`, `SCHEDULED`, `DONE`, `CANCELLED` |
 
 Like Level 1, the `sys_to` fields are automatically chained — each meta row's `sys_to` points to the next row's `sys_from`, so you get a continuous system-time timeline.
 
