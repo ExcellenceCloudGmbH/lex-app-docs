@@ -28,17 +28,16 @@ or the calculation sits in the queue and nothing appears to happen.
 
 The `lex setup` command generates ready-to-use run configurations in the `.run/` folder. Open the **Run Configuration** dropdown in the top-right toolbar and you'll see:
 
-| Configuration | What It Does |
-|---|---|
-| **Init** | Applies migrations and syncs to Keycloak |
-| **Start** | Starts the development server |
-| **Streamlit** | Runs the Streamlit dashboard server |
+| Configuration | What It Does                             |
+| ------------- | ---------------------------------------- |
+| **Init**      | Applies migrations and syncs to Keycloak |
+| **Start**     | Starts the development server            |
+| **Streamlit** | Runs the Streamlit dashboard server      |
 
 Select **"Start"** and click the green ▶️ button. Your app is now running at `http://localhost:8000`.
 
 > [!tip]
 > PyCharm run configurations automatically load your `.env` file. No manual sourcing needed.
-
 
 ## Using the Terminal
 
@@ -72,7 +71,7 @@ lex streamlit
 > [!tip]
 > PyCharm's Streamlit run configuration handles all environment variables automatically. We recommend using it for local development.
 
-`lex streamlit` starts the Streamlit app and the authentication proxy together. Locally, the defaults are enough. In HTTPS deployments, set a fixed `SESSION_SECRET`; if you run multiple proxy replicas, set a shared `TOKEN_REDIS_URL` / `REDIS_URL` too so dashboard sessions survive restarts and load balancing.
+`lex streamlit` starts the Streamlit app and the authentication proxy together. Locally, the defaults are enough. In HTTPS deployments, a stable `DJANGO_SECRET_KEY` is enough for dashboard sessions unless you want to override it with `SESSION_SECRET`; if you run multiple proxy replicas, set a shared `TOKEN_REDIS_URL` / `REDIS_URL` too so sessions survive load balancing.
 
 ## What's Next?
 

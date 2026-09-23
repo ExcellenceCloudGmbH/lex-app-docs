@@ -4,7 +4,7 @@ aliases:
   - "installation"
 ---
 
-Install the `lex-app` package. This gives you the `lex` CLI tool and all framework dependencies.
+Install the `lex-app` package. This gives you the `lex` CLI tool, the framework dependencies, and the matching frontend package it serves.
 
 ```bash
 pip install lex-app

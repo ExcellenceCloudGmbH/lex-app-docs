@@ -25,15 +25,17 @@ Fix the probe, not the migration.
 
 ## An embedded dashboard stops working after it has been open a while
 
-The dashboard's credentials are renewed in the background. If that stops, the session expires on the access token's own lifetime and the symptom is a tab that worked for an hour and then did not.
+The dashboard's credentials are renewed in the background. If that stops, the session expires on the access token's own lifetime and the symptom is a tab that worked for a while and then did not.
 
-Fixed across 2.1.10 and 2.1.11. If you are seeing it on a current version, the thing to check is whether the **interface** is also current — the renewal has a browser-side half, and an installation running an older interface pod against a newer backend gets only the server side. See [[ship-and-operate/upgrading|Upgrading]].
+Fixed across 2.1.10, 2.1.11, and again in 2.2.1 for dashboards that stayed open long enough for the original iframe handshake token to go stale. In a normal install, upgrading `lex-app` also upgrades the matching `lex-app-frontend` package. If you override the frontend package yourself, update that too — the renewal has a browser-side half. See [[ship-and-operate/upgrading|Upgrading]].
 
 ## A document or asset fails to download, with no error anywhere
 
-If the log shows nothing at all for the failed request, that is itself the finding: access logging for the proxy is at WARNING for 4xx and 5xx, so a request that produced *no* line produced no response either — the connection was dropped rather than answered.
+If the log shows nothing at all for the failed request, that is itself the finding: access logging for the proxy is at WARNING for 4xx and 5xx, so a request that produced _no_ line produced no response either — the connection was dropped rather than answered.
 
 The known cause is a pooled upstream connection the Streamlit server had already closed, which surfaced as an unhandled exception rather than a status. Answered as a 502 since 2.1.10, with one retry for requests that had not yet sent a byte.
+
+If the browser shows `ERR_HTTP2_PROTOCOL_ERROR` and a download stalls at 0 bytes, upgrade to 2.2.1 or later. That release fixes proxied responses that were tolerated over HTTP/1.1 but could be rejected by an HTTP/2 intermediary mid-download.
 
 ## `lex init` fails against Keycloak
 

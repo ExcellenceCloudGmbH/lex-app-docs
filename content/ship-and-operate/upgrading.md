@@ -2,7 +2,7 @@
 title: Upgrading
 ---
 
-Moving an application to a newer `lex-app`. Most upgrades are a version bump and a deploy. The two that are not — migrations your app has to generate, and the separately-deployed interface — are what this page is about.
+Moving an application to a newer `lex-app`. Most upgrades are a version bump and a deploy. The two things worth checking are migrations your app has to generate, and whether you have deliberately overridden the frontend package that ships alongside `lex-app`.
 
 ## Pin the version
 
@@ -21,7 +21,7 @@ Every release publishes notes on [GitHub](https://github.com/ExcellenceCloudGmbH
 
 ## Migrations your application has to generate
 
-A framework change can alter a field your models use, and the migration then belongs to *your* app, not to `lex-app`.
+A framework change can alter a field your models use, and the migration then belongs to _your_ app, not to `lex-app`.
 
 **A worked example, from 2.1.11.** `XLSXField` and `PDFField` had always advertised `max_length=300`, and it had never applied — every plain declaration was silently `varchar(100)`, and an over-length report name was quietly truncated rather than rejected. Fixing it means every application using either field gets one `AlterField` per report column on its next `makemigrations`.
 
@@ -30,13 +30,15 @@ A framework change can alter a field your models use, and the migration then bel
 
 The pattern generalises: if a release note mentions a field's width, type or constraint, either let `lex_migrate` generate the migration or generate it yourself before deploying.
 
-## The interface upgrades separately
+## The interface is pinned alongside `lex-app`
 
-The web interface is a built bundle vendored into the package, but a hosted installation serves it from its **own pod** on its own version. So:
+The web interface now lives in `lex-app-frontend`, a separate package that `lex-app` depends on. In a normal install, upgrading `lex-app` also installs the matching frontend version.
 
-> **Upgrading `lex-app` on its own does not give you the new interface.** You can run the newest backend behind an older interface — that is a supported state, and often the desired one.
+So the default rule is now the opposite of the old one:
 
-This matters when a feature spans both halves. The 2.2.0 Streamlit widgets need the interface that renders them; upgrading only the backend gives you the API and none of the controls. When a release says a feature needs the latest interface image, that is what it means.
+> **Upgrading `lex-app` normally upgrades the interface too.**
+
+You only need to think about the interface version separately if you have deliberately pinned or overridden `lex-app-frontend` yourself. That is still a valid deployment choice — just test the pair together when a release mentions a browser-side half, like Streamlit widgets or dashboard token renewal.
 
 ## Order of operations
 
