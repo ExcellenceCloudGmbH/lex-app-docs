@@ -244,12 +244,13 @@ normal deployment.
 
 ## Behaviour switches
 
-Two knobs that change how the framework behaves rather than what it connects to.
+Knobs that change how the framework behaves rather than what it connects to.
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `LEX_METADATA_CACHE_SECONDS` | `30` | How long a browser may reuse the model-structure response. This is the staleness budget for a permission change: a revoked permission can stay visible in the model tree for at most this long. Set `0` where that is unacceptable — the tree is then re-fetched on every navigation. |
 | `LEX_SYNC_STREAMING_EXPANSION` | `true` | Whether synchronous batch expansion streams combinations one at a time (the memory-safe path) or materialises them all first. Set `false` for a one-line rollback to the old behaviour without a redeploy. See [[calculations/batch calculations]]. |
+| `LEX_ACTIVATION_APPLIER_LIVENESS_SECONDS` | `300` | How recent the in-database activation applier's heartbeat must be before lex-app treats it as alive and stops arming its own timers for future-dated history rows. pg_cron fires every minute, so five minutes absorbs a slow tick or a failover. See [[history-and-audit/bitemporal history]]. |
 
 ## Used only by the history backfill script
 
