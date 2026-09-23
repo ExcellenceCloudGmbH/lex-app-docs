@@ -72,5 +72,5 @@ of a serializer you already define silently disables the alias. See
 
 ## Where it fits in the project
 
-`lex_config.py` is generated for you by `lex setup` and sits at the project root alongside `manage.py`, `lex_app/`, and your model packages. See [[start-here/project structure|Project structure]] for the full layout.
+`lex_config.py` is a file you create at the project root, beside `.env`, `model_structure.yaml`, `migrations/` and your `Upload/` · `Input/` · `Reports/` folders. `lex setup` does not generate it — that command writes `.env`, the IDE run configurations and `migrations/`, and nothing else. See [[start-here/project structure|Project structure]] for the full layout.
 
