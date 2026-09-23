@@ -41,9 +41,9 @@ MyProject/
 │   ├── __init__.py
 │   ├── FundUpload.py
 │   └── InvestmentUpload.py
-└── Reports/
-    ├── __init__.py
-    └── CalculateNAV.py
+├── Reports/
+│   ├── __init__.py
+│   └── CalculateNAV.py
 └── requirements.txt
 ```
 
