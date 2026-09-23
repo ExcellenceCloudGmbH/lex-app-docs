@@ -49,6 +49,17 @@ MyProject/
 
 ### How to Flatten
 
+Every file in a V1 project has one of three destinations, and two of them are
+not folders:
+
+```mermaid
+flowchart LR
+    M["my_app/models/*.py"] --> I["Input/ · Upload/ · Reports/<br/><i>sorted by what the model does</i>"]
+    A["manage.py<br/>admin.py<br/>views.py"] --> X["deleted<br/><i>the framework does this</i>"]
+    G["<code>from generic_app…</code>"] --> L["<code>from lex…</code><br/><i>rewritten in place</i>"]
+```
+
+
 1. Move your model files out of the nested app folder
 2. Organize them at the root or into meaningful subfolders
 3. Delete `manage.py`, `admin.py`, `views.py`, and any empty `__init__.py` files
