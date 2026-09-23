@@ -11,6 +11,8 @@ In this part, you'll create a `BudgetSummary` model that automatically calculate
 In PyCharm, right-click the `Reports/` folder → **New → Python File** → name it `BudgetSummary`:
 
 ```python title="Reports/BudgetSummary.py"
+import pandas as pd
+
 from django.db import models
 from lex.core.models.CalculationModel import CalculationModel
 from lex.audit_logging.handlers.LexLogger import LexLogger
