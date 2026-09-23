@@ -11,14 +11,14 @@ If you only want an embedded page, call it without callback flags and it behaves
 If you want Python to react to what the user does in the embedded app, turn on one or more `on_*` flags.
 
 ```python
-from lex.lex_app.streamlit.embed import lex_view
+from lex.lex_app.streamlit import lex_view
 ```
 
 ## Basic usage
 
 ```python
 import streamlit as st
-from lex.lex_app.streamlit.embed import lex_view
+from lex.lex_app.streamlit import lex_view
 
 event = lex_view("investor", on_select=True)
 
@@ -103,7 +103,7 @@ event = lex_view(
 You can also build the table declaratively with `Flow()`, which reads a little better for longer chains:
 
 ```python
-from lex.lex_app.streamlit.embed import Flow
+from lex.lex_app.streamlit import Flow
 
 flow = (
     Flow()
@@ -120,7 +120,7 @@ For repeated entry — enter a record, clear the form, enter the next — route 
 instead of a path:
 
 ```python
-from lex.lex_app.streamlit.embed import STAY, Flow
+from lex.lex_app.streamlit import STAY, Flow
 
 flow = Flow().after_update("cashflow", STAY)
 ```
