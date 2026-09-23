@@ -18,7 +18,7 @@ Quick-lookup reference for Lex App development. All source code is available on 
 
 ## Configuration
 
-- [[reference/lex_config.md|lex_config.py]] — the project-wide settings file: `INITIAL_DATA`, `PROJECT_GROUPS`, `TAB_DISPLAY_NAMES`, `DEFAULT_SERIALIZER_NAME`
+- [[reference/lex_config|lex_config.py]] — the project-wide settings file: `INITIAL_DATA`, `PROJECT_GROUPS`, `TAB_DISPLAY_NAMES`, `DEFAULT_SERIALIZER_NAME`
 - [[reference/Environment Variables|Environment Variables]] — runtime variables the framework reads from `.env`
 
 ## Migration
