@@ -137,6 +137,86 @@ that quietly never happens.
 
 For the simpler single-hop case you don't need a flow table at all — `redirect_after`, `redirect_after_create`, and `redirect_after_update` each take a single route (with the same `{resource}` / `{id}` tokens).
 
+### When the order matters
+
+Everything above is a **mapping**: a rule fires whenever its operation happens,
+wherever the user is. That answers "after any investor is created, go here" — and
+it cannot answer three questions, because a mapping has no position in it:
+
+- **Order.** `create t1 → create t2 → create t1` needs the same key twice.
+- **Repetition.** `STAY` repeats one form; it cannot cycle a pair.
+- **References.** `{id}` always means the record just saved, so a step cannot
+  say "edit the record step 1 made".
+
+For those, build the flow as a **sequence** instead. The same `Flow` object, a
+different set of methods — each call appends a step, and the flow advances one
+position per save:
+
+```python
+from lex.lex_app.streamlit import Flow, ref
+
+flow = (
+    Flow()
+    .create("investor", as_="inv")   # name it, to come back to it later
+    .create("vehicle")               # no id needed — follows the step before
+    .update("investor", id=ref("inv"))
+    .table("investor")               # the ending
+)
+
+lex_view("investor", on_flow_step=True, flow=flow)
+```
+
+| Method | | What it opens |
+|---|---|---|
+| `.create(resource, *, as_=None)` | step | the create form |
+| `.update(resource, id=None, *, as_=None)` | step | the edit form for one record |
+| `.goto(path)` | step | any route; `{id}` and `{resource}` interpolate |
+| `.table(resource=None)` | ending | the table — defaults to the last step's resource |
+| `.show(resource=None, id=None)` | ending | one record's detail page |
+| `.end_goto(path)` | ending | any route |
+| `.loop()` | ending | start again from the first step |
+| `.loop_last()` | ending | repeat the final step |
+
+#### Which record a step edits
+
+`update` takes an id three ways, and choosing between them is the point of the
+step:
+
+```python
+.update("cashflow")                  # the record the PREVIOUS step produced
+.update("cashflow", id=3)            # a literal you knew when writing the flow
+.update("cashflow", id=ref("inv"))   # a step you named with as_
+```
+
+References point **backwards only** — `ref("inv")` for a step not yet written
+raises `FlowError` where you wrote it, rather than failing at run time. Names
+must be unique for the same reason: two steps sharing one name would give
+`ref()` two answers and silently take the later.
+
+An implicit id needs a previous step that actually saves something. After a
+`.goto()` — which saves nothing — the next step must name its record.
+
+#### Repeating
+
+```python
+Flow().create("investor").loop_last()                # one form, over and over
+Flow().create("investor").create("vehicle").loop()   # cycle the pair forever
+```
+
+`loop_last()` is `STAY` with a cursor that does not move: the form clears in
+place. `loop()` restarts from step one and **clears the bindings** on each pass,
+so a `ref` cannot reach back into the previous lap — an iteration is a fresh run.
+
+> [!warning] The two forms cannot be mixed
+> Adding a step to a flow that already holds mapping rules raises `FlowError`,
+> and so does adding anything after an ending. A step fires at its position and a
+> mapping rule fires whenever its operation happens; a flow holding both has no
+> single answer. Pick one.
+
+Existing flows are unaffected — a mapping serialises to exactly the bytes it
+always did, and `after_create` / `after_update` / `after_save` / `STAY` keep
+working unchanged.
+
 ## Choosing a serializer
 
 Use `serializer=` when the embedded view should shape its data with a specific DRF serializer registered on the model:
