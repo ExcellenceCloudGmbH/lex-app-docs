@@ -266,6 +266,15 @@ effect on the application.
 
 ## Where these get set
 
+```mermaid
+flowchart LR
+    E[".env at the project root<br/><i>local development</i>"] --> P["the process<br/><i>lex start · lex streamlit · celery</i>"]
+    C["container / cloud environment<br/><i>production secrets</i>"] --> P
+    P --> R["read ONCE, at startup"]
+    R -.->|"changed a value?"| RS["restart the process<br/><i>nothing re-reads it</i>"]
+```
+
+
 | Place                 | When it's used                                              |
 | --------------------- | ----------------------------------------------------------- |
 | `.env` at project root | Local development. Loaded by PyCharm run configs and `set -a; source .env; set +a` in the terminal. |

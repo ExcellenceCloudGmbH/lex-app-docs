@@ -9,6 +9,16 @@ title: "lex_config.py — project settings"
 
 ## Keys at a glance
 
+```mermaid
+flowchart LR
+    F["<code>lex_config.py</code>"]
+    F --> A["<code>INITIAL_DATA</code><br/><i>what loads at startup</i>"]
+    F --> B["<code>PROJECT_GROUPS</code><br/><i>who sees the project</i>"]
+    F --> C["<code>TAB_DISPLAY_NAMES</code><br/><i>per-model tab labels</i>"]
+    F --> D["<code>DEFAULT_SERIALIZER_NAME</code><br/><i>renames the generated serializer</i>"]
+```
+
+
 | Key                       | Purpose                                                                              | Documented in                                                                  |
 | ------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
 | `INITIAL_DATA`            | Path to the JSON file the framework loads on **server start** to seed your database  | [[model-your-data/initial data]]                                        |
