@@ -1,5 +1,7 @@
 ---
-title: Widgets
+title: Embedding App Controls
+aliases:
+  - "access-and-dashboards/widgets"
 ---
 
 A Streamlit dashboard can host the application's *own* controls. Not a screenshot of the Calculate button, and not a re-implementation of it — the real control, wired to the real record, with the same status pill, the same live log and the same permissions as the grid.
@@ -124,7 +126,7 @@ if status and status["payload"]["status"] == "SUCCESS":
 ```
 
 The envelope has the same shape as the one
-[[access-and-dashboards/lex_view callbacks#The event envelope|`lex_view` returns]]:
+[[access-and-dashboards/streamlit/embedding app pages#The event envelope|the one lex_view returns]]:
 
 | Key | Meaning |
 |---|---|
@@ -159,6 +161,6 @@ You rarely need to set widget ids yourself. An id is derived from what the widge
 
 ## Related
 
-- [[access-and-dashboards/streamlit dashboards|Streamlit dashboards]] — writing and serving the dashboards themselves
-- [[access-and-dashboards/lex_view callbacks|lex_view callbacks]] — embedding a whole lex-app page in a dashboard, and reacting to what happens in it
+- [[access-and-dashboards/streamlit/embedding app pages|Embedding App Pages]] — the same idea for a whole lex-app route, and reacting to what happens in it
+- [[access-and-dashboards/streamlit/standalone dashboards|Standalone Dashboards]] — the page these controls usually live on
 - [[calculations/logging|Logging]] — what appears in the log these widgets display

@@ -32,6 +32,14 @@ from pathlib import Path
 
 CONTENT = Path(__file__).resolve().parents[1] / "content"
 
+# A wikilink whose LABEL holds a code span never becomes a link. Quartz
+# rewrites wikilinks with a mdast find-and-replace, which runs over text
+# nodes; the backticks have already become an `inlineCode` node by then, so
+# the text is split either side of it and the regex never sees a whole
+# `[[...]]`. The link resolves fine — it is simply emitted as the literal
+# characters. Nothing else here catches that, because the target exists.
+CODE_LABEL = re.compile(r"\[\[[^\[\]]*?\\?\|[^\[\]]*?`[^\[\]]*?\]\]")
+
 # Mirrors quartz.config.ts `ignorePatterns`. Kept as a literal list rather than
 # parsed out of the TypeScript: a checker that silently stopped covering a
 # directory because a parse failed would be worse than one that needs editing.
@@ -153,6 +161,7 @@ def main() -> int:
     ambiguous: list[tuple[str, int, str]] = []
     missing_assets: list[tuple[str, int, str]] = []
     bad_prefix: list[tuple[str, int, str]] = []
+    code_labels: list[tuple[str, int, str]] = []
     total = 0
 
     for page in pages:
@@ -172,6 +181,8 @@ def main() -> int:
                     # root-level page wins outright over any nested page of
                     # the same name. `[[index]]` is the home page, always.
                     ambiguous.append((rel, lineno, t))
+            for m in CODE_LABEL.finditer(line):
+                code_labels.append((rel, lineno, m.group(0)))
             for m in MDLINK.finditer(line):
                 href = m.group(1).split()[0].strip("<>")
                 if href.startswith(("http://", "https://", "mailto:", "#", "data:")):
@@ -204,6 +215,11 @@ def main() -> int:
     report("Ambiguous bare wikilinks (resolve to more than one page)", ambiguous)
     report("Missing local files referenced from markdown", missing_assets)
     report(
+        "Wikilinks whose label contains a code span (these render as literal "
+        "text, not links — move the backticks outside the [[...]])",
+        code_labels,
+    )
+    report(
         "Image paths must be written from the content root, with no leading ../ "
         "(Quartz adds the climb itself; a hand-written one overshoots the base path)",
         bad_prefix,
@@ -212,9 +228,10 @@ def main() -> int:
     print(
         f"\n{len(pages)} pages, {total} wikilinks — "
         f"{len(broken)} broken, {len(ambiguous)} ambiguous, "
-        f"{len(missing_assets)} missing files, {len(bad_prefix)} bad image prefixes."
+        f"{len(missing_assets)} missing files, {len(bad_prefix)} bad image prefixes, "
+        f"{len(code_labels)} code-span labels."
     )
-    return 1 if (broken or missing_assets or bad_prefix) else 0
+    return 1 if (broken or missing_assets or bad_prefix or code_labels) else 0
 
 
 if __name__ == "__main__":

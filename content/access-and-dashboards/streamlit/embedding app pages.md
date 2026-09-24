@@ -1,18 +1,29 @@
 ---
-title: lex_view Callbacks
+title: Embedding App Pages
 aliases:
+  - "access-and-dashboards/lex_view callbacks"
   - "features/access-and-ui/lex_view callbacks"
 ---
 
-`lex_view()` embeds a Lex App page inside a [Streamlit](https://docs.streamlit.io/) app. It has always supported a plain embed; now it can also hand user actions in the embedded page back to your Python script so you can react to them.
+`lex_view()` puts a real Lex App page — a table, a form, a record — inside a [Streamlit](https://docs.streamlit.io/) script.
 
-If you only want an embedded page, call it without callback flags and it behaves like before — a plain iframe that returns `None`. Nothing about existing call sites changes.
+![lex_view embedding the application's own table inside a Streamlit page](images/streamlit/lex-view.png)
 
-If you want Python to react to what the user does in the embedded app, turn on one or more `on_*` flags.
+That is the application's grid, not a copy of it: the same saved views, the same filters, the same export, living inside a Streamlit page.
+
+There are three levels to this, and you can stop after the first:
+
+| Level | What you write | What you get |
+|---|---|---|
+| **Embed** | `lex_view("investor")` | A plain iframe. Returns `None`. |
+| **React** | `lex_view("investor", on_select=True)` | The user's actions come back to Python as events. |
+| **Chain** | `lex_view("investor", flow=…)` | The user is routed from one form to the next. |
 
 ```python
 from lex.lex_app.streamlit import lex_view
 ```
+
+Call it without callback flags and it behaves exactly as a plain embed always has — nothing about existing call sites changes. Turn on one or more `on_*` flags when you want Python to react to what the user does.
 
 ## Basic usage
 
@@ -241,3 +252,9 @@ host page and stays in step with Lex App in both directions, without a reload �
 > `lex_view()` still accepts `theme="light"` / `theme="dark"`, but the embedded app no
 > longer reads it — it follows the host page instead. Passing it has no effect; it is
 > kept so existing call sites don't break.
+
+## Related
+
+- [[access-and-dashboards/streamlit/embedding app controls|Embedding App Controls]] — the same idea for a single control rather than a whole page
+- [[model-your-data/serializers|Serializers]] — what `serializer=` selects, and how to register one
+- [[access-and-dashboards/streamlit/standalone dashboards|Standalone Dashboards]] — the page these calls usually live on

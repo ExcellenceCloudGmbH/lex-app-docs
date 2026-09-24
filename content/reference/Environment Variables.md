@@ -53,7 +53,7 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 
 | Variable                                  | Purpose                                                                                  |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `IS_STREAMLIT_ENABLED`                    | `true` to enable the Streamlit toolbar icon in the frontend. See [[access-and-dashboards/streamlit dashboards]]. |
+| `IS_STREAMLIT_ENABLED`                    | `true` to enable the Streamlit toolbar icon in the frontend. See [[access-and-dashboards/streamlit/index|Streamlit Dashboards]]. |
 | `STREAMLIT_URL` / `BASE_URL`              | Public URL used by the embedded dashboard proxy. When this is HTTPS, Lex App defaults to secure cross-site cookies for the iframe. |
 | `LEX_PROXY_PORT`                          | Port exposed by the local Streamlit proxy when running `lex streamlit`. Default `8501`. |
 | `LEX_PROXY_INTERNAL_URL`                  | Full base URL the dashboard uses to reach the proxy when it is not `http://127.0.0.1:$LEX_PROXY_PORT`. |
@@ -199,7 +199,7 @@ rather than what happens when a worker dies.
 
 ## Dashboard proxy: tokens and sessions
 
-These govern how the [[access-and-dashboards/streamlit dashboards|dashboard proxy]]
+These govern how the [[access-and-dashboards/streamlit/index|dashboard proxy]]
 handles the tokens it holds on a user's behalf. The defaults are correct for a
 normal deployment.
 

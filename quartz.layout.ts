@@ -39,6 +39,15 @@ const explorerOptions = {
       "installation", "project-structure", "running-your-app", "tutorial",
       // inside using-the-app
       "navigation", "the-grid", "record-detail", "themes",
+      // inside access-and-dashboards: permissions first, matching the section
+      // title, then the Streamlit folder
+      "permissions", "streamlit",
+      // inside access-and-dashboards/streamlit: a reading order. The two
+      // "downward" pages (lex-app shows your dashboard), then the two
+      // "upward" ones (your dashboard shows lex-app), then the ops page.
+      "dashboards-on-your-models", "standalone-dashboards",
+      "embedding-app-pages", "embedding-app-controls",
+      "sessions-and-authentication",
     ]
     const ia = ORDER.indexOf(a.slugSegment)
     const ib = ORDER.indexOf(b.slugSegment)
