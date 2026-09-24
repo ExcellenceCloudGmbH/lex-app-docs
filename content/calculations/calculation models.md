@@ -45,14 +45,14 @@ stateDiagram-v2
     ABORTED --> IN_PROGRESS : Retry
 ```
 
-| State | Meaning |
-|---|---|
-| `NOT_CALCULATED` | Record exists, no calculation run yet |
-| `IN_PROGRESS` | Calculation is currently running |
-| `SUCCESS` | Completed without errors |
-| `ERROR` | An exception occurred (details stored in `calculation_error_message`) |
-| `CANCELLED` | A user stopped a running calculation |
-| `ABORTED` | The framework recovered a calculation that got stuck in progress |
+| State            | Meaning                                                                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `NOT_CALCULATED` | Record exists, no calculation run yet                                                                                              |
+| `IN_PROGRESS`    | Calculation is currently running                                                                                                   |
+| `SUCCESS`        | Completed without errors                                                                                                           |
+| `ERROR`          | An exception occurred (details stored in `calculation_error_message`; any log output written before the exception stays available) |
+| `CANCELLED`      | A user stopped a running calculation                                                                                               |
+| `ABORTED`        | The framework recovered a calculation that got stuck in progress                                                                   |
 
 If you're using Celery workers, cancelling is immediate: the framework revokes the running worker task and marks the record as `CANCELLED`. `ABORTED` is different — it's used when the framework finds an old `IN_PROGRESS` row that never finished cleanly, for example after a worker or app process died. Those terminal status updates are saved as normal model changes, so they show up in History/Timeline just like in-process runs.
 
@@ -78,7 +78,7 @@ You don't need to define or manage any of the following — they're inherited fr
 > [!info]- How the state machine works internally
 > `calculate_hook()` carries **two** hooks — `@hook(AFTER_UPDATE)` and
 > `@hook(AFTER_CREATE)`, both conditioned on `is_calculated == IN_PROGRESS`. The
-> create hook is why a record that is *born* in `IN_PROGRESS` calculates too,
+> create hook is why a record that is _born_ in `IN_PROGRESS` calculates too,
 > rather than only one edited into it.
 >
 > `IN_PROGRESS` is already committed before the hook runs — `save()` persists it
@@ -110,15 +110,15 @@ class CalculateBalanceSheet(CalculationModel):
 > [!note]- Migrating from V1?
 > If you're coming from `ConditionalUpdateMixin`, here's what changes:
 >
-> | Aspect | V1 (Old) | Current |
-> |---|---|---|
-> | Base class | `ConditionalUpdateMixin` | `CalculationModel` |
-> | Method name | `update()` | `calculate()` |
-> | Decorator | `@ConditionalUpdateMixin.conditional_calculation` | Not needed |
-> | State field | Boolean `is_calculated` | Enum with 6 states |
-> | Recursion guard | Manual `dont_update` flag | Automatic |
-> | Error handling | Manual `try/catch` | Automatic (stored in `calculation_error_message`) |
-> | Save | Manual `self.save()` | Automatic after method returns |
+> | Aspect          | V1 (Old)                                          | Current                                           |
+> | --------------- | ------------------------------------------------- | ------------------------------------------------- |
+> | Base class      | `ConditionalUpdateMixin`                          | `CalculationModel`                                |
+> | Method name     | `update()`                                        | `calculate()`                                     |
+> | Decorator       | `@ConditionalUpdateMixin.conditional_calculation` | Not needed                                        |
+> | State field     | Boolean `is_calculated`                           | Enum with 6 states                                |
+> | Recursion guard | Manual `dont_update` flag                         | Automatic                                         |
+> | Error handling  | Manual `try/catch`                                | Automatic (stored in `calculation_error_message`) |
+> | Save            | Manual `self.save()`                              | Automatic after method returns                    |
 >
 > ### Migration Checklist
 >

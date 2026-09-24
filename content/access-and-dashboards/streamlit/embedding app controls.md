@@ -4,9 +4,9 @@ aliases:
   - "access-and-dashboards/widgets"
 ---
 
-A Streamlit dashboard can host the application's *own* controls. Not a screenshot of the Calculate button, and not a re-implementation of it — the real control, wired to the real record, with the same status pill, the same live log and the same permissions as the grid.
+A Streamlit dashboard can host the application's _own_ controls. Not a screenshot of the Calculate button, and not a re-implementation of it — the real control, wired to the real record, with the same status pill, the same live log and the same permissions as the grid.
 
-**Four pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run everything below against real data:** *The three widgets*, *Shaping a control* — every argument rendered live — *Reacting to a run*, and *Layout and cost*.
+**Four pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run everything below against real data:** _The three widgets_, _Shaping a control_ — every argument rendered live — _Reacting to a run_, and _Layout and cost_.
 
 Use this when a dashboard is where the work happens: a report page where the reader should be able to re-run the calculation they are looking at, without leaving for the grid and coming back.
 
@@ -35,15 +35,17 @@ from lex.lex_app.streamlit import lex_calculation
 lex_calculation("navcalc", pk=1)
 ```
 
-That renders the full control — the status pill, the Calculate button and the button that opens the live log.
+That renders the full control — the status pill, the Calculate button and the button that opens the live log for that record's newest run.
 
-| Call | What it renders |
-|---|---|
-| `lex_calculation(model, pk)` | The Calculate control: status pill, button, log button |
-| `lex_calculation_log(model, pk)` | The calculation log as a **live stream** |
-| `lex_calculation_log_tree(model, pk)` | The finished run's **execution tree** |
+| Call                                  | What it renders                                        |
+| ------------------------------------- | ------------------------------------------------------ |
+| `lex_calculation(model, pk)`          | The Calculate control: status pill, button, log button |
+| `lex_calculation_log(model, pk)`      | The calculation log as a **live stream**               |
+| `lex_calculation_log_tree(model, pk)` | The finished run's **execution tree**                  |
 
 The stream and the tree answer different questions. The stream shows what is happening now; the tree shows how a completed run was structured. Reach for the stream while you are watching, and the tree when you are navigating something that already finished.
+
+If the record has run before, the control resolves that latest run for you. The status pill, log button and execution tree stay in step without you passing a calculation id around.
 
 ## Several widgets
 
@@ -91,14 +93,14 @@ tree and consolidated log below are the same run seen two other ways.
 
 `page.calculation()` is composable, and **absence means hidden**. The default is minimal; you add what a layout needs.
 
-| Argument | Effect |
-|---|---|
-| `variant` | `"full"` (pill + button), `"status"` (pill alone), `"action"` (button alone) |
-| `title` | A heading above the control. Omit it and no heading renders |
-| `fields` | Record fields beside the control, drawn by the application's own field renderer — a foreign key shows its display name, a datetime is formatted as the grid formats it |
-| `show_log` | Put the log inline under the control |
-| `show_log_button` | The control that opens the live log popup. On by default |
-| `on_status` | Return the latest status envelope instead of `None` |
+| Argument          | Effect                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `variant`         | `"full"` (pill + button), `"status"` (pill alone), `"action"` (button alone)                                                                                           |
+| `title`           | A heading above the control. Omit it and no heading renders                                                                                                            |
+| `fields`          | Record fields beside the control, drawn by the application's own field renderer — a foreign key shows its display name, a datetime is formatted as the grid formats it |
+| `show_log`        | Put the log inline under the control                                                                                                                                   |
+| `show_log_button` | The control that opens the live log popup. On by default                                                                                                               |
+| `on_status`       | Return the latest status envelope instead of `None`                                                                                                                    |
 
 When the log is the point, declare it separately rather than with `show_log=True`. A control wants a single line; a two-pane tree wants width and height. Declaring them apart is what lets the control sit in a narrow column and the log run full width beneath it.
 
@@ -130,14 +132,14 @@ if status and status["payload"]["status"] == "SUCCESS":
 The envelope has the same shape as the one
 [[access-and-dashboards/streamlit/embedding app pages#The event envelope|the one lex_view returns]]:
 
-| Key | Meaning |
-|---|---|
-| `type` | `"calculation_status"`. Worth checking — every envelope type shares one component value, so a click on the log button arrives here too, and its payload has no `status` key |
-| `id` | A unique event id, used to de-duplicate across re-runs |
-| `payload.widget_id` | Which widget this is about, when a block has several |
-| `payload.model` | The model the widget is wired to |
-| `payload.pk` | The record's primary key |
-| `payload.status` | The calculation's state — `SUCCESS`, `ERROR`, `IN_PROGRESS`, and the rest of the [[calculations/calculation models#The State Machine|state machine]] |
+| Key                 | Meaning                                                                                                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`              | `"calculation_status"`. Worth checking — every envelope type shares one component value, so a click on the log button arrives here too, and its payload has no `status` key |
+| `id`                | A unique event id, used to de-duplicate across re-runs                                                                                                                      |
+| `payload.widget_id` | Which widget this is about, when a block has several                                                                                                                        |
+| `payload.model`     | The model the widget is wired to                                                                                                                                            |
+| `payload.pk`        | The record's primary key                                                                                                                                                    |
+| `payload.status`    | The calculation's state — `SUCCESS`, `ERROR`, `IN_PROGRESS`, and the rest of the [[calculations/calculation models#The State Machine                                        | state machine]] |
 
 It arrives on the **next** rerun, not during the one that started the run.
 
@@ -150,16 +152,16 @@ with lex_widgets(key="top") as page: ...
 with lex_widgets(key="bottom") as page: ...
 ```
 
-You rarely need to set widget ids yourself. An id is derived from what the widget is *about* — its kind, model and primary key — not from its position, so putting a widget behind an `if` does not renumber the ones after it. Ids used to be positional, and on the rerun where such a condition flipped, a status envelope could be routed to the wrong widget.
+You rarely need to set widget ids yourself. An id is derived from what the widget is _about_ — its kind, model and primary key — not from its position, so putting a widget behind an `if` does not renumber the ones after it. Ids used to be positional, and on the rerun where such a condition flipped, a status envelope could be routed to the wrong widget.
 
 > [!warning] A malformed widget raises rather than rendering blank
-> `WidgetSpecError` is raised when the *spec* cannot be built — a misspelled
+> `WidgetSpecError` is raised when the _spec_ cannot be built — a misspelled
 > option, a `variant` that is not `"full"` or `"action"`, `fields` given as a
 > bare string instead of a list, a non-positive `log_height`, or two widgets
 > claiming the same id. It surfaces as an exception rather than an empty frame,
 > because an empty frame looks like a loading state and gets waited on.
 >
-> A model or primary key that does not *exist* is a different case and does not
+> A model or primary key that does not _exist_ is a different case and does not
 > raise: that widget renders an error card and its siblings keep working. The
 > spec was well-formed; the record was not there.
 

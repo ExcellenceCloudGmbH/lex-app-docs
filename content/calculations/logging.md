@@ -156,8 +156,8 @@ A few things worth knowing:
   to organise what you write.
 
 > [!tip]
-> Reach for a **string** context to structure *one* calculation's own log into phases,
-> and a **model instance** context (above) to nest a *child calculation's* logs under
+> Reach for a **string** context to structure _one_ calculation's own log into phases,
+> and a **model instance** context (above) to nest a _child calculation's_ logs under
 > their parent. They compose: a model section can contain string sections, and vice versa.
 
 For the complete method list, see the [[reference/LexLogger API|LexLogger API reference]].
@@ -165,12 +165,12 @@ For the complete method list, see the [[reference/LexLogger API|LexLogger API re
 > [!note]- Migrating from V1?
 > If you're coming from `CalculationLog.create()`:
 >
-> | Aspect | V1 (Old) | Current |
-> |---|---|---|
-> | API | `CalculationLog.create(...)` | `LexLogger()` builder pattern |
-> | Formatting | Plain text only | Rich Markdown |
-> | Context | Manual — pass IDs yourself | Automatic |
-> | Nested calculations | Not supported | Built-in parent/child hierarchy |
+> | Aspect              | V1 (Old)                     | Current                         |
+> | ------------------- | ---------------------------- | ------------------------------- |
+> | API                 | `CalculationLog.create(...)` | `LexLogger()` builder pattern   |
+> | Formatting          | Plain text only              | Rich Markdown                   |
+> | Context             | Manual — pass IDs yourself   | Automatic                       |
+> | Nested calculations | Not supported                | Built-in parent/child hierarchy |
 >
 > Replace all `CalculationLog.create(...)` calls with `LexLogger()`, remove manual context/ID passing, and always end chains with `.log()`.
 
@@ -179,10 +179,14 @@ For the complete method list, see the [[reference/LexLogger API|LexLogger API re
 LexLogger output is rendered in the frontend in real-time:
 
 - **Calculation Log Panel** — a slide-out drawer during calculation showing live Markdown-rendered output as the calculation progresses, including background calculations after an initial HTTP `202` response
-- **Execution tree** — the left pane lists every node — model instances *and* the string sections above — so you can click straight to the part of the log you care about
+- **Execution tree** — the left pane lists every node — model instances _and_ the string sections above — so you can click straight to the part of the log you care about
+- **Row log buttons** — on calculation rows and embedded calculation controls, the log button opens the newest run for that record; you don't need to track a calculation id yourself
 - **Collapsible sections** — in the consolidated log, any section can be folded away; collapsing a heading hides its whole sub-tree, so you can focus on one phase of a long run at a time
 - **PDF Export** — the calculation log for any record can be exported as a PDF that renders just like the on-screen view: headings, tables, fenced code blocks and even strikethrough survive the export, which makes it usable as compliance evidence
 - **Complete subtree export** — download a log together with all of its nested child logs as one PDF by adding `include_descendants=true` to the download request
 - **Rich Rendering** — headings, tables, DataFrames, and code blocks are all rendered with proper formatting and syntax highlighting
+
+> [!note]
+> If a run fails after it already logged some output, that output stays available. Open the failed run's log to see what completed before the exception.
 
 See the [[using-the-app/record-detail/index|Record Detail]] page for how logs appear in context.
