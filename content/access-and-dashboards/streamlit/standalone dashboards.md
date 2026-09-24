@@ -21,6 +21,8 @@ def main():
 
 Nothing about the frame is the project's own work — the navigation rail, the theme, the signed-in user and the way out all come from lex-app. What the project wrote is the column of metrics, the chart, and the Calculate control sitting beside them.
 
+That frame now behaves like the rest of the app on smaller layouts: the sidebar collapses to icons instead of vanishing, and the account menu sits in the top bar. So even a standalone dashboard keeps the usual wayfinding and account controls close at hand.
+
 ## Two rules that catch people first
 
 > [!warning] `main()` is the only name the framework looks for
@@ -77,6 +79,6 @@ Each page is a function, so every `st.*` call is inside one — which is the sec
 
 ## Related
 
-- [[access-and-dashboards/streamlit/dashboards on your models|Dashboards on Your Models]] — when the dashboard *is* about one model
+- [[access-and-dashboards/streamlit/dashboards on your models|Dashboards on Your Models]] — when the dashboard _is_ about one model
 - [[access-and-dashboards/streamlit/embedding app pages|Embedding App Pages]] — putting a real lex-app table or form on the page
 - [[access-and-dashboards/streamlit/embedding app controls|Embedding App Controls]] — putting a real Calculate button on the page
