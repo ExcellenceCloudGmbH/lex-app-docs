@@ -4,6 +4,8 @@ title: Standalone Dashboards
 
 Some dashboards are not about one model. A monthly report spans several; a control panel drives a workflow; an overview page is the first thing a user should see. Those get a **standalone dashboard** — an app of its own, with no host page around it.
 
+**[Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) is one**, end to end: its `_streamlit_structure.py` is a ten-page dashboard where each page demonstrates one API on this list.
+
 It takes one file. Put `_streamlit_structure.py` at your project root, give it a `main()`, and the Streamlit process serves it when no `model` is in the query string.
 
 ```python title="_streamlit_structure.py"

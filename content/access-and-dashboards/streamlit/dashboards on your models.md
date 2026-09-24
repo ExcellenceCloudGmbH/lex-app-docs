@@ -4,6 +4,8 @@ title: Dashboards on Your Models
 
 The quickest dashboard to write is one that belongs to a model. You add a method, and the application decides when to show it — no routing, no separate app, no extra process to configure beyond the Streamlit server itself.
 
+**[Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) has one:** `Fund.streamlit_main` in `Input/Fund.py`, which is what the Analytics tab renders when you open a fund. Its dashboard's *Record and table dashboards* page walks through it.
+
 There are two of them, and the difference is what the method receives:
 
 | Level | Method | Receives | Where it appears |

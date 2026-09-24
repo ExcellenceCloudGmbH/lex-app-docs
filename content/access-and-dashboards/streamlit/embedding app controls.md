@@ -6,6 +6,8 @@ aliases:
 
 A Streamlit dashboard can host the application's *own* controls. Not a screenshot of the Calculate button, and not a re-implementation of it — the real control, wired to the real record, with the same status pill, the same live log and the same permissions as the grid.
 
+**Four pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run everything below against real data:** *The three widgets*, *Shaping a control* — every argument rendered live — *Reacting to a run*, and *Layout and cost*.
+
 Use this when a dashboard is where the work happens: a report page where the reader should be able to re-run the calculation they are looking at, without leaving for the grid and coming back.
 
 <!-- 📸 TODO: a Streamlit page with a Calculate control and its live log
@@ -133,6 +135,8 @@ The envelope has the same shape as the one
 | `type` | `"calculation_status"`. Worth checking — every envelope type shares one component value, so a click on the log button arrives here too, and its payload has no `status` key |
 | `id` | A unique event id, used to de-duplicate across re-runs |
 | `payload.widget_id` | Which widget this is about, when a block has several |
+| `payload.model` | The model the widget is wired to |
+| `payload.pk` | The record's primary key |
 | `payload.status` | The calculation's state — `SUCCESS`, `ERROR`, `IN_PROGRESS`, and the rest of the [[calculations/calculation models#The State Machine|state machine]] |
 
 It arrives on the **next** rerun, not during the one that started the run.

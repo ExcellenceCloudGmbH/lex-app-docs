@@ -7,6 +7,8 @@ aliases:
 
 `lex_view()` puts a real Lex App page — a table, a form, a record — inside a [Streamlit](https://docs.streamlit.io/) script.
 
+**Four pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run everything below against real data:** *A route, embedded*, *Narrowing with a serializer*, *Reacting to events* — which prints the live envelope beside the table — and *Chaining forms with Flow*.
+
 ![lex_view embedding the application's own table inside a Streamlit page](images/streamlit/lex-view.png)
 
 That is the application's grid, not a copy of it: the same saved views, the same filters, the same export, living inside a Streamlit page.
@@ -43,16 +45,29 @@ When at least one callback flag is set, `lex_view()` switches from a plain ifram
 
 Turn on only what you need:
 
-| Flag | Fires when… |
-|---|---|
-| `on_create` | A record is created in the embedded page |
-| `on_update` | A record is updated |
-| `on_delete` | A record is deleted |
-| `on_select` | The grid selection changes |
-| `on_navigate` | The user navigates to another route |
-| `on_flow_step` | A step in a multi-step `flow` completes |
+| Flag | `type` | `payload` | Fires when… |
+|---|---|---|---|
+| `on_create` | `"create"` | `resource`, `id`, `data` | A create form saves |
+| `on_update` | `"update"` | `resource`, `id`, `data` | An edit form saves |
+| `on_delete` | `"delete"` | `resource`, `id` | A record is deleted from the edit toolbar |
+| `on_select` | `"select"` | `resource`, `ids` | The grid selection changes (debounced 150 ms) |
+| `on_navigate` | `"navigate"` | `from`, `to` | The embedded app routes somewhere else |
+| `on_flow_step` | — | — | Nothing is emitted for this type — see below |
+
+`data` on a create or update is the **whole saved record** as the API returned it, not just the id.
 
 `on_select` is opt-in for a reason: it drives a Streamlit re-run on *every* grid selection change, which is expensive. The framework only wires the grid's selection callback when you explicitly ask for it.
+
+> [!warning] `on_flow_step` does not deliver an event today
+> The flag is accepted and forwarded as `?emit_flow_step=true`, and the
+> embedded app maps it — but nothing emits a `flow_step` event, so a handler
+> guarded on `event["type"] == "flow_step"` never runs.
+>
+> Flows themselves work: the routing happens inside the embedded app and needs
+> no event to reach Python. Setting `on_flow_step=True` does have one real
+> effect, which is switching `lex_view` into bidirectional mode — but any
+> `on_*` flag does that. **To follow a flow's progress, use `on_create` and
+> `on_update`**, which fire at each step that saves.
 
 ## How an event reaches your script
 
@@ -90,11 +105,31 @@ Every event the embedded page sends back is a dict with a stable shape:
 
 | Key | Meaning |
 |---|---|
-| `type` | The event kind — `"create"`, `"update"`, `"delete"`, `"select"`, `"navigate"`, or `"flow_step"` |
-| `payload` | Type-specific data (e.g. `{"id": 42}` for create/update, `{"ids": [...]}` for select) |
-| `id` | A unique event ID, used internally to de-duplicate re-runs so your handler doesn't fire twice for the same event |
+| `type` | The event kind — `"create"`, `"update"`, `"delete"`, `"select"` or `"navigate"` |
+| `payload` | Type-specific data; the table under [[access-and-dashboards/streamlit/embedding app pages#Callback flags\|Callback flags]] gives the keys for each type |
+| `id` | A unique event ID, used to de-duplicate re-runs so your handler doesn't fire twice for the same event |
+| `ts` | Milliseconds since the epoch, set in the browser when the event was raised |
+| `source` | Always `"lex-app"` |
+| `version` | The bridge protocol version |
 
-Guard your handler on `event and event["type"] == "..."` — `event` is `None` on the first render before anything has happened.
+A create event, in full:
+
+```python
+{
+    "source": "lex-app",
+    "version": 1,
+    "type": "create",
+    "id": "01J8ZQ…",
+    "ts": 1758723041123,
+    "payload": {
+        "resource": "investor",
+        "id": 42,
+        "data": {"id": 42, "name": "Acme Holdings", "currency": "EUR", ...},
+    },
+}
+```
+
+Guard your handler on `event and event["type"] == "..."` — `event` is `None` on the first render before anything has happened. The type check matters for a second reason: every event type shares one component value, so a handler that reads `event["payload"]["ids"]` without checking the type will raise the moment a different event arrives.
 
 ## Redirect flows (`flow=`)
 
@@ -122,7 +157,7 @@ flow = (
     .after_update("cashflow", "/investor")
 )
 
-lex_view("investor", on_flow_step=True, flow=flow)
+lex_view("investor", on_create=True, flow=flow)
 ```
 
 ### Staying put after a save
@@ -174,7 +209,7 @@ flow = (
     .table("investor")               # the ending
 )
 
-lex_view("investor", on_flow_step=True, flow=flow)
+lex_view("investor", on_create=True, flow=flow)
 ```
 
 | Method | | What it opens |
