@@ -35,7 +35,7 @@ lex setup
 
 This generates a few things for you:
 
-- `.run/` — PyCharm run configurations (Init, Start, Streamlit)
+- `.run/` — PyCharm run configurations (Init, Start, Streamlit, Reflex, and the rest)
 - `.vscode/launch.json` — VS Code launch configurations (if VS Code settings are present)
 - `.env` — Environment configuration template
 - `migrations/` — Django migrations folder
