@@ -6,7 +6,7 @@ A Reflex dashboard runs as the person looking at it, and it signs them in itself
 
 ## Every page requires sign-in
 
-Every page, event handler and state var requires a signed-in user unless it says otherwise. A visitor who is not signed in is sent to `/login`, clicks **Login with Keycloak**, signs in at Keycloak, and comes back through `/callback` to the page they asked for — query string included, so `?model=fund&pk=42` survives the round trip. Someone already signed in to Keycloak, in Lex App for instance, is not asked for a password again.
+Every page, event handler and state var requires a signed-in user unless it says otherwise. A visitor who is not signed in is sent to `/login`, which sends them straight on to Keycloak — there is nothing to click — and Keycloak sends them back through `/callback` to the page they asked for, query string included, so `?model=fund&pk=42` survives the round trip. Someone already signed in to Keycloak — to Lex App, for instance — sees no form at all: Keycloak answers at once, and the dashboard opens signed in.
 
 ```mermaid
 sequenceDiagram
@@ -14,13 +14,15 @@ sequenceDiagram
     participant R as Reflex app
     participant K as Keycloak
     B->>R: /?model=fund&pk=42
-    R-->>B: not signed in: /login
-    B->>K: Login with Keycloak
-    K-->>B: already signed in, or the login form
+    R-->>B: not signed in: /login, and on to Keycloak
+    B->>K: the sign-in request
+    K-->>B: signed in already: at once, or the login form
     B->>R: /callback?code=…
     R->>K: code → tokens (the confidential client)
     R-->>B: /?model=fund&pk=42, signed in
 ```
+
+`/login` is Lex App's page, not Reflex Enterprise's: the plugin's own is a row of buttons, one per sign-in provider, that waits for a click even when there is only one. Lex App's shows **Login with Keycloak** only when a sign-in it started did not complete — a visitor who leaves Keycloak's form with the browser's back button gets the button rather than being sent straight back, and so does one whose sign-in could not start because Keycloak did not answer.
 
 Something that must be public says so with `auth=False` — `@rxe.page(route="/status", auth=False)`, `@rxe.event(auth=False)`, `rxe.var(auth=False)`. On a dashboard that is rarely right.
 
@@ -28,10 +30,12 @@ Something that must be public says so with `auth=False` — `@rxe.page(route="/s
 
 Framed by Lex App — the **Reflex** entry in the sidebar — the dashboard behaves the same with two differences:
 
-- **Signing in takes one click in a popup.** Keycloak's login page refuses to render inside a frame, so Reflex Enterprise signs in through a small popup window instead. The user clicks **Login with Keycloak** once; being signed in to Lex App already, the popup finishes by itself and closes.
+- **Signing in happens without showing Keycloak.** Keycloak's login page refuses to render inside a frame, so the framed dashboard asks Keycloak whether the user is signed in without a page of its own (`prompt=none`). Signed in to Lex App, they are, and the dashboard opens signed in with nothing to click. When Keycloak cannot tell from inside the frame, `/login` shows **Login with Keycloak**: one click opens a small popup, which finishes by itself and closes for someone signed in already, and shows Keycloak's form to anyone else.
 - **The dashboard's own header is left out.** Lex App opens it with `lex_embed=1`, and the page then draws neither the signed-in user nor a **Sign out** button: Lex App's header shows both.
 
-A dashboard served over HTTP from anywhere but `localhost` cannot keep anyone signed in, framed or not — the sign-in cookies are `Secure`, and browsers drop them on plain HTTP. The symptom is a login loop. Serve it over HTTPS.
+Keycloak cannot tell from inside the frame when there is no Keycloak session, and when the browser keeps Keycloak's cookies from frames on another site — Safari and Firefox do by default, and so does any browser set to block third-party cookies. Serving Keycloak and the dashboards on the same site as Lex App — `auth.example.com` and `dashboards.example.com` beside `app.example.com` — makes the frame's sign-in silent in all of them.
+
+A dashboard served over HTTP from anywhere but `localhost` cannot keep anyone signed in, framed or not — the sign-in cookies are `Secure`, and browsers drop them on plain HTTP. The symptom is a sign-in that never sticks: back on `/login` after every one. Serve it over HTTPS.
 
 ## What to configure
 
@@ -62,9 +66,19 @@ The callback is built from the address in the browser, so every origin people ac
 
 ## Staying signed in
 
-Access tokens are short-lived, and the dashboard renews its own before it expires — in the background, coordinated across the tabs a user has open, without reloading the page. The tokens live in HTTP-only cookies: the page's JavaScript never sees them, and nothing about the sign-in is kept on the server. (Reflex does keep each user's page state on its backend, so more than one backend replica needs a shared Redis — see [[access-and-dashboards/reflex/running and deploying|Running & Deploying]].)
+Access tokens are short-lived, and the dashboard renews its own before it expires — in the background, coordinated across the tabs a user has open, without reloading the page. The tokens live in HTTP-only cookies, which the page's JavaScript never sees. The Reflex backend holds them too, with each user's page state, and reads them back from the cookies whenever it has none. (That page state is why more than one backend replica needs a shared Redis — see [[access-and-dashboards/reflex/running and deploying|Running & Deploying]].)
 
 A dashboard session is bound to the user's **Keycloak session**, exactly like a Lex App or Streamlit session. Signing out of Lex App, an administrator ending the session, or the realm's maximum session lifetime ends the dashboard's session too: its next renewal fails, and the user is signed out.
+
+### Across restarts and new tabs
+
+A new tab, and a restart of the Reflex server — `lex reflex` run again, or a deployment — find the user signed in, from the cookies. When they do not, the dashboard signs in again through Keycloak by itself, with nothing to click, but the likeliest reason is worth fixing: a token too large for its cookie. Browsers refuse a cookie over 4096 bytes without an error, and a Keycloak access token carries every role the user holds in the realm while its client allows full scope — Keycloak's default, and in a realm shared by many clients easily more than 4096 bytes. The dashboard's log says so, once:
+
+```text
+The Keycloak token in cookie _oidc_lex_keycloak_access_token_data_partitioned is 5321 bytes, and browsers drop cookies over 4096 bytes: …
+```
+
+In the browser's developer tools it shows as the `_oidc_lex_keycloak_id_token_partitioned` cookie without its `_oidc_lex_keycloak_access_token_data_partitioned` companion. The fix is in Keycloak, on the confidential client: **Clients** → the client → **Client scopes** → its dedicated scope → **Scope**. Turn **Full scope allowed** off, and assign there the roles its tokens must still carry — those your Keycloak permissions' role policies check. Lex App signs users in with the same client, so check Lex App's permissions afterwards.
 
 > [!note] Why the dashboard does not ask for `offline_access`
 > Reflex's own documentation adds the `offline_access` scope to obtain a refresh token. Keycloak issues one without it — the Streamlit proxy has always renewed with exactly that — and with it the refresh token becomes an *offline* token that outlives the Keycloak session. A dashboard would then stay signed in after the user signed out of Lex App. It is left out on purpose.
