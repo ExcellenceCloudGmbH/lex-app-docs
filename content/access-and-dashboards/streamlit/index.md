@@ -82,3 +82,5 @@ Streamlit runs as a separate process alongside your application. See [[start-her
 
 > [!tip]
 > We recommend running Streamlit from your IDE (e.g. PyCharm) using the `lex streamlit` command, which handles environment configuration automatically.
+
+Dashboards can also be written in Reflex, which Lex App supports alongside Streamlit, with the same `?model=&pk=` links and sign-in against the same Keycloak — see [[access-and-dashboards/reflex/index|Reflex Dashboards]].

@@ -46,5 +46,6 @@ The interface sits on top of the [[home|what the framework gives you]]. Every fe
 | Timeline and history tabs | [[history-and-audit/bitemporal history\|Bitemporal History]] |
 | Audit log per record | [[history-and-audit/audit logs\|Audit Logs]] |
 | Embedded Streamlit dashboards | [[access-and-dashboards/streamlit/index\|Streamlit Dashboards]] |
+| Embedded Reflex dashboards | [[access-and-dashboards/reflex/index\|Reflex Dashboards]] |
 | Calculation logs with progress | [[calculations/logging\|LexLogger]] |
 | Field and row restrictions | [[access-and-dashboards/permissions\|Permissions]] |

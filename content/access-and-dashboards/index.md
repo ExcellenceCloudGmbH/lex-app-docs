@@ -14,6 +14,8 @@ flowchart LR
     data table"]
     B -- Allowed --> D["Streamlit
     dashboard"]
+    B -- Allowed --> F["Reflex
+    dashboard"]
     B -- Denied --> E["Access denied"]
 ```
 
@@ -34,3 +36,14 @@ Interactive [Streamlit](https://docs.streamlit.io/) dashboards, in both directio
 | [[access-and-dashboards/streamlit/sessions and authentication\|Sessions & Authentication]] | Who the dashboard runs as, and what to configure before deploying |
 
 There is a [complete project](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) you can clone and run that demonstrates every one of them.
+
+### [[access-and-dashboards/reflex/index|Reflex Dashboards]]
+Dashboards written in [Reflex](https://reflex.dev/docs/) — Python compiled to a React app — beside or instead of Streamlit, with the same place in Lex App: the same `?model=&pk=` links, the Django ORM, and sign-in against the same Keycloak through [Reflex Enterprise](https://reflex.dev/docs/enterprise/auth/overview/), with no proxy in front. A section of its own, in reading order:
+
+| | |
+|---|---|
+| [[access-and-dashboards/reflex/dashboards on your models\|Dashboards on Your Models]] | `reflex_main` and `reflex_class_main` — a record's dashboard and a table's |
+| [[access-and-dashboards/reflex/standalone dashboards\|Standalone Dashboards]] | `_reflex_structure.py` — the project's own dashboard, and pages of its own |
+| [[access-and-dashboards/reflex/the django orm\|The Django ORM]] | Reading and writing models from an event handler |
+| [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] | Signing in, the user's permissions, and what Keycloak needs |
+| [[access-and-dashboards/reflex/running and deploying\|Running & Deploying]] | `lex reflex`, locally and in production |
