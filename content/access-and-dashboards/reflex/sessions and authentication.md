@@ -35,6 +35,8 @@ Framed by Lex App — the **Reflex** entry in the sidebar — the dashboard beha
 
 Keycloak cannot tell from inside the frame when there is no Keycloak session, and when the browser keeps Keycloak's cookies from frames on another site — Safari and Firefox do by default, and so does any browser set to block third-party cookies. Serving Keycloak and the dashboards on the same site as Lex App — `auth.example.com` and `dashboards.example.com` beside `app.example.com` — makes the frame's sign-in silent in all of them.
 
+Either way the click is needed at most once per browser. A frame on the same site as Lex App — `localhost` in development — shares the dashboard's own cookies, so once the dashboard has signed in there, in a tab or through the popup, the frame is signed in from them without asking Keycloak at all.
+
 A dashboard served over HTTP from anywhere but `localhost` cannot keep anyone signed in, framed or not — the sign-in cookies are `Secure`, and browsers drop them on plain HTTP. The symptom is a sign-in that never sticks: back on `/login` after every one. Serve it over HTTPS.
 
 ## What to configure
@@ -72,13 +74,21 @@ A dashboard session is bound to the user's **Keycloak session**, exactly like a 
 
 ### Across restarts and new tabs
 
-A new tab, and a restart of the Reflex server — `lex reflex` run again, or a deployment — find the user signed in, from the cookies. When they do not, the dashboard signs in again through Keycloak by itself, with nothing to click, but the likeliest reason is worth fixing: a token too large for its cookie. Browsers refuse a cookie over 4096 bytes without an error, and a Keycloak access token carries every role the user holds in the realm while its client allows full scope — Keycloak's default, and in a realm shared by many clients easily more than 4096 bytes. The dashboard's log says so, once:
+A new tab, and a restart of the Reflex server — `lex reflex` run again, or a deployment — find the user signed in, from the cookies.
+
+That holds for large tokens too. Browsers refuse a cookie over 4096 bytes without an error, and a Keycloak access token carries every role the user holds in the realm while its client allows full scope — Keycloak's default, and in a realm shared by many clients easily more than 4096 bytes. Such a token is stored compressed, and the dashboard's log says so, once:
 
 ```text
-The Keycloak token in cookie _oidc_lex_keycloak_access_token_data_partitioned is 5321 bytes, and browsers drop cookies over 4096 bytes: …
+The Keycloak access token makes cookie _oidc_lex_keycloak_access_token_data_partitioned 8896 bytes, more than browsers keep (4096); it is stored compressed, in 2665.
 ```
 
-In the browser's developer tools it shows as the `_oidc_lex_keycloak_id_token_partitioned` cookie without its `_oidc_lex_keycloak_access_token_data_partitioned` companion. The fix is in Keycloak, on the confidential client: **Clients** → the client → **Client scopes** → its dedicated scope → **Scope**. Turn **Full scope allowed** off, and assign there the roles its tokens must still carry — those your Keycloak permissions' role policies check. Lex App signs users in with the same client, so check Lex App's permissions afterwards.
+Compressed, a Keycloak token shrinks to between a fifth and two-fifths of its size, so tokens up to about 13 KB fit. A larger one cannot be kept: a restart or a new tab has to sign the user in again, and one tab's sign-in signs the others out, because the tabs keep in step through the cookies. The log then warns instead:
+
+```text
+The Keycloak token in cookie _oidc_lex_keycloak_access_token_data_partitioned is 5321 bytes even compressed, and browsers drop cookies over 4096 bytes: …
+```
+
+In the browser's developer tools that shows as the `_oidc_lex_keycloak_id_token_partitioned` cookie without its `_oidc_lex_keycloak_access_token_data_partitioned` companion. The fix is in Keycloak, on the confidential client: **Clients** → the client → **Client scopes** → its dedicated scope → **Scope**. Turn **Full scope allowed** off, and assign there the roles its tokens must still carry — those your Keycloak permissions' role policies check. Lex App signs users in with the same client, so check Lex App's permissions afterwards.
 
 > [!note] Why the dashboard does not ask for `offline_access`
 > Reflex's own documentation adds the `offline_access` scope to obtain a refresh token. Keycloak issues one without it — the Streamlit proxy has always renewed with exactly that — and with it the refresh token becomes an *offline* token that outlives the Keycloak session. A dashboard would then stay signed in after the user signed out of Lex App. It is left out on purpose.
