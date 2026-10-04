@@ -153,14 +153,21 @@ fill it in.
 | `DATABASE_DEPLOYMENT_TARGET` | Which connection profile to use: `local` (SQLite file, for a machine with no PostgreSQL), `default` (PostgreSQL on `localhost`), `GCP`, `DOCKER-COMPOSE`, or `K8S`. Default `default`. The three deployed profiles are identical apart from `K8S`, which disables TLS on the connection because the sidecar terminates it. |
 | `DATABASE_NAME`   | Database name. Read by the `GCP`, `DOCKER-COMPOSE` and `K8S` profiles; the `default` profile derives the name from your repository name instead. |
 | `DATABASE_DOMAIN` | Database host for those same three profiles. |
-| `POSTGRES_USERNAME` | Database user. Default `django`. |
-| `POSTGRES_PASSWORD` | Database password. |
+| `POSTGRES_USERNAME` | Database user for those same three profiles. Default `django`. |
+| `POSTGRES_PASSWORD` | Database password for those same three profiles. |
 
 > [!note]
 > If one of these is missing, the connection is built with the literal string
 > `envvar_not_existing` in its place, and the failure surfaces as a connection
 > error naming a host or database you have never heard of. That string in a
 > stack trace means "an env var was not set", not "DNS is broken".
+
+The `default` profile reads none of the variables above. It always connects to
+`localhost:5432` as `django`, with the password `lundadminlocal`, to a database
+named `db_` plus your project folder's name in lower case. The `local` profile
+keeps its SQLite file at the project root, named after the project folder:
+`TeamBudget.sqlite3` for the tutorial. Setting up either is covered in
+[[start-here/installation#Choose a Database|Choose a Database]].
 
 ## Redis
 

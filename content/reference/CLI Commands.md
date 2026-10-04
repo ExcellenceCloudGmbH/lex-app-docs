@@ -20,7 +20,7 @@ Lex App ships with a `lex` CLI tool for managing your application. Here's every 
 | `lex start`     | Start the development server                                  |
 | `lex streamlit` | Start the [Streamlit](https://docs.streamlit.io/) dashboard server |
 | `lex reflex`    | Start the [Reflex](https://reflex.dev/docs/) dashboard server — arguments go to Reflex's own CLI; see [below](#lex-reflex) |
-| `lex create_db` | Create the project database from the configured `DATABASE_*` env vars |
+| `lex create_db` | Create the PostgreSQL database if it doesn't exist yet; does nothing on SQLite — see [[start-here/installation#Choose a Database\|Choose a Database]] |
 | `pip show lex-app` | Print the installed version. There is no `lex --version` — the group does not define one |
 
 `lex init` has two setup-focused flags worth knowing:
@@ -129,7 +129,8 @@ no migration, or a re-register after editing the realm by hand.
 
 | Command              | What It Does                                  |
 | -------------------- | --------------------------------------------- |
-| `lex create_db`      | Create the project database (from the env vars in your `.env`) |
+| `lex create_db`      | Create the PostgreSQL database if it doesn't exist yet; does nothing on SQLite |
+| `lex flush`          | Delete every row in the database, after asking you to confirm (`--noinput` skips the question). The next `lex start` loads your initial data again |
 | `lex migrate`        | Apply pending Django migrations               |
 | `lex makemigrations` | Create new migration files from model changes |
 | `lex sqlflush`       | Print SQL statements to flush the database    |

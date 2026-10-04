@@ -18,8 +18,8 @@ Add this class method to your `BudgetSummary` class (after `calculate()`):
 > [!tip]
 > The snippets below import `streamlit` **inside** each method. That is a
 > preference, not a requirement — a top-level `import streamlit as st` in a
-> model file is harmless, it just makes every Django start-up pay for loading
-> Streamlit whether or not a dashboard is ever opened.
+> model file works just as well, and costs nothing extra: the framework already
+> imports Streamlit when Django starts.
 >
 > The rule that does bite is about `st.*` **calls**, not imports: one outside a
 > function runs when the module is imported, before there is a page to draw
