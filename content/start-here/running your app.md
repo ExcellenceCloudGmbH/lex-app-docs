@@ -27,14 +27,21 @@ or the calculation sits in the queue and nothing appears to happen.
 
 ## Using PyCharm
 
-The `lex setup` command generates ready-to-use run configurations in the `.run/` folder. Open the **Run Configuration** dropdown in the top-right toolbar and you'll see:
+The `lex setup` command generates ready-to-use run configurations in the `.run/` folder. Open the **Run Configuration** dropdown in the top-right toolbar and you'll see eleven:
 
 | Configuration | What It Does |
 |---|---|
-| **Init** | Applies migrations and syncs to Keycloak |
-| **Start** | Starts the development server |
+| **Init** | Applies migrations and syncs your models' permissions to Keycloak |
+| **Start** | Starts the development server, restarting it when your code changes |
 | **Streamlit** | Runs the Streamlit dashboard server |
 | **Reflex** | Runs the Reflex dashboard server |
+| **Celery Workers** | Starts background workers — only needed with `CELERY_ACTIVE=true`. Asks how many to start |
+| **Flower** | A web view of the Celery queue |
+| **Make migrations** | Writes migration files for your model changes, without applying them |
+| **Migrate** | Applies migrations, without the Keycloak sync |
+| **Create DB** | Creates the PostgreSQL database if it doesn't exist yet; does nothing on SQLite |
+| **Flush DB** | Deletes **every row** in the database, after asking you to confirm. The next **Start** loads your initial data again |
+| **Setup With AI** | Configures the LEX AI integration — see [[reference/CLI Commands#AI Commands\|AI Commands]] |
 
 Select **"Start"** and click the green ▶️ button. Your app is now running at `http://localhost:8000`.
 
