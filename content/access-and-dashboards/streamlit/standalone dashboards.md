@@ -19,7 +19,7 @@ def main():
 
 ![A standalone Streamlit app: the project's own pages, lex-app's theme and sign-in, and the project's data](images/streamlit/overview.png)
 
-Nothing about the frame is the project's own work — the navigation rail, the theme, the signed-in user and the way out all come from lex-app. What the project wrote is the column of metrics, the chart, and the Calculate control sitting beside them.
+The frame is lex-app's — the theme, the logo, the signed-in user and the way out. Everything inside it is the project's own: the page list in the sidebar, the column of metrics, the chart, and the Calculate control sitting beside them.
 
 ## Two rules that catch people first
 
@@ -74,6 +74,23 @@ def main():
 ```
 
 Each page is a function, so every `st.*` call is inside one — which is the second rule above, satisfied for free.
+
+Streamlit's own multi-page navigation works the same way:
+
+```python
+def main():
+    st.navigation([
+        st.Page(overview, title="Overview"),
+        st.Page(calculations, title="Calculations"),
+    ]).run()
+```
+
+Whichever you use, lex-app adds two things around it: its logo at the top of the
+sidebar, above your pages, and a bar at the top of the page with the signed-in
+user and **Log out**. Nothing of lex-app's sits below your navigation. When the
+dashboard is opened from inside lex-app, neither appears — lex-app draws its
+own — and the sidebar starts collapsed, so your navigation is one click away
+rather than gone.
 
 ## Related
 
