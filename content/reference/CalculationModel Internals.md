@@ -132,6 +132,18 @@ For triaging and recovering from calculations that are wedged in `IN_PROGRESS`, 
 
 `started_at` is anchored to a monotonic clock internally, so `age_seconds` stays correct even if the system wall-clock jumps.
 
+## Closing a Record
+
+`calculation_closed_reason()` returns why a record must not be calculated again, or `None` while it may be. `CalculationModel` and `CalculatedModelMixin` both define it, returning `None`; returning `True` closes the record with a generic message. Every way a calculation can start asks it first, and sees the record as it was before the run was asked for:
+
+| How the calculation starts | What a closed record does |
+|---|---|
+| **Calculate** (`PATCH` with `calculate=true`) | Refused with HTTP 409, `{"detail": "<reason>", "code": "calculation_closed"}`; nothing changes |
+| A save that sets `is_calculated = IN_PROGRESS` (scripts, other calculations) | Keeps its previous status; the rest of the save is written, and the skip is logged, into the calling calculation's log when there is one |
+| `CalculatedModelMixin.create()`, in any mode | The existing row is neither recalculated nor saved; the Celery task counts it under `skipped_closed` |
+
+Rows of calculation models carry the reason as `lex_reserved_calculation_closed_reason` (`null` while the record is open), and a closed record's `lex_reserved_scopes.edit` leaves out `is_calculated`, which is what greys its Calculate button. See [[calculations/calculation models#Closing a Record|Closing a Record]].
+
 ## Nested Calculations
 
 When a parent calculation triggers a child, wrap the child execution in `model_logging_context` to preserve the log hierarchy:
