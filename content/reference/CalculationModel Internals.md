@@ -83,6 +83,14 @@ class LargeImport(CalculationModel):
         ...
 ```
 
+## Calculating on Create
+
+Set `calculate_on_create = True` to have records created through the app start
+their calculation straight away, in the background, as if **Calculate** had been
+clicked. Records created in code are not affected. It is read from the instance,
+so it can be a property that decides per record. See
+[[calculations/calculation models#Calculating New Records Automatically|Calculating New Records Automatically]].
+
 ## Celery Integration
 
 In production, calculations can be dispatched to [Celery](https://docs.celeryq.dev/) workers for background/parallel processing. The framework checks two things automatically:

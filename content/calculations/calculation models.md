@@ -34,7 +34,7 @@ The `is_calculated` field is a state machine with clear transitions:
 ```mermaid
 stateDiagram-v2
     [*] --> NOT_CALCULATED : Record created
-    NOT_CALCULATED --> IN_PROGRESS : User clicks "Calculate"
+    NOT_CALCULATED --> IN_PROGRESS : User clicks "Calculate" (or the record was just created, with calculate_on_create)
     IN_PROGRESS --> SUCCESS : Completed without errors
     IN_PROGRESS --> ERROR : Exception occurred
     IN_PROGRESS --> CANCELLED : User cancels
@@ -67,7 +67,7 @@ You don't need to define or manage any of the following — they're inherited fr
   one**, and `is_calculated` becomes `ERROR` either way. `CalculationModel` adds
   only `is_calculated`; without a message field the detail is in the logs alone
 - **Auto-save** — the record is saved automatically after `calculate()` returns
-- **Non-blocking trigger** — clicking **Calculate** returns the record in `IN_PROGRESS`, then the UI updates again when the run finishes
+- **Non-blocking trigger** — clicking **Calculate** returns the record in `IN_PROGRESS`, then the UI updates again when the run finishes. With [[#Calculating New Records Automatically|calculate_on_create]], creating a record does the same
 - **Cancellation handling** — running Celery-backed calculations can be stopped cleanly from the UI/API
 - **[[calculations/celery and async calculations|Celery support]]** — dispatch to [Celery](https://docs.celeryq.dev/) workers for parallel execution
 - **System-save attribution** — any records you save inside `calculate()` won't have their `edited_by` / `edited_at` stamped with the triggering user; those saves are treated as system-triggered, not direct user edits
@@ -79,7 +79,10 @@ You don't need to define or manage any of the following — they're inherited fr
 > `calculate_hook()` carries **two** hooks — `@hook(AFTER_UPDATE)` and
 > `@hook(AFTER_CREATE)`, both conditioned on `is_calculated == IN_PROGRESS`. The
 > create hook is why a record that is *born* in `IN_PROGRESS` calculates too,
-> rather than only one edited into it.
+> rather than only one edited into it. It calculates inside the save that
+> created it, so a create request waits for the whole run; to start new
+> records' runs in the background, use
+> [[#Calculating New Records Automatically|calculate_on_create]].
 >
 > `IN_PROGRESS` is already committed before the hook runs — `save()` persists it
 > in its own transaction and then calls the hook outside that transaction, so
@@ -94,6 +97,52 @@ You don't need to define or manage any of the following — they're inherited fr
 > 7. On other exceptions: sets `is_calculated = ERROR`, writes the traceback to `calculation_error_message` if your model has one, and saves
 >
 > You never need to manage this yourself.
+
+## Calculating New Records Automatically
+
+To have new records calculate without anyone clicking **Calculate**, set
+`calculate_on_create`:
+
+```python title="CalculateNAV.py"
+class CalculateNAV(CalculationModel):
+    calculate_on_create = True
+
+    quarter = models.ForeignKey('Quarter', on_delete=models.CASCADE)
+    ...
+```
+
+A record created through the app (the create form, the REST API or an embedded
+form) then starts its calculation as soon as it exists, the same way a click on
+**Calculate** does:
+
+- The create answers straight away, with the record already `IN_PROGRESS`. The
+  form doesn't wait for the run.
+- The run goes to Celery when it's on, and the status pill and the log update
+  as they do after a click.
+- The audit log shows two entries: the create, and the run, as an update with
+  its own calculation id. If the run fails, the record stays created, in
+  `ERROR`, and the create's entry is still a success.
+
+Records created in code (scripts, [[model-your-data/initial data|initial data]],
+uploads, another calculation's `calculate()`) don't start a run. Code that
+creates records decides for itself when they calculate: a calculation that needs
+a new record's result can create it already `IN_PROGRESS`, which calculates it
+on the spot, before the code carries on.
+
+To decide per record, make it a property:
+
+```python
+    @property
+    def calculate_on_create(self):
+        return self.quarter.is_open
+```
+
+> [!warning] Don't start the calculation from an `AFTER_CREATE` hook
+> A hook that sets `is_calculated = IN_PROGRESS` runs the calculation inside the
+> request that created the record, so the create form waits for the whole run.
+> `calculate_on_create` starts the same run in the background instead.
+
+> [!note] Needs a lex-app release newer than 2.3.4.
 
 ## Another Example
 
