@@ -61,6 +61,24 @@ Two things about the proxy's access log are worth knowing, because they were cho
 
 Query strings are never written out, only noted as present. The embedded dashboard is bootstrapped with a token in the URL, and an access log echoing it would copy that credential into log storage and every downstream shipper.
 
+## Usage metrics
+
+An instance records which parts of the application are used, in its own database, so that
+Excellence Cloud can see which features and instances are in use.
+
+- **What is stored:** one row per person (by internal user id), product area and day. The
+  areas are a fixed list: the grid, records, creating records, history, the audit log,
+  calculations and their logs, processes, reports, analytics, dashboards, search, exports,
+  files and monitoring.
+- **Where it comes from:** the web interface reports an area when a person opens it or
+  uses it. It sends only the area's name and whether it ran embedded in another page: never
+  a page address, a record, a search term or a file name. API requests are recorded
+  separately, per person or API key, as API activity. The two are never added together.
+- **What leaves the instance:** only counts. Once a day, Excellence Cloud reads how many
+  people used each area. No identity leaves the instance's database.
+- **Turning it off:** set `LEX_USAGE_METRICS=false`. The instance then records only which
+  lex-app version it runs, and accepts and discards the interface's reports.
+
 ## What to alert on
 
 | Signal | Meaning |
