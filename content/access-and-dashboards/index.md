@@ -40,6 +40,9 @@ There is a [complete project](https://github.com/ExcellenceCloudGmbH/DemoNorthwi
 ### [[access-and-dashboards/custom-api|Custom API Endpoints]]
 Your own REST endpoints — composed reads, actions, webhooks — mounted through Lex App with its sign-in, transactions, audit logging, error format and read permissions. Configured in `lex_config.py`; no settings override needed.
 
+### [[access-and-dashboards/api-keys|API Keys]]
+Keys for machines: a scoped key acts as a user you choose, with its own scopes and allowed paths; classic keys keep working.
+
 ### [[access-and-dashboards/reflex/index|Reflex Dashboards]]
 Dashboards written in [Reflex](https://reflex.dev/docs/) — Python compiled to a React app — beside or instead of Streamlit, with the same place in Lex App: the same `?model=&pk=` links, the Django ORM, and sign-in against the same Keycloak through [Reflex Enterprise](https://reflex.dev/docs/enterprise/auth/overview/), with no proxy in front. A section of its own, in reading order:
 

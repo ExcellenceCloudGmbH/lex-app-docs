@@ -147,6 +147,19 @@ SCHEMA = {
 
 Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too.
 
+## Public identifiers
+
+Integer primary keys are guessable and differ between systems. A model can be addressed by a public uuid instead:
+
+```python
+class Invoice(LexModel):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    lex_lookup_field = "uuid"
+    lex_lookup_allow_pk = False   # optional: close the integer routes
+```
+
+This adds `api/model_entries/<model>/<calculationId>/one/<uuid>`, `…/history/<uuid>` and `file-download?lookup=<uuid>` beside the integer routes. Responses are unchanged. A `lex_lookup_field` that is not a unique `UUIDField` stops the server at startup.
+
 ## See also
 
 - [[reference/lex_config]] — every key at a glance

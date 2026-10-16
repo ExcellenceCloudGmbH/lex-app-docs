@@ -41,6 +41,9 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `DB_ERROR_MAPPER` | Function turning a database error into a `LexActionError` | [[access-and-dashboards/custom-api#Errors and database rules]] |
 | `GENERIC_API` | Who may use the generic `api/*` endpoints: `"all"` (default), `"superuser"`, `"off"` | [[access-and-dashboards/custom-api#Keep the generic API for operators only]] |
 | `SCHEMA` | OpenAPI schema of your endpoints: `title`, `version`, `include`, `public` | [[access-and-dashboards/custom-api#OpenAPI schema]] |
+| `DB_CONTEXT` | Function telling the database who is asking, per request, task and thread | [[ship-and-operate/row-level-security]] |
+| `API_KEY_HEADERS` | Additional header names that carry a scoped API key | [[access-and-dashboards/api-keys]] |
+| `API_KEY_RESOLVER` | Function replacing the scoped API-key lookup | [[access-and-dashboards/api-keys]] |
 | `EXPOSE_AUTO_SERIALIZER` | `False` stops registering the generated serializer under its alias when a model overrides `default` | [[model-your-data/serializers#Who may pick a serializer]] |
 
 ## `INITIAL_DATA`
