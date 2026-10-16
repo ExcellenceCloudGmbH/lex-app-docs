@@ -20,7 +20,7 @@ def user_groups(user):
     return [f"tenant-{m.tenant_id}" for m in user.memberships.all()]
 ```
 
-With both set, an event reaches only sockets whose user shares a group with the record; anonymous sockets receive nothing, and the list of running calculations a socket gets on connect is filtered the same way. A bulk change passes the model class instead of a record. Payloads do not change, so the bundled frontend works as before.
+With both set, an event reaches only sockets whose user shares a group with the record; anonymous sockets receive nothing, and the list of running calculations a socket gets on connect is filtered the same way. A bulk change passes the model class instead of a record. An update reaches the groups of the record before and after the change, each group once, so a record moved to another tenant leaves the old tenant's grid and appears in the new one's. Payloads do not change, so the bundled frontend works as before.
 
 ## Silence a model
 
