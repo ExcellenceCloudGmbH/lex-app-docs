@@ -44,6 +44,8 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `DB_CONTEXT` | Function telling the database who is asking, per request, task and thread | [[ship-and-operate/row-level-security]] |
 | `API_KEY_HEADERS` | Additional header names that carry a scoped API key | [[access-and-dashboards/api-keys]] |
 | `API_KEY_RESOLVER` | Function replacing the scoped API-key lookup | [[access-and-dashboards/api-keys]] |
+| `MUTATION_GROUPS` | Function naming the realtime groups an event about a record goes to | [[ship-and-operate/realtime-events]] |
+| `USER_GROUPS` | Function naming the realtime groups a user's sockets join | [[ship-and-operate/realtime-events]] |
 | `EXPOSE_AUTO_SERIALIZER` | `False` stops registering the generated serializer under its alias when a model overrides `default` | [[model-your-data/serializers#Who may pick a serializer]] |
 
 ## `INITIAL_DATA`
