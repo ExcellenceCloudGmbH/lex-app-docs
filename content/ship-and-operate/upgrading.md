@@ -67,6 +67,15 @@ change a field: the schema and Django's idea of it drift apart silently, and the
 first over-length value turns what used to be quiet truncation into a
 `DataError`.
 
+## Upgrading to 3.0
+
+3.0 changes defaults and removes one model type. Before you upgrade:
+
+- **Security defaults are on.** Error responses no longer carry tracebacks unless `DEBUG` is on, and OIDC sign-in only redirects to your own or a trusted origin. See [[ship-and-operate/security-defaults]] for the full list and the `LEX_LEGACY_SECURITY` opt-out.
+- **`Process` is gone.** The `Process` model base class, its `api/process/<name>` endpoint and the frontend's process-flow wizard were removed. A project that still subclasses `Process` fails on import; turn the model into a normal `LexModel` or an `HTMLReport`.
+- **Pin `lex-app-frontend~=3.0`** together with `lex-app` 3.0.
+- **No settings override needed for your own endpoints.** If your project replaced `ROOT_URLCONF`, `MIDDLEWARE` or `REST_FRAMEWORK` to add endpoints, move that to `lex_config.py` — see [[access-and-dashboards/custom-api]]. The old override keeps working.
+
 ## Downgrading
 
 Reinstall the older pin and redeploy. The caveat is migrations: a migration your app generated during the upgrade is not reversed by reinstalling the old package. If step 4 produced one, plan the reverse before you need it.

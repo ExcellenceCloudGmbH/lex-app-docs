@@ -125,6 +125,12 @@ no migration, or a re-register after editing the realm by hand.
 > [!note]
 > The standalone `lex-generate-configs` console script (note the hyphen, not `lex generate-configs`) regenerates the PyCharm run configurations under `.run/` and VS Code launch configurations under `.vscode/launch.json`. You usually don't need to call it directly — `lex setup` and `lex setup-with-ai` run it for you. There is no `lex generate-configs` subcommand.
 
+## API Commands
+
+| Command | What It Does |
+|---|---|
+| `lex schema` | Write the OpenAPI schema of your project API, configured by `SCHEMA` in `lex_config.py` — see [[access-and-dashboards/custom-api#OpenAPI schema\|OpenAPI schema]]. Takes drf-spectacular's options: `--file openapi.yaml`, `--validate`, `--fail-on-warn`, `--format openapi-json`. |
+
 ## Database Commands
 
 | Command              | What It Does                                  |
