@@ -106,7 +106,7 @@ These govern how the framework recovers tasks from dead workers and how idle wor
 | `INSTANCE_CONTROLLER_BASE_URL` | Base URL of the instance-controller service that `lex init --bootstrap` opens in the browser. |
 | `KEYCLOAK_SETUP_CALLBACK_URL` | URL that bootstrap flow calls back with the credentials it obtained. Both of these have working defaults — set them only against a self-hosted controller. |
 | `LEX_KEYCLOAK_PERMISSION_CACHE_SECONDS` | Cache each token's Keycloak permissions and userinfo for this many seconds (never past the token's expiry). Default `0` — off, because a cache delays revocations by up to this long. Lex App keeps one Keycloak client per process either way. |
-| `LEX_BEARER_STATELESS` | `true` stops bearer-token requests without a session cookie from creating a `django_session` row per call. Default off (upstream behaviour). |
+| `LEX_BEARER_STATELESS` | `true` stops bearer-token requests without a session cookie from creating a `django_session` row per call. Default off (upstream behaviour). Lex does this itself, in front of django-oauth2-codeflow's bearer middleware, and relies on how codeflow 1.1 saves the session, so lex-app pins `django-oauth2-codeflow~=1.1.1`. |
 | `OIDC_ISSUER`           | Expected `iss` claim when the dashboard proxy validates a token. Defaults to the realm URL derived from `KEYCLOAK_URL` and `KEYCLOAK_REALM`; set it only when the issuer the tokens carry differs from the URL you reach Keycloak on (a split-horizon DNS setup, typically). |
 
 `lex setup` writes a starting set of these into `.env` and `lex init --bootstrap`
