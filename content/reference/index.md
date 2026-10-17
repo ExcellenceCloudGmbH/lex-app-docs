@@ -38,6 +38,7 @@ every `lex` command, the second is what a report model writes to disk.
 - [[reference/LexLogger API|LexLogger API]] — every `LexLogger` method with examples
 - [[reference/CLI Commands|CLI Commands]] — every `lex` command at a glance
 - [[reference/Report File Fields|Report File Fields]] — generated Excel and PDF files on report models
+- [[reference/openapi|OpenAPI schema]] — the OpenAPI document of your own endpoints, `SCHEMA` and `lex schema`
 
 ## Configuration
 
