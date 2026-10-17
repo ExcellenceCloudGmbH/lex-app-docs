@@ -145,7 +145,7 @@ SCHEMA = {
 }
 ```
 
-Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too.
+Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too. Every key and option: [[reference/openapi]].
 
 ## Record actions
 
