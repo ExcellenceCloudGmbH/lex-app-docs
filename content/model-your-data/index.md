@@ -30,5 +30,8 @@ Custom [Django REST Framework](https://www.django-rest-framework.org/) serialize
 ### [[model-your-data/lifecycle hooks|Lifecycle Hooks]]
 React to model events — creation, update, deletion — with explicit [django-lifecycle](https://rsinger86.github.io/django-lifecycle/) decorators. Process uploaded files, trigger side effects, and enforce validation rules.
 
+### [[model-your-data/read models|Read Models]]
+Views and projections served by the generic endpoints: lists that are joins, unions or one table shown another way — filtered, sorted and exported, never written.
+
 ### [[model-your-data/model structure|Model Structure]]
 Control how models appear in the frontend sidebar. Group models into categories, customize display names, and hide internal models from end users.

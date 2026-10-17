@@ -18,6 +18,7 @@ Every time a user creates, updates, or deletes a record through the API, an `Aud
 | `action` | `create`, `update`, or `delete` |
 | `payload` | The full serialized data at the time of the operation |
 | `content_type` + `object_id` | A [generic relation](https://docs.djangoproject.com/en/stable/ref/contrib/contenttypes/) linking back to the affected record |
+| `object_ref` | The record's [[access-and-dashboards/custom-api#Public identifiers\|public identifier]] (the value of its `lex_lookup_field`, e.g. a uuid) for models addressed by one; empty otherwise (3.0) |
 
 ## Keep personal data out of the log (3.0)
 
