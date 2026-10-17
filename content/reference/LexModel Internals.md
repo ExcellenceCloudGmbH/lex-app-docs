@@ -238,6 +238,8 @@ Class attributes that shape how the generic API serves a model. Every one is opt
 | `lex_strict_input` | `False` | Refuse keys the serializer does not declare | [[model-your-data/serializers#Strict input]] |
 | `lex_filterable_fields` | unset | Extra fields lists may filter and order by; `"__all__"` for any | [[access-and-dashboards/permissions#Filtering and ordering]] |
 | `broadcast_mutations` | `True` | `False` sends no realtime events for the model | [[ship-and-operate/realtime-events]] |
+| `lex_permission_source` | unset | `"database"`: the default permission hooks allow and row-level security decides; `"python"`: the hooks decide. Unset, `PERMISSION_SOURCE` applies | [[ship-and-operate/database-decides]] |
+| `lex_scope_queryset(cls, queryset, scope, request)` | unset | Classmethod narrowing lists, records, history and action lookups to the request's scope | [[access-and-dashboards/request-scope]] |
 
 ## DateTimeField Timezone Awareness
 

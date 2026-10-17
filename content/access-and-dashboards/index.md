@@ -43,6 +43,9 @@ Your own REST endpoints — composed reads, actions, webhooks — mounted throug
 ### [[access-and-dashboards/generic-api|Generic API for Your Clients]]
 Lex App's generic record endpoints for your own web app, mobile app or integrators: each model names the operations it exposes, everything else stays for operators.
 
+### [[access-and-dashboards/request-scope|Request Scope]]
+The organisation or workspace a request acts in, chosen by one query parameter: resolved by your project, passed to the database context, narrowing every model that asks.
+
 ### [[access-and-dashboards/api-keys|API Keys]]
 Keys for machines: a scoped key acts as a user you choose, with its own scopes and allowed paths; classic keys keep working.
 
