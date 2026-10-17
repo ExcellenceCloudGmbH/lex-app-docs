@@ -21,7 +21,7 @@ Create a user for the integration (it needs no password), then issue a key:
 lex create_api_key --user quantium-sync --name "Quantium sync" --scopes read,list,edit --prefix api/myproject/
 ```
 
-The key is printed once — only a hash is stored. `--expires-in-days 90` sets an expiry; revoking happens in the Django admin.
+The key is printed once — only a hash is stored. `--expires-in-days 90` sets an expiry; revoking happens in the Django admin (Authentication → Lex API keys).
 
 ## Use it
 
@@ -36,7 +36,7 @@ The request then runs as the key's user:
 - the default permission methods check the key's **scopes** (`read`, `list`, `edit`, `create`, `delete`, `export`) on every model; your own permission methods see the user (`user_context.user`, `user_context.groups`);
 - `created_by` / `edited_by` and the audit log name the user;
 - the [[ship-and-operate/row-level-security|database context]] is set for the user;
-- outside its `--prefix` paths the key finds nothing (404);
+- outside its `--prefix` paths the key finds nothing (404). A prefix is a plain string prefix of the full request path, including `DJANGO_BASE_PATH`;
 - no CSRF token is needed.
 
 Revoked and expired keys are ignored.

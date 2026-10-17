@@ -23,7 +23,7 @@ def set_db_user(user, *, local):
 
 | Where | When Lex App calls it | `local` |
 |---|---|---|
-| Every request | first thing, inside one transaction around the rest of the request | `True` — ends with the transaction |
+| Every request | after the login check and the API-key lookup, inside one transaction around the rest of the request | `True` — ends with the transaction |
 | A project endpoint (`LexAPIView`) | again after DRF authentication, in case your own authentication chose the user | `True` |
 | A Celery task | at the start, with the user who started the work; with `None` at the end | `False` |
 | The calculation thread pool | the same, around the calculation | `False` |
@@ -31,5 +31,18 @@ def set_db_user(user, *, local):
 
 `user` is `None` for anonymous callers. Without `DB_CONTEXT` nothing changes: no extra transaction per request, no calls.
 
+Not covered: management commands, `lex shell`, Streamlit and Reflex apps, and WebSocket consumers. Code there sets the context itself — call your `DB_CONTEXT` function inside `transaction.atomic()` with `local=True`.
+
 > [!note]
 > Run migrations as a database role that owns the tables, and the application as a role without `BYPASSRLS` — a superuser ignores every policy. Under RLS the API-key table may be unreadable before sign-in; see `API_KEY_RESOLVER` in [[access-and-dashboards/api-keys]].
+
+## Lex App's own database functions
+
+The bitemporal activation applier installs three `SECURITY DEFINER` functions owned by the migration role: `lex_apply_due_activations()`, `lex_pending_activations()` and `lex_bitemporal_tables()`. PostgreSQL lets every role execute a new function, so a restricted application role could call them and write as the owner, past your policies. Lex App leaves them executable because the pg_cron job that calls them runs as the server admin, which on managed PostgreSQL is not always a superuser. With a restricted application role, revoke them in a migration of your own and grant them to the role that runs the cron job:
+
+```sql
+REVOKE EXECUTE ON FUNCTION lex_apply_due_activations(), lex_pending_activations(), lex_bitemporal_tables() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION lex_apply_due_activations(), lex_pending_activations(), lex_bitemporal_tables() TO cron_role;  -- if pg_cron runs them
+```
+
+The application only reads `lex_activation_applier_state` (to see whether the applier is alive); it needs no other right on that table.

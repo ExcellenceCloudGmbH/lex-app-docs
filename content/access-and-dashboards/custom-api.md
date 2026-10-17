@@ -27,7 +27,7 @@ urlpatterns = [
 ]
 ```
 
-The endpoints answer at `/api/myproject/dashboard` and so on (behind `DJANGO_BASE_PATH` if you set one). A prefix that overlaps one of Lex App's own routes (`api/model_entries/`, `oidc/`, `admin/`, …) stops the server at startup with an error naming the clash.
+The endpoints answer at `/api/myproject/dashboard` and so on (behind `DJANGO_BASE_PATH` if you set one). A prefix that overlaps one of Lex App's own routes (`api/model_entries/`, `oidc/`, `admin/`, …) stops the server with an error naming the clash as soon as the URL configuration loads (the first request, or `lex check`).
 
 ## Build views on `LexAPIView`
 
@@ -54,9 +54,9 @@ What every `LexAPIView` does for you:
 
 | | |
 |---|---|
-| **Sign-in** | Required, unless the view sets `public = True` or its path is in `PUBLIC_PATHS`. A public view still recognises a signed-in caller. |
-| **Transaction** | The whole request runs in one database transaction. An error answer rolls it back. Set `atomic = False` to opt out. |
-| **Audit** | The request runs inside Lex App's operation context, so model saves record the right actor. |
+| **Sign-in** | Required, unless the view sets `public = True` or its path is in `PUBLIC_PATHS`. A public view still recognises a signed-in caller. `public = True` also makes the view `AllowAny`, which the OpenAPI schema shows as an optional security requirement (`{}`); to keep a view's schema unchanged, list its path in `PUBLIC_PATHS` instead. |
+| **Transaction** | The whole request runs in one database transaction. A raised error (`LexActionError`, a DRF exception, a database error) rolls it back; an error `Response` you return yourself is committed like any other answer. Set `atomic = False` to opt out. |
+| **Audit** | The request runs inside Lex App's operation context, so model saves record the right actor: `created_by` / `edited_by` hold the caller's username or e-mail. If you erase personal data, include these columns. |
 | **Read permission** | `get_object_or_404()` and `visible_queryset()` apply the same rule as the generic list endpoint — a record the caller may not read is "not found" (404), never "forbidden". |
 | **Errors** | `{"code", "detail", "error", "fields"}`. Raise `LexActionError(detail, code=..., fields=..., status_code=...)` for business errors. |
 | **CSRF cookie** | `ensure_csrf = True` sets it — for the endpoint a browser client calls first. |
@@ -124,6 +124,8 @@ MIDDLEWARE_EXTRA = {
 }
 ```
 
+Lex App's login check runs before DRF, so a caller that only one of your `AUTHENTICATION_CLASSES` recognises is sent to sign in on a non-public path. Recognise such callers in an `after_auth` middleware (set `request.user` there), use [[access-and-dashboards/api-keys|API_KEY_HEADERS and API_KEY_RESOLVER]] for key headers, or make the path public.
+
 ## Keep the generic API for operators only
 
 If your product UI uses only your own endpoints, you can close Lex App's generic `api/*` endpoints to everyone but superusers:
@@ -132,7 +134,7 @@ If your product UI uses only your own endpoints, you can close Lex App's generic
 GENERIC_API = "superuser"   # "all" (default) | "superuser" | "off"
 ```
 
-Everyone else gets 404 for those paths, as if they did not exist. Your API prefix and `api/health` stay open. `"off"` also disables the bundled frontend, which is built on the generic endpoints.
+Everyone else gets 404 for those paths, as if they did not exist — signed in or not. Only `api/user/` still answers 401 to an anonymous caller, so the bundled frontend can send operators to sign in. Your API prefix (when `API_URLCONF` is set) and `api/health` stay open. The switch also closes the [record actions](#record-actions) for everyone else, because their routes live under `api/model_entries/`. `"off"` also disables the bundled frontend, which is built on the generic endpoints.
 
 ## OpenAPI schema
 
@@ -141,11 +143,13 @@ SCHEMA = {
     "title": "My Project API",
     "version": "1.4.0",
     "public": True,                 # serve schema and docs without sign-in
+    # "description": "…",          # shown on the docs page
     # "include": ["api/myproject/"] # default: API_PREFIX
+    # "settings": {"REDOC_DIST": "https://cdn.jsdelivr.net/npm/redoc@2.1.5", "ENUM_NAME_OVERRIDES": {…}},
 }
 ```
 
-Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too.
+Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. `settings` are further drf-spectacular settings; the served schema, the docs page and `lex schema` all use them. Lex App's own Bearer and API-key authentication are described as `bearerAuth` and `apiKeyAuth`. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too — an extension for `LexAPIKeyAuthentication` replaces Lex App's (for example to name your `API_KEY_HEADERS` header).
 
 ## Record actions
 
