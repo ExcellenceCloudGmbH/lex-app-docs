@@ -51,7 +51,7 @@ For a caller who is not a superuser, the rest of `api/` does not exist. It answe
 - an operation the model does not name — a PATCH on a read-only model is 404, not 405;
 - Lex App's own endpoints: `api/model-structure`, `api/run_step/…`, global search, the calculation log tree, `api/user/` and the others the bundled frontend uses.
 
-Superusers reach all of it, so the bundled frontend keeps working for operators; for everyone else its requests answer 404. An anonymous caller gets 404 for a closed path and the usual sign-in answer for an exposed one; `api/user/` keeps its 401 for anonymous callers so the frontend can send operators to sign in. Always open: `api/health` and, with `API_URLCONF`, [[access-and-dashboards/custom-api|your own API prefix]].
+Superusers reach all of it, so the bundled frontend keeps working for operators. A signed-in caller who is not a superuser gets 404 for the frontend itself (its pages and files), in every mode except `"all"`: the page would load and then every one of its requests would answer 404. An anonymous caller gets 404 for a closed path and the usual sign-in answer for an exposed one; `api/user/` keeps its 401 for anonymous callers so the frontend can send operators to sign in. Always open: `api/health` and, with `API_URLCONF`, [[access-and-dashboards/custom-api|your own API prefix]].
 
 A path under `api/` that no route matches is 404 for everyone, superusers included, in every mode — not the frontend's `index.html` with 200, which made a removed or misspelt endpoint look like a success (security flag `NOT_FOUND`).
 
