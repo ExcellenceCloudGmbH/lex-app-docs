@@ -78,7 +78,7 @@ A projection inherits the actions of the model it projects; they run on the unde
 | List, filter, sort, page, export, read one record | as for any model |
 | Create, update, delete, bulk, `run_step` | 405 |
 | History, and `?as_of=` on a list or record | 400 `HISTORY_NOT_TRACKED` |
-| [[access-and-dashboards/custom-api#Record actions\|Actions]] | allowed |
+| [[access-and-dashboards/actions\|Actions]] | allowed |
 
 No history tables are created for a read model. A model with `lex_read_model = True` that has a table of its own — neither `managed = False` nor `proxy = True` — stops the server at startup.
 

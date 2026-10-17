@@ -40,6 +40,9 @@ There is a [complete project](https://github.com/ExcellenceCloudGmbH/DemoNorthwi
 ### [[access-and-dashboards/custom-api|Custom API Endpoints]]
 Your own REST endpoints — composed reads, actions, webhooks — mounted through Lex App with its sign-in, transactions, audit logging, error format and read permissions. Configured in `lex_config.py`; no settings override needed.
 
+### [[access-and-dashboards/actions|Actions]]
+Operations beyond create, read, update and delete, declared on the model with `@lex_action`: validated input, a permission that sees it, one transaction, an audit entry, the status and headers you choose.
+
 ### [[access-and-dashboards/generic-api|Generic API for Your Clients]]
 Lex App's generic record endpoints for your own web app, mobile app or integrators: each model names the operations it exposes, everything else stays for operators.
 

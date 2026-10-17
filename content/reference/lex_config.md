@@ -28,7 +28,7 @@ flowchart LR
 
 ### Extension keys (3.0)
 
-These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. Dotted paths are imported after the app has loaded, so they may point at your own code. Lex App checks them all at startup: a `lex_config.py` that raises, a dotted path that cannot be imported, an unknown `GENERIC_API` mode, `AUDIT_PAYLOAD` or `PERMISSION_SOURCE`, a malformed `REQUEST_SCOPE`, a misspelt `lex_api_exposed` operation or an `API_URLCONF` that does not exist stops the server with an error naming the key — never a silent fallback to the defaults.
+These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. Dotted paths are imported after the app has loaded, so they may point at your own code. Lex App checks them all at startup: a `lex_config.py` that raises, a dotted path that cannot be imported, an unknown `GENERIC_API` mode, `AUDIT_PAYLOAD` or `PERMISSION_SOURCE`, a malformed `REQUEST_SCOPE`, an unknown `ACTION_DENIED`, an action throttle without a rate, a misspelt `lex_api_exposed` operation or an `API_URLCONF` that does not exist stops the server with an error naming the key — never a silent fallback to the defaults.
 
 | Key | Purpose | Documented in |
 |---|---|---|
@@ -50,6 +50,8 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `EXPOSE_AUTO_SERIALIZER` | `False` stops registering the generated serializer under its alias when a model overrides `default` | [[model-your-data/serializers#Who may pick a serializer]] |
 | `PERMISSION_SOURCE` | `"database"` lets row-level security decide for every project model instead of the permission hooks; default `"python"` | [[ship-and-operate/database-decides]] |
 | `REQUEST_SCOPE` | `{"param": ..., "resolver": "<dotted path>"}` — the query parameter naming the scope a request acts in, and the function resolving it | [[access-and-dashboards/request-scope]] |
+| `ACTION_DENIED` | What a refused action answers: `"refused"` (default, 400 `ACTION_NOT_ALLOWED`) or `"not_found"` (404) | [[access-and-dashboards/actions#Who may run it]] |
+| `THROTTLE_RATES` | Rates of action throttles, `{"<scope>": "30/min"}` | [[access-and-dashboards/actions#Throttling]] |
 | `AUDIT_PAYLOAD` | How much of a payload the audit log stores: `"full"` (default), `"fields"` (keys only), `"none"` | [[history-and-audit/audit logs#Keep personal data out of the log (3.0)]] |
 | `AUDIT_ACTOR` | Function `(user) -> str` naming the author of audit entries and the `created_by` / `edited_by` of records | [[history-and-audit/audit logs#Keep personal data out of the log (3.0)]] |
 

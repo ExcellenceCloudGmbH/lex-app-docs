@@ -40,7 +40,7 @@ In mode `"records"` every signed-in user and every API key reaches the operation
 
 `True` stands for the first five. History, bulk, export and file download reach more than one record's current data — who changed what, many rows at once, whole files — so a model names them explicitly. A value that is not `True`, `False` or a set of these names (a typo, or a plain string such as `"list"`) stops the server at startup with an error naming the model.
 
-The [[access-and-dashboards/custom-api#Record actions|actions]] of an exposed model are reachable whatever operations it names; each action's own `permission` decides. On a model that is not exposed they are 404 like everything else.
+The [[access-and-dashboards/actions|actions]] of an exposed model are reachable whatever operations it names; each action's own `permission` decides. On a model that is not exposed they are 404 like everything else.
 
 ## Everything else is 404
 

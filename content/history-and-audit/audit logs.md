@@ -15,7 +15,7 @@ Every time a user creates, updates, or deletes a record through the API, an `Aud
 | `date` | Timestamp of the operation |
 | `author` | The user who performed the action |
 | `resource` | The model name (e.g., `expense`, `team`) |
-| `action` | `create`, `update`, or `delete` |
+| `action` | `create`, `update`, `delete`, or `action` for a [[access-and-dashboards/actions\|model action]] (3.0) |
 | `payload` | The full serialized data at the time of the operation |
 | `content_type` + `object_id` | A [generic relation](https://docs.djangoproject.com/en/stable/ref/contrib/contenttypes/) linking back to the affected record |
 | `object_ref` | The record's [[access-and-dashboards/custom-api#Public identifiers\|public identifier]] (the value of its `lex_lookup_field`, e.g. a uuid) for models addressed by one; empty otherwise (3.0) |
