@@ -134,6 +134,7 @@ class UserContext:
     keycloak_scopes: Set[str]          # Keycloak UMA scopes for this resource
     user_permissions: tuple[...]       # Raw Keycloak UMA permissions
     client_roles: FrozenSet[str]       # Keycloak client roles
+    request: Any                       # the request it was made from (3.0); not compared, not shown
 ```
 
 Constructed automatically from the Django request via `UserContext.from_request(request, instance)`.
@@ -232,7 +233,10 @@ Class attributes that shape how the generic API serves a model. Every one is opt
 
 | Attribute | Default | What It Does | Documented in |
 |---|---|---|---|
-| `lex_api_exposed` | `False` | With `GENERIC_API = "records"`: `True` (list, retrieve, create, update, delete) or a set of operations signed-in users and API keys may use | [[access-and-dashboards/generic-api]] |
+| `lex_api_exposed` | `False` | With `GENERIC_API = "records"`: `True` (list, retrieve, create, update, delete) or a set of operations signed-in users and API keys may use; `{"action"}` for the actions alone | [[access-and-dashboards/generic-api]] |
+| `lex_api_internal_fields` | `True` | `False`: responses are exactly the serializer's fields, without Lex App's `id`, `id_field`, `short_description`, `lex_reserved_scopes`, `<fk>__short_description` | [[access-and-dashboards/generic-api#Public identifiers in and out]] |
+| `lex_actions` | unset | Names of the actions the model offers; the inherited others do not exist on it | [[access-and-dashboards/actions#Which actions a model offers]] |
+| `lex_api_tag`, `lex_api_filters`, `lex_query_parameters` | unset | The OpenAPI tag, the documented list filters and further documented query parameters | [[access-and-dashboards/generic-api#OpenAPI document]] |
 | `lex_lookup_field` | unset | A unique `UUIDField` the record is addressed by | [[access-and-dashboards/custom-api#Public identifiers]] |
 | `lex_lookup_allow_pk` | `True` | `False` closes the integer routes of a model with `lex_lookup_field` | [[access-and-dashboards/custom-api#Public identifiers]] |
 | `lex_strict_input` | `False` | Refuse keys the serializer does not declare | [[model-your-data/serializers#Strict input]] |

@@ -69,7 +69,7 @@ class InvoiceCard(Invoice):
         return queryset.exclude(status="archived")
 ```
 
-A projection inherits the actions of the model it projects; they run on the underlying row.
+A projection inherits the actions of the model it projects; they run on the underlying row. `lex_actions = ("approve",)` offers only the named ones, `lex_actions = ()` none — see [[access-and-dashboards/actions#Which actions a model offers|Which actions a model offers]].
 
 ## What the endpoints do
 
