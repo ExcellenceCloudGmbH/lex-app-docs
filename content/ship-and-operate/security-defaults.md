@@ -30,7 +30,7 @@ LEX_SEC_EDIT=true             # …but keep this one on
 LEX_SEC_FILTERS=false         # only this one off
 ```
 
-A per-flag `LEX_SEC_<FLAG>` always wins over `LEX_LEGACY_SECURITY`. The opt-out is a migration aid: it logs a warning once at startup and will be removed in a later major release.
+A per-flag `LEX_SEC_<FLAG>` always wins over `LEX_LEGACY_SECURITY`. The opt-out is a migration aid: it logs a deprecation warning once, the first time a legacy check runs, and will be removed in a later major release.
 
 ## Related switches
 

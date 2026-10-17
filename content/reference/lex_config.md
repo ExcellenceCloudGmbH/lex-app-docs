@@ -2,7 +2,7 @@
 title: "lex_config.py — project settings"
 ---
 
-`lex_config.py` lives at your project root and holds project-wide settings the framework reads at boot. It's a plain Python module — the framework imports it once and pulls the keys it cares about. Most projects only set two or three of these.
+`lex_config.py` lives at your project root and holds project-wide settings the framework reads at boot. It's a plain Python module — the framework executes it at startup (and again whenever it reloads the configuration) and pulls the keys it cares about. Keep it to constants and dotted paths: an import of your own code at the top runs before the app is ready. Most projects only set two or three of these.
 
 > [!note]
 > This page is a one-stop index. The individual feature pages linked from each section are the place to go for examples and edge cases.
@@ -28,7 +28,7 @@ flowchart LR
 
 ### Extension keys (3.0)
 
-These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. They are read lazily — after the app has loaded — so `lex_config.py` may import your own code, and a dotted path that cannot be imported stops the server with an error naming the key.
+These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. Dotted paths are imported after the app has loaded, so they may point at your own code. Lex App checks them all at startup: a `lex_config.py` that raises, a dotted path that cannot be imported, an unknown `GENERIC_API` mode or an `API_URLCONF` that does not exist stops the server with an error naming the key — never a silent fallback to the defaults.
 
 | Key | Purpose | Documented in |
 |---|---|---|
@@ -46,6 +46,7 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `API_KEY_RESOLVER` | Function replacing the scoped API-key lookup | [[access-and-dashboards/api-keys]] |
 | `MUTATION_GROUPS` | Function naming the realtime groups an event about a record goes to | [[ship-and-operate/realtime-events]] |
 | `USER_GROUPS` | Function naming the realtime groups a user's sockets join | [[ship-and-operate/realtime-events]] |
+| `BITEMPORAL_FUNCTION_ROLES` | Database roles that may run the bitemporal applier's `SECURITY DEFINER` functions; set, EXECUTE is revoked from everyone else after each migrate | [[ship-and-operate/row-level-security]] |
 | `EXPOSE_AUTO_SERIALIZER` | `False` stops registering the generated serializer under its alias when a model overrides `default` | [[model-your-data/serializers#Who may pick a serializer]] |
 
 ## `INITIAL_DATA`

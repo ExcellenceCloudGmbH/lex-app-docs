@@ -74,7 +74,8 @@ first over-length value turns what used to be quiet truncation into a
 - **Security defaults are on.** Error responses no longer carry tracebacks unless `DEBUG` is on, and OIDC sign-in only redirects to your own or a trusted origin. See [[ship-and-operate/security-defaults]] for the full list and the `LEX_LEGACY_SECURITY` opt-out.
 - **`Process` is gone.** The `Process` model base class, its `api/process/<name>` endpoint and the frontend's process-flow wizard were removed. A project that still subclasses `Process` fails on import; turn the model into a normal `LexModel` or an `HTMLReport`.
 - **Pin `lex-app-frontend~=3.0`** together with `lex-app` 3.0.
-- **No settings override needed for your own endpoints.** If your project replaced `ROOT_URLCONF`, `MIDDLEWARE` or `REST_FRAMEWORK` to add endpoints, move that to `lex_config.py` — see [[access-and-dashboards/custom-api]]. The old override keeps working.
+- **No settings override needed for your own endpoints.** If your project replaced `ROOT_URLCONF`, `MIDDLEWARE` or `REST_FRAMEWORK` to add endpoints, move that to `lex_config.py` — see [[access-and-dashboards/custom-api]]. The old override keeps working, with two exceptions: remove `drf_spectacular` from your own `INSTALLED_APPS` additions (Lex App installs it now; a duplicate label stops Django), and know that replacing `REST_FRAMEWORK["EXCEPTION_HANDLER"]` also replaces how Lex App renders `LexActionError`.
+- **A broken `lex_config.py` stops startup.** It used to print an error and run with the defaults; now an exception in the file, or a dotted path that cannot be imported, stops the server with an error naming the key.
 
 ## Downgrading
 
