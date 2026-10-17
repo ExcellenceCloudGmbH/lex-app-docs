@@ -10,7 +10,7 @@ Lex App 3.0 turns on a set of hardenings that earlier versions left off. Each on
 |---|---|---|
 | `TRACEBACKS` | Error responses carry no server traceback, unless `DEBUG` is on or `LEX_API_TRACEBACKS=true` | Every 500 from the generic CRUD endpoints included the full traceback |
 | `FAIL_CLOSED` | An exception inside a permission method denies access and is logged | An exception counted as "allowed" |
-| `NOT_FOUND` | A record the user may not read answers 404 | 200 with `{}` |
+| `NOT_FOUND` | A record the user may not read answers 404; so does a path under `api/` that no route matches | 200 with `{}`; an unknown `api/` path answered the frontend's `index.html` with 200 |
 | `READ_SURFACES` | History, global search, export and file download apply read permission | They did not |
 | `EDIT` | `permission_edit` on PATCH/PUT, bulk PATCH and `run_step`; `permission_delete` per row on bulk delete; `permission_create` on `run_step` | Not enforced on these paths |
 | `FILTERS` | List filters and ordering only on fields a response can contain | Any model field |

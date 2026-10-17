@@ -19,6 +19,7 @@ class UserContext:
     is_superuser: bool     # Is user a superuser?
     groups: Set[str]       # Group names, e.g. {'admin', 'finance'}
     keycloak_scopes: Set[str]  # Keycloak permission scopes
+    request: Any           # the request it was made from (3.0), e.g. its request.lex_scope
 ```
 
 ## Basic Example

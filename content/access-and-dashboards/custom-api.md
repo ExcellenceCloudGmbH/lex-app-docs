@@ -160,7 +160,7 @@ SCHEMA = {
 }
 ```
 
-Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. `settings` are further drf-spectacular settings; the served schema, the docs page and `lex schema` all use them. Lex App's own Bearer and API-key authentication are described as `bearerAuth` and `apiKeyAuth`. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too — an extension for `LexAPIKeyAuthentication` replaces Lex App's (for example to name your `API_KEY_HEADERS` header).
+Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out unless `SCHEMA["generic"]` describes the models you expose — see [[access-and-dashboards/generic-api#OpenAPI document|OpenAPI document]]. `settings` are further drf-spectacular settings; the served schema, the docs page and `lex schema` all use them. Lex App's own Bearer and API-key authentication are described as `bearerAuth` and `apiKeyAuth`. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too — an extension for `LexAPIKeyAuthentication` replaces Lex App's (for example to name your `API_KEY_HEADERS` header).
 
 ## Record actions
 
@@ -192,7 +192,7 @@ class Invoice(LexModel):
     lex_lookup_allow_pk = False   # optional: close the integer routes
 ```
 
-This adds `api/model_entries/<model>/<calculationId>/one/<uuid>`, `…/history/<uuid>` and `file-download?lookup=<uuid>` beside the integer routes. Responses are unchanged. A `lex_lookup_field` that is not a unique `UUIDField` stops the server at startup.
+This adds `api/model_entries/<model>/<calculationId>/one/<uuid>`, `…/history/<uuid>` and `file-download?lookup=<uuid>` beside the integer routes, and the [[access-and-dashboards/generic-api#Short paths|short paths]] without `calculationId` (`…/<model>/one/<uuid>`). Responses are unchanged. A `lex_lookup_field` that is not a unique `UUIDField` stops the server at startup.
 
 ## See also
 

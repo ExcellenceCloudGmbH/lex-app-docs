@@ -177,6 +177,11 @@ class Fund(LexModel):
 With this in place, any grid that links to a `Fund` shows *"Growth Opportunities Fund
 (2021)"* instead of a bare id — everywhere, without touching the serializer.
 
+For clients that know records by a public uuid rather than an id, declare the field as
+`LexLookupRelatedField(queryset=Fund.objects.all())` (from `lex.api.project`): it reads and
+writes the linked record's `lex_lookup_field` — see
+[[access-and-dashboards/generic-api#Public identifiers in and out|Public identifiers in and out]].
+
 ## Multiple Serializer Views
 
 You can define multiple serializers for the same model — for example, a default view and a more detailed view:
@@ -269,7 +274,7 @@ what `FundSummarySerializer` declares. See
 [[access-and-dashboards/streamlit/index|Streamlit dashboards]].
 
 > [!note] The `id` field is always present
-> When you override `api_serializers["default"]`, the framework always includes the model's primary key as `id` in the serialized output — even if your `Meta.fields` omits it. Row navigation, edit URLs, and the CRUD loading overlay all depend on this field.
+> When you override `api_serializers["default"]`, the framework always includes the model's primary key as `id` in the serialized output — even if your `Meta.fields` omits it. Row navigation, edit URLs, and the CRUD loading overlay all depend on this field. A model with `lex_api_internal_fields = False` gets exactly its declared fields instead — for models only your own clients read; see [[access-and-dashboards/generic-api#Public identifiers in and out|Public identifiers in and out]].
 
 > [!tip] Foreign keys now come with a readable companion value
 > In list and detail responses, foreign-key fields keep their raw ID (`team: 79`) and also include a second key with the related record's label (`team__short_description: "Growth Fund"`). That gives custom frontends and integrations something human-readable to show without losing the real ID needed for edits, filters, and writes.

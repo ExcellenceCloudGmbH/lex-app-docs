@@ -290,7 +290,7 @@ protects.
 |---|---|---|
 | `LEX_LEGACY_SECURITY` | unset | `true` restores the pre-3.0 behaviour for every flag below. Deprecated; logs a warning once. |
 | `LEX_SEC_FAIL_CLOSED` | on | A permission method that raises denies |
-| `LEX_SEC_NOT_FOUND` | on | A record the user may not read answers 404 |
+| `LEX_SEC_NOT_FOUND` | on | A record the user may not read answers 404, and so does an unknown path under `api/` |
 | `LEX_SEC_READ_SURFACES` | on | History, search, export and file download apply read permission |
 | `LEX_SEC_EDIT` | on | `permission_edit`/`permission_delete`/`permission_create` on every write path |
 | `LEX_SEC_FILTERS` | on | List filters and ordering only on fields a response can contain |

@@ -39,8 +39,11 @@ class Invoice(LexModel):
 | `POST api/model_entries/<model>/<calculationId>/one/<pk>/action/<name>` | a record action |
 | `POST …/one/<uuid>/action/<name>` | the same, by [[access-and-dashboards/custom-api#Public identifiers\|public identifier]] |
 | `POST api/model_entries/<model>/<calculationId>/action/<name>` | a collection action |
+| `POST api/model_entries/<model>/one/<uuid>/action/<name>`, `POST api/model_entries/<model>/action/<name>` | the same without `calculationId` — the [[access-and-dashboards/generic-api#Short paths\|short paths]] |
 
 `methods=("get",)` serves an action on GET instead of POST; several methods are allowed.
+
+`input` and `output` may also be dotted paths (`input="myproject.io.ApproveInput"`), imported on first use — for serializers in a module that imports the model.
 
 > [!note]
 > Since Lex App 3.0.
@@ -66,7 +69,7 @@ A throttle and a model's `modification_restriction` are checked before all of th
 | any other name | that method on the model returns true — an instance method for a record action, a classmethod for a collection action |
 | not set | never: an action must say who may run it |
 
-A permission method takes `(user_context)` or `(user_context, data)`. With the second argument it sees the validated input and can decide on it: which step, which amount, which file. It may also raise `LexActionError` or DRF's `NotFound` to answer in its own words — a 409 `WRONG_STATE` says more than a refusal. Any other exception denies the run and is logged.
+A permission method takes `(user_context)` or `(user_context, data)`. It runs inside the request's operation context, and `user_context.request` is the request — for its [[access-and-dashboards/request-scope|scope]] (`request.lex_scope`) or to tell an API key from a person. With the second argument it sees the validated input and can decide on it: which step, which amount, which file. It may also raise `LexActionError` or DRF's `NotFound` to answer in its own words — a 409 `WRONG_STATE` says more than a refusal. Any other exception denies the run and is logged.
 
 A refusal answers 400 `ACTION_NOT_ALLOWED` — never 403, which signs the bundled frontend's user out. Where anything outside a caller's access should not exist, answer 404 instead:
 
@@ -86,7 +89,7 @@ Any other value of either stops the server at startup.
 | The method returns | The response |
 |---|---|
 | a dict or list | JSON, status 200 or `status=` |
-| data, with `output=` a serializer | the serialized data (a list, tuple or queryset as `many`) |
+| data, with `output=` a serializer | the serialized data (a list, tuple or queryset as `many`; declare `many=True` so the API document says it is a list) |
 | `None` | 204 |
 | `ActionResult(data, status=…, headers=…)` | status and headers decided while running |
 | an `HttpResponse` | passed through untouched — a PDF, a CSV |
@@ -126,9 +129,22 @@ An action that succeeded leaves one entry with `action = "action"` and status `s
 
 A run that raised leaves an entry with status `failure` and the error's code (`NOT_SUBMITTED`, or the exception's class name). It is written in a transaction of its own, so the rollback of the run does not take it along — with `atomic=False` too. A refused run or invalid input leaves no entry.
 
+## Which actions a model offers
+
+A model inherits the actions of its bases, and a [[model-your-data/read models#A projection|projection]] those of the model it projects. `lex_actions` names the ones it offers; the others do not exist on it (404, and absent from the API document):
+
+```python
+class InvoiceCard(Invoice):
+    lex_read_model = True
+    lex_actions = ("approve",)     # () offers none
+
+    class Meta:
+        proxy = True
+```
+
 ## Describing an action
 
-`summary`, `description`, `operation_id`, `tags`, `responses` (further statuses, `{409: "Not submitted"}`) and `media="multipart"` (the input is a file upload) describe the action for an API document. They change nothing at runtime.
+`summary`, `description`, `operation_id`, `tags`, `responses` (further statuses, `{409: "Not submitted"}`), `media="multipart"` (the input is a file upload) and `many=True` describe the action in the [[access-and-dashboards/generic-api#OpenAPI document|OpenAPI document]] of the generic API. They change nothing at runtime. An action that answers with a file declares `output=OpenApiTypes.BINARY` (from `drf_spectacular.types`) and returns its `HttpResponse`; the document then says `application/octet-stream`.
 
 ## See also
 

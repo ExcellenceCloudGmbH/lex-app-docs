@@ -40,7 +40,7 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `EXCEPTION_HANDLER` | Your own DRF exception handler, replacing Lex App's | [[access-and-dashboards/custom-api#Errors and database rules]] |
 | `DB_ERROR_MAPPER` | Function turning a database error into a `LexActionError` | [[access-and-dashboards/custom-api#Errors and database rules]] |
 | `GENERIC_API` | Who may use the generic `api/*` endpoints: `"all"` (default), `"records"` (the operations models expose with `lex_api_exposed`), `"superuser"`, `"off"` | [[access-and-dashboards/generic-api]] |
-| `SCHEMA` | OpenAPI schema of your endpoints: `title`, `version`, `include`, `public` | [[access-and-dashboards/custom-api#OpenAPI schema]] |
+| `SCHEMA` | OpenAPI schema of your endpoints: `title`, `version`, `include`, `public`; `generic` and `error_component` describe the exposed models too | [[access-and-dashboards/custom-api#OpenAPI schema]], [[access-and-dashboards/generic-api#OpenAPI document]] |
 | `DB_CONTEXT` | Function telling the database who is asking, per request, task and thread | [[ship-and-operate/row-level-security]] |
 | `API_KEY_HEADERS` | Additional header names that carry a scoped API key | [[access-and-dashboards/api-keys]] |
 | `API_KEY_RESOLVER` | Function replacing the scoped API-key lookup | [[access-and-dashboards/api-keys]] |
