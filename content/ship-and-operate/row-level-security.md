@@ -31,7 +31,11 @@ def set_db_user(user, *, local):
 
 `user` is `None` for anonymous callers. Without `DB_CONTEXT` nothing changes: no extra transaction per request, no calls.
 
+With a [[access-and-dashboards/request-scope|request scope]], the function also receives the organisation or workspace the request acts in as `scope=` — when its signature accepts that keyword. On the generic record endpoints and in actions Lex App calls it once more with the scope after DRF authentication.
+
 Not covered: management commands, `lex shell`, Streamlit and Reflex apps, and WebSocket consumers. Code there sets the context itself — call your `DB_CONTEXT` function inside `transaction.atomic()` with `local=True`.
+
+To let these policies decide what a caller sees and changes, instead of Lex App's permission hooks, see [[ship-and-operate/database-decides]].
 
 > [!note]
 > Run migrations as a database role that owns the tables, and the application as a role without `BYPASSRLS` — a superuser ignores every policy. Under RLS the API-key table may be unreadable before sign-in; see `API_KEY_RESOLVER` in [[access-and-dashboards/api-keys]].

@@ -140,6 +140,9 @@ class ExpenseReport(LexModel):
         return PermissionResult.allow_fields(set())  # row hidden
 ```
 
+> [!tip] Rules in the database
+> A project whose access rules are row-level security policies can switch Lex App's default hooks off per model or for the whole project — see [[ship-and-operate/database-decides]].
+
 ## Keycloak Integration
 
 By default, permission methods fall back to Keycloak scopes. After running `lex init`, your project models are synced to Keycloak as Resources and your permission methods are registered as Scopes. Manage permissions at [Excellence Cloud](https://excellence-cloud.de).
