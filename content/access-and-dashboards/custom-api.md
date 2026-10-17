@@ -177,23 +177,9 @@ class Invoice(LexModel):
         self.status = "approved"
         self.save()
         return {"status": self.status}
-
-    @lex_action(detail=False, permission="permission_import", input=ImportInput)
-    def import_batch(cls, context, data):
-        ...
-
-    @classmethod
-    def permission_import(cls, user_context):
-        return "finance" in user_context.groups
 ```
 
-| Route | For |
-|---|---|
-| `POST api/model_entries/<model>/<calculationId>/one/<pk>/action/<name>` | a record action |
-| `POST …/one/<uuid>/action/<name>` | the same, by [public identifier](#public-identifiers) |
-| `POST api/model_entries/<model>/<calculationId>/action/<name>` | a collection action (`detail=False`) |
-
-Each call: the record must exist and be readable (404 otherwise); `permission` decides — `"edit"`, `"create"`, `"delete"` use the model's own methods, any other name is a method on the model returning `bool` — and a refusal answers 400 `ACTION_NOT_ALLOWED`; an action without `permission` is always refused. `input` is a DRF serializer and unknown keys are refused. The method runs in one transaction with the caller's audit and [[ship-and-operate/row-level-security|database]] context and writes an audit-log entry. Return a dict or list (JSON), data for `output=`, `None` (204) or any `HttpResponse` — a PDF or spreadsheet passes through untouched. `methods=("get",)` allows GET instead of POST.
+It answers at `POST api/model_entries/<model>/<calculationId>/one/<pk>/action/approve`, with the record's read permission, validated input, its own permission, one transaction and an audit-log entry. [[access-and-dashboards/actions]] has the whole of it: collection actions, permissions that see the input, refusals as 404, statuses and headers, throttling.
 
 ## Public identifiers
 

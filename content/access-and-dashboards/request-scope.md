@@ -53,7 +53,7 @@ curl -H "Api-Key: …" "https://app.example.com/api/model_entries/invoice/list?w
           return queryset.filter(workspace=scope) if scope is not None else queryset.none()
   ```
 
-The scope applies to Lex App's generic record endpoints and to [[access-and-dashboards/custom-api#Record actions|record actions]]; your own endpoints under `API_PREFIX` are not affected. A `REQUEST_SCOPE` that is not `{"param": "<name>", "resolver": "<dotted path>"}`, or a resolver that cannot be imported, stops the server at startup.
+The scope applies to Lex App's generic record endpoints and to [[access-and-dashboards/actions|record actions]]; your own endpoints under `API_PREFIX` are not affected. A `REQUEST_SCOPE` that is not `{"param": "<name>", "resolver": "<dotted path>"}`, or a resolver that cannot be imported, stops the server at startup.
 
 ## See also
 
