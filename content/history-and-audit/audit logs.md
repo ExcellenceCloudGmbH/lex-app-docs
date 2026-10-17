@@ -19,6 +19,30 @@ Every time a user creates, updates, or deletes a record through the API, an `Aud
 | `payload` | The full serialized data at the time of the operation |
 | `content_type` + `object_id` | A [generic relation](https://docs.djangoproject.com/en/stable/ref/contrib/contenttypes/) linking back to the affected record |
 
+## Keep personal data out of the log (3.0)
+
+The payload is a copy of what was written, and the author is a name or an e-mail address. If your erasure rules do not reach Lex App's tables, store less:
+
+```python title="lex_config.py"
+AUDIT_PAYLOAD = "fields"                 # "full" (default) | "fields" | "none"
+AUDIT_ACTOR = "myproject.audit.actor"    # (user) -> str | None
+```
+
+```python title="myproject/audit.py"
+def actor(user):
+    return f"user:{user.pk}"
+```
+
+| `AUDIT_PAYLOAD` | Stored payload |
+|---|---|
+| `"full"` | the payload as sent and saved — the behaviour before 3.0 |
+| `"fields"` | the keys only: every value becomes `null`, nested objects keep their keys (`{"iban": null, "address": {"city": null}}`) |
+| `"none"` | `{}` |
+
+The rule covers every entry Lex App writes: creates, updates and deletes through the API, bulk changes, record actions, initial data and calculation runs. It does not touch the record's [[history-and-audit/history|history]] tables, which keep their values.
+
+`AUDIT_ACTOR`'s answer is the `author` of every entry and the `created_by` / `edited_by` of every record written in a request — `"user:42"` instead of a name. An empty answer leaves them empty. Unset, Lex App records the user's name, username or e-mail address as before. An unknown `AUDIT_PAYLOAD` or a dotted path that cannot be imported stops the server at startup.
+
 ## How It Works
 
 ```mermaid

@@ -109,7 +109,16 @@ def map_database_error(exc):
     return None   # anything else stays a 500
 ```
 
-To take over error handling completely, set `EXCEPTION_HANDLER` to your own DRF exception handler. Lex App's generic endpoints keep their own error bodies unless you set `LEX_ERROR_FORMAT=structured` — see [[ship-and-operate/security-defaults]].
+To take over error handling completely, set `EXCEPTION_HANDLER` to your own DRF exception handler. It sees the errors of Lex App's generic endpoints too: they raise their refusals and not-found answers to the handler instead of returning bodies past it.
+
+| On a generic endpoint | Your handler receives |
+|---|---|
+| A refused create, edit or delete; an unknown field (`lex_strict_input`); a hidden row in history or a bulk request; nothing to export; an unknown HTML report | `LexActionError` carrying the old body's keys and a `code` — `PERMISSION_DENIED`, `EDIT_NOT_ALLOWED`, `DELETE_NOT_ALLOWED`, `UNKNOWN_FIELDS`, `NOT_FOUND`, `NO_DATA`, … |
+| A missing or invalid field | DRF's `ValidationError` |
+| A `LexActionError` or DRF error raised in model code (`save()`, a hook) | that error, with its own status — no longer wrapped into a 500 |
+| A database error | the `LexActionError` your `DB_ERROR_MAPPER` returns for it, otherwise the `DatabaseError` itself |
+
+Without a handler of your own, Lex App's renders the same errors with every key of the old body plus `code` and `detail`, so existing clients keep working: a refused create answers 403 `{"message": …, "code": "PERMISSION_DENIED", "detail": …, "error": …}`. `DB_ERROR_MAPPER` now answers for the generic endpoints as well (an unmapped database error is still a 500 there). Field errors keep DRF's shape unless you set `LEX_ERROR_FORMAT=structured`. `LEX_SEC_ERRORS=false` restores the old behaviour — see [[ship-and-operate/security-defaults]].
 
 ## Your own authentication and middleware
 
@@ -131,10 +140,12 @@ Lex App's login check runs before DRF, so a caller that only one of your `AUTHEN
 If your product UI uses only your own endpoints, you can close Lex App's generic `api/*` endpoints to everyone but superusers:
 
 ```python title="lex_config.py"
-GENERIC_API = "superuser"   # "all" (default) | "superuser" | "off"
+GENERIC_API = "superuser"   # "all" (default) | "records" | "superuser" | "off"
 ```
 
-Everyone else gets 404 for those paths, as if they did not exist — signed in or not. Only `api/user/` still answers 401 to an anonymous caller, so the bundled frontend can send operators to sign in. Your API prefix (when `API_URLCONF` is set) and `api/health` stay open. The switch also closes the [record actions](#record-actions) for everyone else, because their routes live under `api/model_entries/`. `"off"` also disables the bundled frontend, which is built on the generic endpoints.
+Everyone else gets 404 for those paths, as if they did not exist — signed in or not. Only `api/user/` still answers 401 to an anonymous caller, so the bundled frontend can send operators to sign in. Your API prefix (when `API_URLCONF` is set) and `api/health` stay open. The switch also closes the [record actions](#record-actions) for everyone else, because their routes live under `api/model_entries/`, and it closes the WebSockets (`ws/`) to everyone but superusers. `"off"` also disables the bundled frontend, which is built on the generic endpoints.
+
+If your clients should use the generic endpoints for some models instead of your own, open those models with `GENERIC_API = "records"` and `lex_api_exposed` — see [[access-and-dashboards/generic-api]].
 
 ## OpenAPI schema
 
