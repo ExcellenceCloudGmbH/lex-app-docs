@@ -38,11 +38,12 @@ Not covered: management commands, `lex shell`, Streamlit and Reflex apps, and We
 
 ## Lex App's own database functions
 
-The bitemporal activation applier installs three `SECURITY DEFINER` functions owned by the migration role: `lex_apply_due_activations()`, `lex_pending_activations()` and `lex_bitemporal_tables()`. PostgreSQL lets every role execute a new function, so a restricted application role could call them and write as the owner, past your policies. Lex App leaves them executable because the pg_cron job that calls them runs as the server admin, which on managed PostgreSQL is not always a superuser. With a restricted application role, revoke them in a migration of your own and grant them to the role that runs the cron job:
+The bitemporal activation applier installs three `SECURITY DEFINER` functions owned by the migration role: `lex_apply_due_activations()`, `lex_pending_activations()` and `lex_bitemporal_tables()`. PostgreSQL lets every role execute a new function, so a restricted application role could call them and write as the owner, past your policies. Name the roles that may run them:
 
-```sql
-REVOKE EXECUTE ON FUNCTION lex_apply_due_activations(), lex_pending_activations(), lex_bitemporal_tables() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION lex_apply_due_activations(), lex_pending_activations(), lex_bitemporal_tables() TO cron_role;  -- if pg_cron runs them
+```python title="lex_config.py"
+BITEMPORAL_FUNCTION_ROLES = ["cron_role"]   # the role your pg_cron job runs as; [] if none
 ```
+
+After every `lex migrate`, Lex App then revokes EXECUTE from PUBLIC and grants it to these roles only (the owner keeps it). Unset, the functions stay executable by every role, as PostgreSQL makes them: Lex App does not change that by default because the pg_cron job may run as a server admin that is not a superuser on managed PostgreSQL.
 
 The application only reads `lex_activation_applier_state` (to see whether the applier is alive); it needs no other right on that table.

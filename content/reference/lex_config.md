@@ -46,6 +46,7 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `API_KEY_RESOLVER` | Function replacing the scoped API-key lookup | [[access-and-dashboards/api-keys]] |
 | `MUTATION_GROUPS` | Function naming the realtime groups an event about a record goes to | [[ship-and-operate/realtime-events]] |
 | `USER_GROUPS` | Function naming the realtime groups a user's sockets join | [[ship-and-operate/realtime-events]] |
+| `BITEMPORAL_FUNCTION_ROLES` | Database roles that may run the bitemporal applier's `SECURITY DEFINER` functions; set, EXECUTE is revoked from everyone else after each migrate | [[ship-and-operate/row-level-security]] |
 | `EXPOSE_AUTO_SERIALIZER` | `False` stops registering the generated serializer under its alias when a model overrides `default` | [[model-your-data/serializers#Who may pick a serializer]] |
 
 ## `INITIAL_DATA`
