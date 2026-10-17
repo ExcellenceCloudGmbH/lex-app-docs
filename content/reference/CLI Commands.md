@@ -129,6 +129,7 @@ no migration, or a re-register after editing the realm by hand.
 
 | Command | What It Does |
 |---|---|
+| `lex create_api_key` | Issue a scoped API key that acts as an existing user: `--user`, `--scopes read,list`, `--prefix api/myproject/` (repeatable), `--expires-in-days`. Prints the key once — see [[access-and-dashboards/api-keys]]. |
 | `lex schema` | Write the OpenAPI schema of your project API, configured by `SCHEMA` in `lex_config.py` — see [[access-and-dashboards/custom-api#OpenAPI schema\|OpenAPI schema]]. Takes drf-spectacular's options: `--file openapi.yaml`, `--validate`, `--fail-on-warn`, `--format openapi-json`. |
 
 ## Database Commands
