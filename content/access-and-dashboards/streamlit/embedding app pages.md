@@ -355,7 +355,7 @@ setting on the Lex App side: see [Allowed sites](#allowed-sites).
 |---|---|
 | A list — `["open", "overdue"]` | Tick these values |
 | One value — `3` | Tick just this one |
-| `None`, or an empty list | Clear the column's filter |
+| `None`, or an empty list | Untick all of the column's values |
 
 Pass stored values, not the labels the grid shows: a related record's id, `True` or
 `False`, a date as a `date` or as `"2026-03-31"`, a choice's stored value. `None`
@@ -365,8 +365,9 @@ call, and so does a `filters` that isn't a dict of column names.
 
 How the table takes them:
 
-- **On top of what it has.** The columns you name are replaced, whatever filter the
-  saved view or the user had on them. Every other filter stays.
+- **On top of what it has.** The ticked values of the columns you name are replaced,
+  whatever the saved view or the user had ticked. A condition typed in a column's
+  filter stays, and so does every other column's filter.
 - **On the table showing.** The first filters go to the table the embed opened with,
   never to another table the user reaches inside the frame. A change you pass later
   goes to whichever table is showing when it arrives.

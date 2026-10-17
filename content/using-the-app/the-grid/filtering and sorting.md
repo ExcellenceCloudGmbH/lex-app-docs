@@ -74,7 +74,7 @@ Views saved before value lists existed still open as they did. When the view loa
 
 ## The Filter Bar
 
-A list can show a row of dropdowns between the toolbar and the grid, one per chosen column. Each is the same value list as that column's filter, with counts, chips for the ticked values and a search box. Unlike the column filter, a pick in the bar applies straight away.
+A list can show a row of dropdowns between the toolbar and the grid, one per chosen column. Each is the same value list as that column's filter, with counts, chips for the ticked values and a search box. Unlike the column filter, a pick in the bar applies straight away, and the dropdown stays open for the next pick.
 
 - **Add a column**: open the column's menu and choose **Show in filter bar**. Only columns with a value list offer it.
 - **Remove a column**: click the **×** next to its dropdown. Its filter stays — the column header still shows it — so untick its values first if you want them gone.
