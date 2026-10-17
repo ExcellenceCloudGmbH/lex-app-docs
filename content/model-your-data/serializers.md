@@ -293,6 +293,92 @@ With this setting, the framework-generated serializer is additionally registered
 > [!tip] History tables pick up your default override automatically
 > When you override `api_serializers["default"]`, the framework also registers the auto-generated serializer under the same alias on the model's history and meta-history tables. You don't need to configure anything on `HistoricalInvestorCashflow` or `MetaHistoricalInvestorCashflow`—history-endpoint and snapshot lookups stay consistent for free.
 
+## Value lists and the filter bar
+
+In the grid, most columns filter by a *value list*: the column's values, each with
+its row count, ready to tick — see
+[[using-the-app/the-grid/filtering and sorting#Value Lists|Filtering & Sorting]].
+Whether a column gets one depends on its type, on your serializer and on the model.
+A column without one keeps its condition filter, exactly as before.
+
+**The column's type.** `CharField`, integer, `BooleanField`, `DateField` and
+`ForeignKey` columns get a value list, and so does any column with `choices`.
+`TextField` without `choices`, `DecimalField`, `FloatField`, `DateTimeField`,
+`JSONField`, file and many-to-many columns don't, and neither does a field type not
+named here. The primary key keeps its condition filter in the grid, integer or not.
+
+**The serializer.** A value list offers *stored* values, so a column only gets one
+when the grid shows it as stored. It has none when the serializer:
+
+- leaves it out, or makes it write-only;
+- computes it — a `SerializerMethodField`;
+- renames it with `source=`;
+- renders it through a field class with its own `to_representation` or
+  `get_attribute`, or through a nested serializer.
+
+A serializer class that overrides `to_representation` itself gives none of its
+columns a value list: that method could change any value on any row.
+
+**The model.** `lex_value_lists = False` turns value lists off for every column of a
+model, its history tables included:
+
+```python
+class InvoiceNote(LexModel):
+    lex_value_lists = False
+```
+
+Reach for it when counting a column's values would be expensive. The framework's own
+audit log does this, because whether a user may read an entry is decided entry by
+entry.
+
+The fields endpoint reports the result for each column — see
+[[reference/Grid Filter API|Grid Filter API]].
+
+### Setting the filter bar
+
+`Meta.filter_bar` names the columns a list shows in its
+[[using-the-app/the-grid/filtering and sorting#The Filter Bar|filter bar]] by default:
+
+```python title="Sales/serializers.py"
+from rest_framework import serializers
+
+from Sales.Invoice import Invoice
+
+
+class InvoiceDefaultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = '__all__'
+        filter_bar = ['status', 'region', 'customer']
+
+
+Invoice.api_serializers = {
+    'default': InvoiceDefaultSerializer,
+}
+```
+
+A list without a serializer of its own can put the same attribute on the model:
+
+```python
+class Invoice(LexModel):
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    region = models.ForeignKey(Region, on_delete=models.PROTECT)
+
+    filter_bar = ['status', 'region']
+```
+
+- The serializer wins: the model's attribute is used only when the serializer the
+  list renders through doesn't set `Meta.filter_bar`. Each serializer can name its
+  own bar.
+- A name that isn't a value-list column of that serializer is dropped, with a
+  warning in the server log. The others keep their order.
+- With neither set there is no bar, and `Meta.filter_bar = []` gives none even when
+  the model names one.
+
+It is a default. Users add and remove bar columns in the grid and a saved view keeps
+their choice, and an embedded table can set its own with
+[[access-and-dashboards/streamlit/embedding app pages#Choosing the filter bar|lex_view]].
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:
