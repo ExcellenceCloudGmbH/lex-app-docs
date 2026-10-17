@@ -91,7 +91,7 @@ The record routes carry a `calculationId` segment that only the bundled frontend
 | `api/model_entries/<model>/one/<uuid>/action/<name>` | `…/<model>/<calculationId>/one/<uuid>/action/<name>` |
 | `api/model_entries/<model>/action/<name>` | `…/<model>/<calculationId>/action/<name>` |
 
-A record is addressed by its [[access-and-dashboards/custom-api#Public identifiers|public identifier]] on the short paths; there is no short form with an integer key. The long forms keep working.
+On the short paths a record is addressed by its uuid when the model sets `lex_lookup_field` (a uuid field — its [[access-and-dashboards/custom-api#Public identifiers|public identifier]]), and by its integer key otherwise (`…/<model>/one/<pk>`, `…/one/<pk>/history`, `…/one/<pk>/action/<name>`). The long forms keep working.
 
 ## Public identifiers in and out
 
@@ -154,7 +154,7 @@ Every model with `lex_api_exposed` gets one operation per exposed operation and 
 | `<model>_history` | GET `…/<model>/one/{uuid}/history` |
 | `<model>_<action>` | `…/<model>/one/{uuid}/action/<action>` or `…/<model>/action/<action>` |
 
-`<model>` is the model's lowercase name. Path parameters are typed (a `uuid` lookup field is a uuid). Request and response bodies are the model's `api_serializers["default"]` as you declared it, or the generated serializer. `"short_paths": False` documents the long forms with their `calculationId`; the short form is the default. Since short paths address records by uuid, models documented with them need a `lex_lookup_field`.
+`<model>` is the model's lowercase name. Path parameters are typed (a `uuid` lookup field is a uuid). Request and response bodies are the model's `api_serializers["default"]` as you declared it, or the generated serializer. `"short_paths": False` documents the long forms with their `calculationId`; the short form is the default. A record's path parameter is its uuid when the model sets `lex_lookup_field` (a uuid field), and its integer key otherwise.
 
 The parameters a model documents:
 
