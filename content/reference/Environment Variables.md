@@ -295,6 +295,8 @@ protects.
 | `LEX_SEC_FILTERS` | on | List filters and ordering only on fields a response can contain |
 | `LEX_SEC_TRACEBACKS` | on | Error responses carry no traceback unless `DEBUG` is on |
 | `LEX_SEC_OIDC_REDIRECT` | on | `next`/`fail` on `/oidc/*` must stay on the site or a trusted origin |
+| `LEX_SEC_INTERNAL` | on | Django's users, the server log, file cleanup and other callers' calculation logs are for superusers only |
+| `LEX_SEC_ERRORS` | on | The generic endpoints raise their errors to the exception handler instead of returning bodies past it |
 | `LEX_API_TRACEBACKS` | unset | `true` shows tracebacks in error responses even with `DEBUG` off |
 | `LEX_ERROR_FORMAT` | unset | `structured` makes every error body `{code, detail, error, fields}` |
 | `LEX_CORS_ALLOWED_ORIGINS` | unset | Comma-separated origins for credentialed cross-origin requests; replaces the permissive CORS defaults when set |

@@ -226,6 +226,19 @@ The lean snapshot retains only the fields the framework can prove are needed: `e
 > ```
 > or opt the whole model out with `lex_lean_initial_state = False` to restore the full snapshot.
 
+## API Attributes (3.0)
+
+Class attributes that shape how the generic API serves a model. Every one is optional.
+
+| Attribute | Default | What It Does | Documented in |
+|---|---|---|---|
+| `lex_api_exposed` | `False` | With `GENERIC_API = "records"`: `True` (list, retrieve, create, update, delete) or a set of operations signed-in users and API keys may use | [[access-and-dashboards/generic-api]] |
+| `lex_lookup_field` | unset | A unique `UUIDField` the record is addressed by | [[access-and-dashboards/custom-api#Public identifiers]] |
+| `lex_lookup_allow_pk` | `True` | `False` closes the integer routes of a model with `lex_lookup_field` | [[access-and-dashboards/custom-api#Public identifiers]] |
+| `lex_strict_input` | `False` | Refuse keys the serializer does not declare | [[model-your-data/serializers#Strict input]] |
+| `lex_filterable_fields` | unset | Extra fields lists may filter and order by; `"__all__"` for any | [[access-and-dashboards/permissions#Filtering and ordering]] |
+| `broadcast_mutations` | `True` | `False` sends no realtime events for the model | [[ship-and-operate/realtime-events]] |
+
 ## DateTimeField Timezone Awareness
 
 When `USE_TZ = True`, every `DateTimeField` on a `LexModel` subclass is made timezone-aware the moment you assign a value — not only when it comes back from the database. If you assign a naive datetime, the framework automatically converts it to the project's default timezone (the `TIME_ZONE` setting), which is the same interpretation Django applies when it saves the value.

@@ -226,6 +226,8 @@ Since Lex App 3.0 every endpoint applies these methods the same way, and a few l
 | **Bulk delete** | asks `permission_delete` for every row; one refusal answers 400 `DELETE_NOT_ALLOWED` and deletes nothing |
 | **`run_step` create** | asks `permission_create` (400 `CREATE_NOT_ALLOWED`) |
 | **A permission method that raises** | denies (and is logged), instead of allowing |
+| **`permission_list` refuses** | the list endpoint answers 404, as for a list that does not exist. Only a model's own override is asked — the default reads Keycloak scopes and would close every list of a project without them |
+| **Django's users, groups and permissions** | only superusers change them through the generic API (400 `EDIT_NOT_ALLOWED`) |
 | **History, global search, export, file download** | apply read permission; a download only serves real file fields |
 | **Filtering and ordering** | only on fields a response can contain — see below |
 

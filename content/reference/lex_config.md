@@ -28,7 +28,7 @@ flowchart LR
 
 ### Extension keys (3.0)
 
-These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. Dotted paths are imported after the app has loaded, so they may point at your own code. Lex App checks them all at startup: a `lex_config.py` that raises, a dotted path that cannot be imported, an unknown `GENERIC_API` mode or an `API_URLCONF` that does not exist stops the server with an error naming the key — never a silent fallback to the defaults.
+These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. Dotted paths are imported after the app has loaded, so they may point at your own code. Lex App checks them all at startup: a `lex_config.py` that raises, a dotted path that cannot be imported, an unknown `GENERIC_API` mode or `AUDIT_PAYLOAD`, a misspelt `lex_api_exposed` operation or an `API_URLCONF` that does not exist stops the server with an error naming the key — never a silent fallback to the defaults.
 
 | Key | Purpose | Documented in |
 |---|---|---|
@@ -39,7 +39,7 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `MIDDLEWARE_EXTRA` | Middleware per slot: `{"first": [...], "after_auth": [...], "last": [...]}` | [[access-and-dashboards/custom-api#Your own authentication and middleware]] |
 | `EXCEPTION_HANDLER` | Your own DRF exception handler, replacing Lex App's | [[access-and-dashboards/custom-api#Errors and database rules]] |
 | `DB_ERROR_MAPPER` | Function turning a database error into a `LexActionError` | [[access-and-dashboards/custom-api#Errors and database rules]] |
-| `GENERIC_API` | Who may use the generic `api/*` endpoints: `"all"` (default), `"superuser"`, `"off"` | [[access-and-dashboards/custom-api#Keep the generic API for operators only]] |
+| `GENERIC_API` | Who may use the generic `api/*` endpoints: `"all"` (default), `"records"` (the operations models expose with `lex_api_exposed`), `"superuser"`, `"off"` | [[access-and-dashboards/generic-api]] |
 | `SCHEMA` | OpenAPI schema of your endpoints: `title`, `version`, `include`, `public` | [[access-and-dashboards/custom-api#OpenAPI schema]] |
 | `DB_CONTEXT` | Function telling the database who is asking, per request, task and thread | [[ship-and-operate/row-level-security]] |
 | `API_KEY_HEADERS` | Additional header names that carry a scoped API key | [[access-and-dashboards/api-keys]] |
@@ -48,6 +48,8 @@ These keys let a project extend Lex App without overriding Django settings. Ever
 | `USER_GROUPS` | Function naming the realtime groups a user's sockets join | [[ship-and-operate/realtime-events]] |
 | `BITEMPORAL_FUNCTION_ROLES` | Database roles that may run the bitemporal applier's `SECURITY DEFINER` functions; set, EXECUTE is revoked from everyone else after each migrate | [[ship-and-operate/row-level-security]] |
 | `EXPOSE_AUTO_SERIALIZER` | `False` stops registering the generated serializer under its alias when a model overrides `default` | [[model-your-data/serializers#Who may pick a serializer]] |
+| `AUDIT_PAYLOAD` | How much of a payload the audit log stores: `"full"` (default), `"fields"` (keys only), `"none"` | [[history-and-audit/audit logs#Keep personal data out of the log (3.0)]] |
+| `AUDIT_ACTOR` | Function `(user) -> str` naming the author of audit entries and the `created_by` / `edited_by` of records | [[history-and-audit/audit logs#Keep personal data out of the log (3.0)]] |
 
 ## `INITIAL_DATA`
 
