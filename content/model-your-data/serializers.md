@@ -293,6 +293,21 @@ With this setting, the framework-generated serializer is additionally registered
 > [!tip] History tables pick up your default override automatically
 > When you override `api_serializers["default"]`, the framework also registers the auto-generated serializer under the same alias on the model's history and meta-history tables. You don't need to configure anything on `HistoricalInvestorCashflow` or `MetaHistoricalInvestorCashflow`—history-endpoint and snapshot lookups stay consistent for free.
 
+## Who may pick a serializer
+
+`?serializer=<name>` lets a client choose the response shape. To reserve a serializer for some users, add `permission_serializer` to the model — see [[access-and-dashboards/permissions#Optional class-level hooks (3.0)|permissions]]. A project that overrides `default` can stop exposing the generated all-fields serializer under its alias with `EXPOSE_AUTO_SERIALIZER = False` in `lex_config.py`.
+
+## Strict input
+
+By default the generic endpoints ignore keys a serializer does not declare. Set `lex_strict_input = True` on the model (or in the custom serializer's `Meta`) to refuse them instead, together with the fields Lex App sets itself (`created_by`, `edited_by`, `created_at`, `edited_at`):
+
+```python
+class Invoice(LexModel):
+    lex_strict_input = True
+```
+
+A refused request answers 400 `{"code": "UNKNOWN_FIELDS", "fields": {...}}`. The keys the bundled frontend sends with every write (`id`, `calculate`, `lex_reserved_*`, `*__short_description`) stay accepted.
+
 ## Where to Put Serializers
 
 We recommend **one `serializers.py` file per folder**, containing all serializers for the models in that folder:

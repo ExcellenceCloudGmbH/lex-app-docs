@@ -9,6 +9,11 @@ Lex App 3.0 turns on a set of hardenings that earlier versions left off. Each on
 | Flag | On means | Before 3.0 |
 |---|---|---|
 | `TRACEBACKS` | Error responses carry no server traceback, unless `DEBUG` is on or `LEX_API_TRACEBACKS=true` | Every 500 from the generic CRUD endpoints included the full traceback |
+| `FAIL_CLOSED` | An exception inside a permission method denies access and is logged | An exception counted as "allowed" |
+| `NOT_FOUND` | A record the user may not read answers 404 | 200 with `{}` |
+| `READ_SURFACES` | History, global search, export and file download apply read permission | They did not |
+| `EDIT` | `permission_edit` on PATCH/PUT, bulk PATCH and `run_step`; `permission_delete` per row on bulk delete; `permission_create` on `run_step` | Not enforced on these paths |
+| `FILTERS` | List filters and ordering only on fields a response can contain | Any model field |
 | `OIDC_REDIRECT` | `next`/`fail` on `/oidc/*` must be relative, the site's own origin, or an origin in `CORS_ALLOWED_ORIGINS` / `CORS_ORIGIN_WHITELIST` / `CSRF_TRUSTED_ORIGINS` (wildcards like `https://*.example.com` included); otherwise 400 | Any URL was followed — an open redirect |
 
 > [!note]
@@ -18,11 +23,11 @@ Lex App 3.0 turns on a set of hardenings that earlier versions left off. Each on
 
 ```bash title=".env"
 LEX_LEGACY_SECURITY=true      # all flags off — the pre-3.0 behaviour
-LEX_SEC_TRACEBACKS=true       # …but keep this one on
+LEX_SEC_EDIT=true             # …but keep this one on
 ```
 
 ```bash title=".env"
-LEX_SEC_OIDC_REDIRECT=false   # only this one off
+LEX_SEC_FILTERS=false         # only this one off
 ```
 
 A per-flag `LEX_SEC_<FLAG>` always wins over `LEX_LEGACY_SECURITY`. The opt-out is a migration aid: it logs a warning once at startup and will be removed in a later major release.

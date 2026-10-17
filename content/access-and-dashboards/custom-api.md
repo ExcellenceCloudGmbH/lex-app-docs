@@ -33,7 +33,7 @@ The endpoints answer at `/api/myproject/dashboard` and so on (behind `DJANGO_BAS
 
 ```python title="_api/views.py"
 from rest_framework.response import Response
-from lex.api.project import LexAPIView, LexActionError, visible_queryset
+from lex.api.project import LexAPIView, LexActionError, serialize_for, visible_queryset
 
 class DashboardView(LexAPIView):
     def get(self, request):
@@ -60,6 +60,8 @@ What every `LexAPIView` does for you:
 | **Read permission** | `get_object_or_404()` and `visible_queryset()` apply the same rule as the generic list endpoint — a record the caller may not read is "not found" (404), never "forbidden". |
 | **Errors** | `{"code", "detail", "error", "fields"}`. Raise `LexActionError(detail, code=..., fields=..., status_code=...)` for business errors. |
 | **CSRF cookie** | `ensure_csrf = True` sets it — for the endpoint a browser client calls first. |
+
+`serialize_for(request, obj_or_queryset, SerializerClass, many=False)` serializes with the caller's read permission applied: rows `permission_read` refuses are left out, withheld fields removed, and your serializer's field list stays the positive list.
 
 To reject input keys an endpoint does not declare (an actor, a timestamp the server sets), decorate the serializer:
 

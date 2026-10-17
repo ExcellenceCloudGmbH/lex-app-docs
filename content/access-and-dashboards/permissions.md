@@ -60,6 +60,24 @@ class MyModel(LexModel):
 | `permission_delete(user_context)` | Can this user delete this instance?         |
 | `permission_list(user_context)`   | Can this user list instances of this model? |
 
+### Optional class-level hooks (3.0)
+
+| Method | Purpose |
+| --- | --- |
+| `permission_read_queryset(cls, user_context, queryset)` | Restrict a whole queryset to the rows a user may read, **in SQL**. Return the filtered queryset, or `None` (default) to fall back to `permission_read` per row. Lists, exports, search, history and project endpoints use it — one query instead of one Python call per row. `permission_read` still decides which *fields* of a visible row are shown. |
+| `permission_serializer(cls, user_context, name)` | Who may request `?serializer=<name>`. A refused name answers 400 exactly like an unknown one. Default: every serializer for everyone. |
+
+```python
+class Invoice(LexModel):
+    @classmethod
+    def permission_read_queryset(cls, user_context, queryset):
+        if user_context.is_superuser:
+            return queryset
+        return queryset.filter(department__in=user_context.groups)
+```
+
+HTML reports have their own hook: `HTMLReport.permission_view(cls, user_context) -> bool`. A refused (or unknown) report answers 404.
+
 > [!note]
 > When `permission_create` returns `False`, the API responds with **401 Unauthorized** for unauthenticated requests and **403 Forbidden** for authenticated-but-denied requests — not a generic 400. Frontends and API clients can use these status codes to redirect to login (401) or show a "permission denied" message (403).
 
@@ -196,6 +214,33 @@ Permissions are enforced across 6 scopes:
 | **list**   | Whether a user can view the model's table |
 
 These scopes are synced to Keycloak when you run `lex init`, enabling centralized policy management.
+
+## How the API enforces them (3.0)
+
+Since Lex App 3.0 every endpoint applies these methods the same way, and a few long-standing gaps are closed. All of this is on by default; [[ship-and-operate/security-defaults]] lists the switches to turn each part off while you migrate.
+
+| | Behaviour |
+|---|---|
+| **A record you may not read** | 404 on GET, PATCH, PUT, DELETE, history and bulk endpoints — never `200 {}`, never 403 |
+| **A field you may not edit** | PATCH, PUT, bulk PATCH and `run_step` answer **400** `{"code": "EDIT_NOT_ALLOWED", "fields": {...}}`. Only fields whose value actually changes are checked. A record `permission_edit` denies entirely refuses every write, including Calculate |
+| **Bulk delete** | asks `permission_delete` for every row; one refusal answers 400 `DELETE_NOT_ALLOWED` and deletes nothing |
+| **`run_step` create** | asks `permission_create` (400 `CREATE_NOT_ALLOWED`) |
+| **A permission method that raises** | denies (and is logged), instead of allowing |
+| **History, global search, export, file download** | apply read permission; a download only serves real file fields |
+| **Filtering and ordering** | only on fields a response can contain — see below |
+
+> [!note]
+> New denials answer 400 or 404 rather than 403, because the bundled frontend signs the user out on a 403.
+
+### Filtering and ordering
+
+A list filter reveals a field's value even if no response contains it (`?salary__gte=100000`). List requests may therefore only filter and order by:
+
+- fields of any serializer registered for the model,
+- the `limit_choices_to` keys of foreign keys pointing at the model (the frontend's pickers use them),
+- fields listed in the model's `lex_filterable_fields`,
+
+minus credential-shaped names and fields `permission_read` withholds model-wide. Anything else answers 400 `FILTER_NOT_ALLOWED`; the AG Grid request treats such a column as nonexistent. Relations follow the related model's rules. Set `lex_filterable_fields = "__all__"` on a model to keep the old behaviour for it. The audit log, calculation log and history tables are not restricted.
 
 ## In the Frontend
 
