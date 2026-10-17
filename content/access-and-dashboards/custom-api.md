@@ -147,6 +147,39 @@ SCHEMA = {
 
 Lex App then serves the OpenAPI document at `<API_PREFIX>schema` and a Redoc page at `<API_PREFIX>docs`, and `lex schema --validate --fail-on-warn --file openapi.yaml` writes it for client generation. Only the included prefixes are documented; the generic `model_entries` endpoints are left out. Describe your own authentication classes with a drf-spectacular `OpenApiAuthenticationExtension` and they appear in the schema too. Every key and option: [[reference/openapi]].
 
+## Record actions
+
+For operations on one model that are not create/read/update/delete — approve, submit, close — you do not need a custom endpoint at all. Declare an action on the model:
+
+```python
+from lex.api.project import lex_action, LexActionError
+
+class Invoice(LexModel):
+    @lex_action(permission="edit", input=ApproveInput)
+    def approve(self, context, data):
+        if self.status != "submitted":
+            raise LexActionError("Only submitted invoices can be approved.", code="NOT_SUBMITTED")
+        self.status = "approved"
+        self.save()
+        return {"status": self.status}
+
+    @lex_action(detail=False, permission="permission_import", input=ImportInput)
+    def import_batch(cls, context, data):
+        ...
+
+    @classmethod
+    def permission_import(cls, user_context):
+        return "finance" in user_context.groups
+```
+
+| Route | For |
+|---|---|
+| `POST api/model_entries/<model>/<calculationId>/one/<pk>/action/<name>` | a record action |
+| `POST …/one/<uuid>/action/<name>` | the same, by [public identifier](#public-identifiers) |
+| `POST api/model_entries/<model>/<calculationId>/action/<name>` | a collection action (`detail=False`) |
+
+Each call: the record must exist and be readable (404 otherwise); `permission` decides — `"edit"`, `"create"`, `"delete"` use the model's own methods, any other name is a method on the model returning `bool` — and a refusal answers 400 `ACTION_NOT_ALLOWED`; an action without `permission` is always refused. `input` is a DRF serializer and unknown keys are refused. The method runs in one transaction with the caller's audit and [[ship-and-operate/row-level-security|database]] context and writes an audit-log entry. Return a dict or list (JSON), data for `output=`, `None` (204) or any `HttpResponse` — a PDF or spreadsheet passes through untouched. `methods=("get",)` allows GET instead of POST.
+
 ## Public identifiers
 
 Integer primary keys are guessable and differ between systems. A model can be addressed by a public uuid instead:
