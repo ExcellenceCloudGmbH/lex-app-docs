@@ -239,6 +239,8 @@ Class attributes that shape how the generic API serves a model. Every one is opt
 | `lex_filterable_fields` | unset | Extra fields lists may filter and order by; `"__all__"` for any | [[access-and-dashboards/permissions#Filtering and ordering]] |
 | `broadcast_mutations` | `True` | `False` sends no realtime events for the model | [[ship-and-operate/realtime-events]] |
 | `lex_permission_source` | unset | `"database"`: the default permission hooks allow and row-level security decides; `"python"`: the hooks decide. Unset, `PERMISSION_SOURCE` applies | [[ship-and-operate/database-decides]] |
+| `lex_read_model` | `False` | `True` on a view (`managed = False`) or projection (`proxy = True`): served for reading, every write 405, no history | [[model-your-data/read models]] |
+| `lex_list_queryset(cls, queryset, request)` | unset | Classmethod: the list endpoint's default selection; records stay reachable by id | [[model-your-data/read models#Two hooks for any model]] |
 | `lex_scope_queryset(cls, queryset, scope, request)` | unset | Classmethod narrowing lists, records, history and action lookups to the request's scope | [[access-and-dashboards/request-scope]] |
 
 ## DateTimeField Timezone Awareness

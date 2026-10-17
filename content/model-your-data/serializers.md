@@ -286,6 +286,10 @@ DEFAULT_SERIALIZER_NAME = "framework_default"
 
 With this setting, the framework-generated serializer is additionally registered under `"framework_default"`. Both keys appear in the **View Preset** dropdown. Without this setting, the framework serializer is only available while no `"default"` override exists — once you add one, the framework serializer is no longer in the map.
 
+### Computed fields for a whole page
+
+A `SerializerMethodField` that queries the database runs once per row. Give the serializer a `lex_prepare_page(cls, instances, context)` classmethod to load what those fields need once per list page (and once for a single record) — see [[model-your-data/read models#Two hooks for any model|Read Models]].
+
 ### Computed fields and row grouping
 
 `SerializerMethodField` fields — and any other computed property with no underlying database column — are automatically marked as non-groupable. The grid will disable **row group** and **pivot** for those columns. Only real database-backed columns support server-side grouping.
