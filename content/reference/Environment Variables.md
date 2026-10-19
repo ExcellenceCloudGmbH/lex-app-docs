@@ -313,7 +313,8 @@ What each flag does:
 - `NOT_FOUND` — a record the caller may not read answers 404 on the record,
   history and bulk endpoints (it used to answer 200 with `{}`); a bulk read
   leaves unreadable ids out; `permission_list` returning false makes the list
-  404; an unknown path under `api/` is a JSON 404, not the app's index page.
+  and its value lists 404; an unknown path under `api/` is a JSON 404, not the
+  app's index page.
 - `READ_SURFACES` — history, global search, export and file download apply read
   permission.
 - `EDIT` — `permission_edit`, `permission_delete` and `permission_create` run on
@@ -322,7 +323,8 @@ What each flag does:
   `CREATE_NOT_ALLOWED`), never a 403: the bundled frontend signs the user out on
   403.
 - `FILTERS` — list filters and ordering only on fields the caller can see; the
-  primary key is always allowed. Otherwise 400 `FILTER_NOT_ALLOWED`.
+  primary key is always allowed. Otherwise 400 `FILTER_NOT_ALLOWED`. A column the
+  caller may not filter by has no value list either.
 - `TRACEBACKS` — no server traceback in error responses unless `DEBUG` or
   `LEX_API_TRACEBACKS=true`.
 - `OIDC_REDIRECT` — `next` and `fail` on `/oidc/*` (sign-in, logout,

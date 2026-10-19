@@ -298,8 +298,8 @@ With this setting, the framework-generated serializer is additionally registered
 In the grid, most columns filter by a *value list*: the column's values, each with
 its row count, ready to tick — see
 [[using-the-app/the-grid/filtering and sorting#Value Lists|Filtering & Sorting]].
-Whether a column gets one depends on its type, on your serializer and on the model.
-A column without one keeps its condition filter, exactly as before.
+Whether a column gets one depends on its type, on your serializer, on the model and
+on the user. A column without one keeps its condition filter, exactly as before.
 
 **The column's type.** `CharField`, integer, `BooleanField`, `DateField` and
 `ForeignKey` columns get a value list, and so does any column with `choices`.
@@ -330,6 +330,11 @@ class InvoiceNote(LexModel):
 Reach for it when counting a column's values would be expensive. The framework's own
 audit log does this, because whether a user may read an entry is decided entry by
 entry.
+
+**The user.** A column the user may not filter by has no value list for them, and
+leaves their filter bar — a column your `permission_read()` withholds from them on
+every record, for example. This follows the `FILTERS` security switch; see
+[[reference/Grid Filter API#Security switches|Grid Filter API]].
 
 The fields endpoint reports the result for each column — see
 [[reference/Grid Filter API|Grid Filter API]].

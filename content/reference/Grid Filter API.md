@@ -4,7 +4,7 @@ title: "Grid Filter API"
 
 The grid's [[using-the-app/the-grid/filtering and sorting#Value Lists|value lists]] and
 [[using-the-app/the-grid/filtering and sorting#The Filter Bar|filter bar]] run on two
-endpoints, and the list endpoint's GET has a lookup for the blanks they list. This page
+endpoints, and the list endpoint's GET has lookups for the values they list. This page
 is for calling them yourself — from a script, or from a dashboard of your own. Which
 columns get a value list is explained under
 [[model-your-data/serializers#Value lists and the filter bar|Serializers]].
@@ -32,12 +32,14 @@ shows a request with a bearer token. Paths are relative to Lex App's own address
 ```
 
 - `value_list` is `true` exactly when `filter_values` lists that column's values through
-  this serializer, and `Meta.filter_bar` accepts the same columns. A field with no
-  database column behind it is always `false`.
+  this serializer, for the caller asking. A field with no database column behind it is
+  always `false`, and so is a column the caller may not filter by — see
+  [Security switches](#security-switches).
 - The grid offers a value list on every column where it is `true`, except the primary
   key.
 - `list_ui.filter_bar` is the list's default filter bar — `Meta.filter_bar`, or the
   model's `filter_bar` — with every name that isn't a value-list column already dropped.
+  A column the caller may not filter by leaves their bar too.
 
 ## A column's values: `filter_values`
 
@@ -93,6 +95,8 @@ The answer:
   hide a field on some rows, only the rows where the user may read this column count.
   A ticked key that no readable row holds is listed under its own key, never under the
   related record's name.
+- A row whose permission check raises is not counted either — see
+  [Security switches](#security-switches).
 
 ### Set and multi filters
 
@@ -111,16 +115,39 @@ out of the filter model.
 
 | Status | Body | When |
 |---|---|---|
-| `400` | `{"field": "'notes' is not filterable."}` | `field` isn't a value-list column of this list. The message is the same whatever the reason |
+| `400` | `{"field": "'notes' is not filterable."}` | `field` isn't a value-list column of this list, or the caller may not filter by it. The message is the same whatever the reason |
 | `400` | `{"filterModel": {"year": "'abc' is not a valid value for year."}}` | A `set` key that can't be read as the column's type — the list endpoint answers the same |
 | `400` | `{"filterModel": "must be an object"}` or `{"selected": "must be a list"}` | The body has the wrong shape |
+| `404` | | The model's `permission_list` refuses the caller — its list answers `404` too |
 | `405` | | The request is a `GET` |
 
-## The (Blank) lookup on the list GET
+## Value-list lookups on the list GET
 
 `GET api/model_entries/<model>/list` narrows its rows by query parameters, such as
-`?status=open` or `?year__gte=2025`. The `__blank` lookup finds the rows a value list's
-*(Blank)* finds:
+`?status=open` or `?year__gte=2025`. Three lookups match what value lists hold: keys
+with `__in` and `__exact`, and blanks with `__blank`. On a field the caller may not
+filter by, each of them answers `400` with the code `FILTER_NOT_ALLOWED`, like any
+other filter on it — see [Security switches](#security-switches).
+
+### Keys: `__in` and `__exact`
+
+| Parameter | Keeps |
+|---|---|
+| `?status__in=open,overdue` | The rows holding any of these keys. The parameter can also be repeated |
+| `?region__exact=3` | The rows holding this key |
+
+- A key is written as a value list's `key`, and read as the column's type, the way a
+  `set` filter reads it. So `?status__exact=null` no longer means *is empty*: it looks
+  for the text `null`. Ask `?status__isnull=true` for NULL, or `?status__blank=true`
+  for what *(Blank)* finds.
+- A key that can't be read as the column's type is dropped, and when none is left no
+  row matches: `?region__in=abc` keeps no rows.
+- Two readings are unchanged: a bare `?status=null`, with no lookup, still means NULL,
+  and a JSON field, or a path into one, still reads `5`, `true` and `null` as JSON.
+
+### Blanks: `__blank`
+
+The `__blank` lookup finds the rows a value list's *(Blank)* finds:
 
 | Parameter | Keeps |
 |---|---|
@@ -133,8 +160,24 @@ out of the filter model.
   is ignored, like any lookup the list doesn't know.
 - A value other than `true` or `false`, in any letter case, is ignored too.
 
+## Security switches
+
+Value lists answer as the list does under Lex App's
+[[reference/Environment Variables#Security|security switches]]. Three of them change
+what these endpoints say:
+
+| Switch | On, the default | Off |
+|---|---|---|
+| `LEX_SEC_FILTERS` | A column the caller may not filter by has no value list for them: `filter_values` refuses it with the `400` above, the fields endpoint gives it `value_list: false`, `list_ui.filter_bar` leaves it out, and a GET lookup on it answers `400` `FILTER_NOT_ALLOWED`. A `filterModel` entry on such a field is ignored, as the list ignores it | The column has its value list, and filters on it apply |
+| `LEX_SEC_FAIL_CLOSED` | A row whose permission check raises is not counted | Such a row is counted wherever the list shows it |
+| `LEX_SEC_NOT_FOUND` | When the model's `permission_list` refuses the caller, `filter_values` answers `404`, as the list does | `filter_values` lists the values, as the list lists the rows |
+
+`LEX_LEGACY_SECURITY=true` turns all three off, and a `LEX_SEC_<FLAG>` setting wins over
+it.
+
 ## See also
 
 - [[using-the-app/the-grid/filtering and sorting|Filtering & Sorting]] — value lists and the filter bar, as users see them
 - [[model-your-data/serializers#Value lists and the filter bar|Serializers]] — which columns get a value list, and `Meta.filter_bar`
 - [[access-and-dashboards/streamlit/embedding app pages#Filtering the embedded table|Embedding App Pages]] — an embedded table's filters, set from Python
+- [[reference/Environment Variables#Security|Environment Variables]] — the security switches value lists follow
