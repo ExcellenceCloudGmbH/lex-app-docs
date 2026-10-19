@@ -40,6 +40,7 @@ For text columns, type in the filter input and apply. The condition dropdown cho
 
 Date columns use a calendar picker for precision. Select a range with "between" to isolate a specific period — like all invoices from Q1 2026. When you enter a date without a time, Lex App treats it as the whole day rather than a single instant. The built-in date picker handles timezones automatically.
 
+
 ### Foreign Key Filters
 
 When a column references another model (like an invoice's customer), its filter is a value list of the related records, shown by name. It lists the records the column actually refers to — not every record of that model — so tick one or more to narrow the view.

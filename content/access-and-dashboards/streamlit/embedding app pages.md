@@ -383,8 +383,8 @@ How the table takes them:
 > [!note] Keep passing a dict
 > Without an `on_*` flag, `filters` is what switches `lex_view` to the bidirectional
 > component. A call that alternates between a dict and `filters=None` swaps the
-> component for a plain iframe and back, reloading the table each time. To clear a
-> column, keep the dict and give that column `None`: `filters={"region": None}`.
+> component for a plain iframe and back, reloading the table each time. To untick a
+> column's values, keep the dict and give that column `None`: `filters={"region": None}`.
 
 The first filters travel in the frame's address. A long list — a few hundred ids — is
 kept out of it once the encoded filters pass 2,000 characters, and sent into the frame
