@@ -414,8 +414,13 @@ if event and event["type"] == "filter":
 ```
 
 The event arrives about 300 ms after the table has reloaded; a reload that fails sends
-none. Feeding a table's own `filters` back into its `filters=` settles instead of
-looping: once sent, the same filters aren't sent again.
+none. A value list applies on every tick, so with `on_filter=True` the script reruns
+once per tick, not once per Apply.
+
+Pass a table's filters on to a *different* table — see
+[Linking two tables](#linking-two-tables) below. Don't echo them back into the same
+table's `filters=`: the frame already keeps its own ticks across re-runs, and an echo
+that reaches Python one re-run late can land after the user's next tick and undo it.
 
 ### Linking two tables
 

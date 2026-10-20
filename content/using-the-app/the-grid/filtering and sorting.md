@@ -51,13 +51,13 @@ When a column references another model (like an invoice's customer), its filter 
 
 Most columns list their own values, each with the number of rows that have it. Tick the values you want, and the table keeps the rows that have any of them.
 
-- **Nothing ticked means no filter.** A list opens with nothing ticked, and there is no *Select All*. You pick what to include, never what to leave out.
+- **Nothing ticked means no filter.** A list opens with nothing ticked, and there is no *Select All* button. Pressing **Enter** in the search box is the exception: it ticks every value the search currently shows, all at once.
 - **Every value shows its row count**, so you can see how many invoices are *Overdue* before you tick it.
 - **The lists narrow each other.** The counts follow every other filter in force: once a region is ticked, the customer list only offers that region's customers. A column's own filter never narrows its own list, so you can always tick one more value.
 - **A ticked value stays.** If the other filters leave no rows with a value you ticked, it stays in the list with a count of 0, so you can still untick it.
 - **Values appear by label.** Related records appear by name, choices by their label, yes/no columns as *Yes* and *No*, and dates as `YYYY-MM-DD`. Values are sorted by label — numbers in numeric order — with *(Blank)* last.
 - **(Blank) is a value too.** It stands for rows with nothing in the column. On a text column, empty text counts as blank, so *(Blank)* finds both.
-- **Up to 1,000 values.** A list shows at most 1,000 values, and its search box searches those.
+- **Up to 1,000 values.** A list shows at most 1,000 values, and its search box searches only those. To reach a value that isn't listed, narrow the other filters first — or, on text, whole-number and date columns, use the condition instead: it checks every row, not just the first 1,000.
 
 The lists only count rows you're allowed to see, and never offer a value you couldn't see in the grid.
 
