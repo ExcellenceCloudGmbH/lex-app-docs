@@ -2,12 +2,11 @@
 title: "Grid Filter API"
 ---
 
-The grid's [[using-the-app/the-grid/filtering and sorting#Value Lists|value lists]] and
-[[using-the-app/the-grid/filtering and sorting#The Filter Bar|filter bar]] run on two
-endpoints, and the list endpoint's GET has lookups for the values they list. This page
+The grid's [[using-the-app/the-grid/filtering and sorting#Value Lists|value lists]] run on
+two endpoints, and the list endpoint's GET has lookups for the values they list. This page
 is for calling them yourself — from a script, or from a dashboard of your own. Which
 columns get a value list is explained under
-[[model-your-data/serializers#Value lists and the filter bar|Serializers]].
+[[model-your-data/serializers#Value lists|Serializers]].
 
 They take the same sign-in as the rest of Lex App's API, and apply the user's read
 permissions exactly as the grid does;
@@ -27,7 +26,7 @@ shows a request with a bearer token. Paths are relative to Lex App's own address
     {"name": "notes", "type": "string", "value_list": false, ...}
   ],
   "id_field": "id",
-  "list_ui": {"hide_actions_column": false, "filter_bar": ["status", "region"]}
+  "list_ui": {"hide_actions_column": false}
 }
 ```
 
@@ -37,9 +36,6 @@ shows a request with a bearer token. Paths are relative to Lex App's own address
   [Security switches](#security-switches).
 - The grid offers a value list on every column where it is `true`, except the primary
   key.
-- `list_ui.filter_bar` is the list's default filter bar — `Meta.filter_bar`, or the
-  model's `filter_bar` — with every name that isn't a value-list column already dropped.
-  A column the caller may not filter by leaves their bar too.
 
 ## A column's values: `filter_values`
 
@@ -168,7 +164,7 @@ what these endpoints say:
 
 | Switch | On, the default | Off |
 |---|---|---|
-| `LEX_SEC_FILTERS` | A column the caller may not filter by has no value list for them: `filter_values` refuses it with the `400` above, the fields endpoint gives it `value_list: false`, `list_ui.filter_bar` leaves it out, and a GET lookup on it answers `400` `FILTER_NOT_ALLOWED`. A `filterModel` entry on such a field is ignored, as the list ignores it | The column has its value list, and filters on it apply |
+| `LEX_SEC_FILTERS` | A column the caller may not filter by has no value list for them: `filter_values` refuses it with the `400` above, the fields endpoint gives it `value_list: false`, and a GET lookup on it answers `400` `FILTER_NOT_ALLOWED`. A `filterModel` entry on such a field is ignored, as the list ignores it | The column has its value list, and filters on it apply |
 | `LEX_SEC_FAIL_CLOSED` | A row whose permission check raises is not counted | Such a row is counted wherever the list shows it |
 | `LEX_SEC_NOT_FOUND` | When the model's `permission_list` refuses the caller, `filter_values` answers `404`, as the list does | `filter_values` lists the values, as the list lists the rows |
 
@@ -177,7 +173,7 @@ it.
 
 ## See also
 
-- [[using-the-app/the-grid/filtering and sorting|Filtering & Sorting]] — value lists and the filter bar, as users see them
-- [[model-your-data/serializers#Value lists and the filter bar|Serializers]] — which columns get a value list, and `Meta.filter_bar`
+- [[using-the-app/the-grid/filtering and sorting|Filtering & Sorting]] — value lists, as users see them
+- [[model-your-data/serializers#Value lists|Serializers]] — which columns get a value list
 - [[access-and-dashboards/streamlit/embedding app pages#Filtering the embedded table|Embedding App Pages]] — an embedded table's filters, set from Python
 - [[reference/Environment Variables#Security|Environment Variables]] — the security switches value lists follow

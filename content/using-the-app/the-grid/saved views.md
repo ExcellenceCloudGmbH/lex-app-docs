@@ -14,7 +14,6 @@ A saved view captures the complete state of your grid:
 
 - Column order and widths
 - Active filters and filter values
-- The [[using-the-app/the-grid/filtering and sorting#The Filter Bar|filter bar]]'s columns
 - Sorting (columns and direction)
 - Grouping and pivot configuration
 - Row height / density setting
@@ -82,7 +81,6 @@ Hover over any user-created preset in the dropdown and click the **trash icon** 
 | Column widths | ✅ |
 | Column visibility | ✅ |
 | Filters and filter values | ✅ |
-| Filter bar columns | ✅ |
 | Sort order | ✅ |
 | Row grouping | ✅ |
 | Pivot mode configuration | ✅ |

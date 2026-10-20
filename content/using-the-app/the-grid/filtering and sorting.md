@@ -24,7 +24,9 @@ Every column header has a built-in filter. Click the menu icon on any column to 
 
 ![The grid with a filter in force — five funds narrowed to one](images/the-grid/filter-applied.svg)
 
-Filters wait for **Apply**. Type a condition or tick values, then click **Apply** (or press Enter) and the table refreshes — nothing reloads while you're still typing. **Reset** clears that column's filter. The date-and-time filter is the exception: it applies as soon as you pick a date, and has its own **Clear Filter** button.
+A value list applies as you tick: each value you tick or untick refreshes the table at once, and the list stays open for the next one. **Reset** unticks them all. A condition waits for **Apply**: type it, then click **Apply** (or press Enter) and the table refreshes — nothing reloads while you're still typing. **Reset** clears it. The date-and-time filter needs no Apply either: it applies as soon as you pick a date, and has its own **Clear Filter** button.
+
+The **Filters** tab on the grid's right edge holds the same filters, column by column, so you can set several without opening each column's menu.
 
 ### Text Filters
 
@@ -47,7 +49,7 @@ When a column references another model (like an invoice's customer), its filter 
 
 ## Value Lists
 
-Most columns list their own values, each with the number of rows that have it. Tick the values you want and click **Apply**: the table keeps the rows that have any of them.
+Most columns list their own values, each with the number of rows that have it. Tick the values you want, and the table keeps the rows that have any of them.
 
 - **Nothing ticked means no filter.** A list opens with nothing ticked, and there is no *Select All*. You pick what to include, never what to leave out.
 - **Every value shows its row count**, so you can see how many invoices are *Overdue* before you tick it.
@@ -55,11 +57,11 @@ Most columns list their own values, each with the number of rows that have it. T
 - **A ticked value stays.** If the other filters leave no rows with a value you ticked, it stays in the list with a count of 0, so you can still untick it.
 - **Values appear by label.** Related records appear by name, choices by their label, yes/no columns as *Yes* and *No*, and dates as `YYYY-MM-DD`. Values are sorted by label — numbers in numeric order — with *(Blank)* last.
 - **(Blank) is a value too.** It stands for rows with nothing in the column. On a text column, empty text counts as blank, so *(Blank)* finds both.
-- **Up to 1,000 values.** The column menu lists at most 1,000 values, and its search box searches those. For a column with more, add it to the [filter bar](#the-filter-bar), whose search asks the server.
+- **Up to 1,000 values.** A list shows at most 1,000 values, and its search box searches those.
 
 The lists only count rows you're allowed to see, and never offer a value you couldn't see in the grid.
 
-On text, whole-number and date columns the filter has two parts: the condition on top and the value list below. Use either or both — with both, a row has to match both.
+On text, whole-number and date columns the filter has two parts: the condition on top and the value list below. Use either or both — with both, a row has to match both. Each part has its own **Reset**, and only the condition waits for **Apply**.
 
 ### Which Columns Have a Value List
 
@@ -67,24 +69,11 @@ On text, whole-number and date columns the filter has two parts: the condition o
 |---|---|
 | Text, whole numbers, dates, yes/no, choices, foreign keys | Long text, decimal numbers, date and time, JSON, files, many-to-many, the ID column |
 
-A few columns keep their conditions even though their type would get a list: a column the [[model-your-data/serializers#Value lists and the filter bar|serializer]] computes or reformats, for example. And a developer can turn value lists off for a whole table — the audit log has none.
+A few columns keep their conditions even though their type would get a list: a column the [[model-your-data/serializers#Value lists|serializer]] computes or reformats, for example. And a developer can turn value lists off for a whole table — the audit log has none.
 
 ### Saved Views Keep Working
 
 Views saved before value lists existed still open as they did. When the view loads, its filters are converted to the column's new filter: a foreign-key or yes/no filter becomes a value list with that one value ticked, and a text, number or date condition carries on as the column's condition. A saved filter that can't be shown that way is dropped rather than half-applied.
-
-## The Filter Bar
-
-A list can show a row of dropdowns between the toolbar and the grid, one per chosen column. Each is the same value list as that column's filter, with counts, chips for the ticked values and a search box. Unlike the column filter, a pick in the bar applies straight away, and the dropdown stays open for the next pick.
-
-- **Add a column**: open the column's menu and choose **Show in filter bar**. Only columns with a value list offer it.
-- **Remove a column**: click the **×** next to its dropdown. Its filter stays — the column header still shows it — so untick its values first if you want them gone.
-- **Untick a value**: click the × on its chip.
-- **Search the server**: the dropdown shows up to 200 values, and says *More values — type to search* when there are more. Typing asks the server, so it finds values beyond the ones shown.
-
-The bar and the column filters are one filter seen from two places: tick a value in either and the other shows it. On a column that also has a condition, the bar edits only the value list and says *+ condition in the column filter*. An empty dropdown reads *All*.
-
-Which columns the bar starts with is up to your developer, and you can change it. Adding or removing a column changes the view like any other edit, and [[using-the-app/the-grid/saved views|saving the view]] keeps your bar, so each saved view remembers its own. A table embedded in a dashboard can be given a bar of its own, too. With no columns, the bar isn't shown.
 
 ## Multi-Column Sorting
 

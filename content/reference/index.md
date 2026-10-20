@@ -39,7 +39,7 @@ the third is the HTTP side of the grid's value lists.
 - [[reference/LexLogger API|LexLogger API]] — every `LexLogger` method with examples
 - [[reference/CLI Commands|CLI Commands]] — every `lex` command at a glance
 - [[reference/Report File Fields|Report File Fields]] — generated Excel and PDF files on report models
-- [[reference/Grid Filter API|Grid Filter API]] — the endpoints behind value lists and the filter bar, and the list's `__in`, `__exact` and `__blank` lookups
+- [[reference/Grid Filter API|Grid Filter API]] — the endpoints behind the grid's value lists, and the list's `__in`, `__exact` and `__blank` lookups
 
 ## Configuration
 

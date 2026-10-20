@@ -320,8 +320,7 @@ If the name isn't a serializer registered for that model, the embedded request r
 
 ## Filtering the embedded table
 
-An embedded table can open already filtered, show a filter bar of your choosing, and
-tell Python when its filters change:
+An embedded table can open already filtered and tell Python when its filters change:
 
 ```python
 from lex.lex_app.streamlit import lex_view
@@ -329,7 +328,6 @@ from lex.lex_app.streamlit import lex_view
 event = lex_view(
     "invoice",
     filters={"status": ["open", "overdue"], "region": 3},
-    filter_bar=["status", "region", "customer"],
     on_filter=True,
     key="invoices",
 )
@@ -338,14 +336,15 @@ event = lex_view(
 | Argument | Default | What it does |
 |---|---|---|
 | `filters` | `None` | Ticks values in the table's value lists — [Setting the filters](#setting-the-filters) |
-| `filter_bar` | `None` | Picks the filter bar's columns; `[]` hides the bar — [Choosing the filter bar](#choosing-the-filter-bar) |
 | `on_filter` | `False` | Sends a `"filter"` event when the table's filters change — [Hearing filter changes](#hearing-filter-changes) |
 
-All three work on the table's value-list columns — the ones whose filter lists their
+`filters` works on the table's value-list columns — the ones whose filter lists their
 values with a row count, described in
 [[using-the-app/the-grid/filtering and sorting#Value Lists|Filtering & Sorting]].
-`on_filter`, and any change to `filters` after the table's first load, also need one
-setting on the Lex App side: see [Allowed sites](#allowed-sites).
+Inside the frame, users filter the table the way they do in the app: in its column
+filters and the **Filters** tab. `on_filter`, and any change to `filters` after the
+table's first load, also need one setting on the Lex App side: see
+[Allowed sites](#allowed-sites).
 
 ### Setting the filters
 
@@ -390,26 +389,6 @@ The first filters travel in the frame's address. A long list — a few hundred i
 kept out of it once the encoded filters pass 2,000 characters, and sent into the frame
 when the frame has loaded instead, so it needs [Allowed sites](#allowed-sites) just
 like a later change.
-
-### Choosing the filter bar
-
-`filter_bar` lists the columns of the embedded table's
-[[using-the-app/the-grid/filtering and sorting#The Filter Bar|filter bar]], in order:
-
-```python
-lex_view("invoice", hide_toolbar=True, filter_bar=["status", "region"])
-```
-
-`[]` hides the bar. Leave the argument out and the table shows the bar it would show
-anyway — its saved view's, or the default its
-[[model-your-data/serializers#Value lists and the filter bar|serializer]] declares.
-It applies to the table the embed opened with, and a name that isn't a value-list
-column is dropped with a warning in the browser console. Pass a list: a single name as
-a bare string raises `TypeError`.
-
-`hide_toolbar` leaves the bar in place: on a dashboard it is often the only control a
-table needs. `filter_bar` is part of the frame's address, so changing it between
-reruns reloads the frame.
 
 ### Hearing filter changes
 
@@ -510,8 +489,8 @@ leaves it alone.
 
 Neither makes the grid read-only. Whether a cell can be edited in place is
 decided by the user's permissions, and both options leave that untouched. Nor
-does either hide the [filter bar](#choosing-the-filter-bar), which is not part of
-the toolbar.
+does either hide the column filters or the **Filters** tab, which belong to the
+grid, not the toolbar.
 
 > [!note] `hide_actions` needs a newer interface
 > It takes effect with a lex-app-frontend release newer than 2.2.0. Up to 2.2.0
@@ -563,6 +542,6 @@ host page and stays in step with Lex App in both directions, without a reload �
 
 - [[access-and-dashboards/streamlit/embedding app controls|Embedding App Controls]] — the same idea for a single control rather than a whole page
 - [[model-your-data/serializers|Serializers]] — what `serializer=` selects, and how to register one
-- [[using-the-app/the-grid/filtering and sorting|Filtering & Sorting]] — value lists and the filter bar, as users see them
+- [[using-the-app/the-grid/filtering and sorting|Filtering & Sorting]] — value lists, as users see them
 - [[reference/Environment Variables|Environment Variables]] — `LEX_EMBED_ALLOWED_ORIGINS` and the dashboard settings
 - [[access-and-dashboards/streamlit/standalone dashboards|Standalone Dashboards]] — the page these calls usually live on
