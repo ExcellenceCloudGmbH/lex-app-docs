@@ -61,6 +61,12 @@ Two things about the proxy's access log are worth knowing, because they were cho
 
 Query strings are never written out, only noted as present. The embedded dashboard is bootstrapped with a token in the URL, and an access log echoing it would copy that credential into log storage and every downstream shipper.
 
+## Usage metrics
+
+An instance reports how it is used, so that Excellence Cloud can see which features and instances are in use and how reliably calculations run. The web interface sends the name of each product area a person opens — the grid, a record, creating a record, history, the audit log, calculations and their logs, processes, reports, analytics, dashboards, search, exports, files, monitoring — whether it ran embedded in another page, the instance's identifier, and a hashed user id that is specific to this instance and cannot be linked across instances. It never sends a page address, a record, a search term, a file name or a name. These events go to PostHog (EU cloud, Frankfurt), listed among our subprocessors.
+
+The instance itself sends Excellence Cloud's controller the outcome, the duration and the data model of each calculation run, together with a run identifier that can include the record's own number and the number of its audit log entry, and, once an hour, the version it runs, the commit it was built from, and whether the switch is on. Set `LEX_USAGE_METRICS=false` to turn the interface and calculation reporting off; the hourly version report then says the switch is off.
+
 ## What to alert on
 
 | Signal | Meaning |
