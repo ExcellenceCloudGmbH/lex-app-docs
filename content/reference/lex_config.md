@@ -29,6 +29,22 @@ flowchart LR
 | `TAB_DISPLAY_NAMES`       | Friendly labels for the tabs in the record-detail view                               | [[using-the-app/record-detail/index]]                                              |
 | `DEFAULT_SERIALIZER_NAME` | Name of the serializer the framework picks when no explicit one is requested         | [[model-your-data/serializers]]                                         |
 
+### Extension keys (3.0)
+
+These keys let a project extend Lex App without overriding Django settings. Every one is optional; unset, Lex App behaves as before. They are read lazily — after the app has loaded — so `lex_config.py` may import your own code, and a dotted path that cannot be imported stops the server with an error naming the key.
+
+| Key | Purpose | Documented in |
+|---|---|---|
+| `API_URLCONF` | Module with `urlpatterns` for your own endpoints | [[access-and-dashboards/custom-api]] |
+| `API_PREFIX` | Where they are mounted. Default `"api/project/"` | [[access-and-dashboards/custom-api]] |
+| `PUBLIC_PATHS` | Paths below `API_PREFIX` that answer without sign-in | [[access-and-dashboards/custom-api]] |
+| `AUTHENTICATION_CLASSES` | DRF authentication classes tried before Lex App's own | [[access-and-dashboards/custom-api#Your own authentication and middleware]] |
+| `MIDDLEWARE_EXTRA` | Middleware per slot: `{"first": [...], "after_auth": [...], "last": [...]}` | [[access-and-dashboards/custom-api#Your own authentication and middleware]] |
+| `EXCEPTION_HANDLER` | Your own DRF exception handler, replacing Lex App's | [[access-and-dashboards/custom-api#Errors and database rules]] |
+| `DB_ERROR_MAPPER` | Function turning a database error into a `LexActionError` | [[access-and-dashboards/custom-api#Errors and database rules]] |
+| `GENERIC_API` | Who may use the generic `api/*` endpoints: `"all"` (default), `"superuser"`, `"off"` | [[access-and-dashboards/custom-api#Keep the generic API for operators only]] |
+| `SCHEMA` | OpenAPI schema of your endpoints: `title`, `version`, `include`, `public` | [[access-and-dashboards/custom-api#OpenAPI schema]] |
+
 ## `INITIAL_DATA`
 
 ```python title="lex_config.py"

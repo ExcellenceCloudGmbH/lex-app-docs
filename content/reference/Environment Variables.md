@@ -155,6 +155,7 @@ fill it in.
 | `DATABASE_DOMAIN` | Database host for those same three profiles. |
 | `POSTGRES_USERNAME` | Database user for those same three profiles. Default `django`. |
 | `POSTGRES_PASSWORD` | Database password for those same three profiles. |
+| `DATABASE_PORT` | Port of every PostgreSQL profile, including `default`. Default `5432`. |
 
 > [!note]
 > If one of these is missing, the connection is built with the literal string
@@ -162,8 +163,8 @@ fill it in.
 > error naming a host or database you have never heard of. That string in a
 > stack trace means "an env var was not set", not "DNS is broken".
 
-The `default` profile reads none of the variables above. It always connects to
-`localhost:5432` as `django`, with the password `lundadminlocal`, to a database
+Apart from `DATABASE_PORT`, the `default` profile reads none of the variables above. It always connects to
+`localhost` (port `DATABASE_PORT`, default `5432`) as `django`, with the password `lundadminlocal`, to a database
 named `db_` plus your project folder's name in lower case. The `local` profile
 keeps its SQLite file at the project root, named after the project folder:
 `TeamBudget.sqlite3` for the tutorial. Setting up either is covered in
@@ -318,6 +319,23 @@ Knobs that change how the framework behaves rather than what it connects to.
 | `LEX_METADATA_CACHE_SECONDS` | `30` | How long a browser may reuse the model-structure response. This is the staleness budget for a permission change: a revoked permission can stay visible in the model tree for at most this long. Set `0` where that is unacceptable — the tree is then re-fetched on every navigation. |
 | `LEX_SYNC_STREAMING_EXPANSION` | `true` | Whether synchronous batch expansion streams combinations one at a time (the memory-safe path) or materialises them all first. Set `false` for a one-line rollback to the old behaviour without a redeploy. See [[calculations/batch calculations]]. |
 | `LEX_ACTIVATION_APPLIER_LIVENESS_SECONDS` | `300` | How recent the in-database activation applier's heartbeat must be before lex-app treats it as alive and stops arming its own timers for future-dated history rows. pg_cron fires every minute, so five minutes absorbs a slow tick or a failover. See [[history-and-audit/bitemporal history]]. |
+
+## Security defaults
+
+Since 3.0 the hardenings below are on; these variables switch them off while
+you migrate. See [[ship-and-operate/security-defaults]] for what each one
+protects.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LEX_LEGACY_SECURITY` | unset | `true` restores the pre-3.0 behaviour for every flag below. Deprecated; logs a warning once. |
+| `LEX_SEC_TRACEBACKS` | on | Error responses carry no traceback unless `DEBUG` is on |
+| `LEX_SEC_OIDC_REDIRECT` | on | `next`/`fail` on `/oidc/*` must stay on the site or a trusted origin |
+| `LEX_API_TRACEBACKS` | unset | `true` shows tracebacks in error responses even with `DEBUG` off |
+| `LEX_ERROR_FORMAT` | unset | `structured` makes every error body `{code, detail, error, fields}` |
+| `LEX_CORS_ALLOWED_ORIGINS` | unset | Comma-separated origins for credentialed cross-origin requests; replaces the permissive CORS defaults when set |
+
+A `LEX_SEC_<FLAG>` value (`true`/`false`) always wins over `LEX_LEGACY_SECURITY`.
 
 ## Used only by the history backfill script
 
