@@ -181,8 +181,51 @@ LexLogger output is rendered in the frontend in real-time:
 - **Calculation Log Panel** — a slide-out drawer during calculation showing live Markdown-rendered output as the calculation progresses, including background calculations after an initial HTTP `202` response
 - **Execution tree** — the left pane lists every node — model instances *and* the string sections above — so you can click straight to the part of the log you care about
 - **Collapsible sections** — in the consolidated log, any section can be folded away; collapsing a heading hides its whole sub-tree, so you can focus on one phase of a long run at a time
-- **PDF Export** — the calculation log for any record can be exported as a PDF that renders just like the on-screen view: headings, tables, fenced code blocks and even strikethrough survive the export, which makes it usable as compliance evidence
-- **Complete subtree export** — download a log together with all of its nested child logs as one PDF by adding `include_descendants=true` to the download request
 - **Rich Rendering** — headings, tables, DataFrames, and code blocks are all rendered with proper formatting and syntax highlighting
 
 See the [[using-the-app/record-detail/index|Record Detail]] page for how logs appear in context.
+
+## Exporting a log
+
+A calculation log can be downloaded as a PDF, either whole or from any node in
+the execution tree down.
+
+**The export renders what the screen renders.** That is a deliberate contract,
+not a coincidence: a log that reads as a formatted report on screen and arrives
+as a wall of `##` and `|` characters in the PDF is useless as evidence, which is
+exactly what a customer reported in July 2026. Two things were matched to the
+log view to fix it and are kept matched:
+
+- **The same markdown surface.** Tables, fenced code blocks and strikethrough
+  are enabled because the log view renders them. One tempting extra —
+  `code-friendly` — is deliberately *not* enabled: it silently disables
+  `__bold__` inside a word, which the log view does render, so the PDF would
+  have diverged from the screen without anything failing.
+- **A stylesheet mirroring the log view.** Bordered headings, shaded monospace
+  code blocks, bordered tables with a tinted header row, a left-rail blockquote.
+  Long lines wrap rather than run off the sheet.
+
+The contract is worth stating plainly: **anything the log view renders appears
+rendered in the PDF, never as raw markdown syntax.**
+
+### Exporting one section
+
+The execution tree is what makes a partial export meaningful. Each node is a
+section you opened with `model_logging_context`, so "export this part" means
+"export this node and everything under it".
+
+Add `include_descendants=true` to the download request to take a node together
+with all of its nested children as a single PDF:
+
+```
+GET .../download-markdown-pdf?include_descendants=true
+```
+
+Without it you get that node alone. On a long run with several phases, that is
+the difference between sending somebody the aggregation step and sending them
+the whole afternoon.
+
+> [!tip]
+> This is the payoff for structuring a log with sections. A calculation that
+> logs everything flat has one node, so there is nothing to export a part of —
+> see [[calculations/logging#Grouping logs into sections|Grouping logs into sections]] above.
