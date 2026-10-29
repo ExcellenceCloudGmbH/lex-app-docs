@@ -319,6 +319,17 @@ Knobs that change how the framework behaves rather than what it connects to.
 | `LEX_SYNC_STREAMING_EXPANSION` | `true` | Whether synchronous batch expansion streams combinations one at a time (the memory-safe path) or materialises them all first. Set `false` for a one-line rollback to the old behaviour without a redeploy. See [[calculations/batch calculations]]. |
 | `LEX_ACTIVATION_APPLIER_LIVENESS_SECONDS` | `300` | How recent the in-database activation applier's heartbeat must be before lex-app treats it as alive and stops arming its own timers for future-dated history rows. pg_cron fires every minute, so five minutes absorbs a slow tick or a failover. See [[history-and-audit/bitemporal history]]. |
 
+## Usage metrics
+
+None of these four live in a project's own `.env` — all are set by the Instance Controller, per instance. See [[ship-and-operate/monitoring and health#Usage metrics|Usage metrics]] for what each one actually sends.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LEX_USAGE_METRICS` | on | The privacy switch. Unset, empty, `true`, `1`, `yes` or `on` mean on; `false`, `0`, `no` or `off` mean off; any other value is treated as off and logs one warning per process. |
+| `LEX_USAGE_SALT` | — | The HMAC key behind each hashed user id. Generated once per instance (32 random bytes, hex) and delivered the same way as `LEX_API_KEY`. |
+| `POSTHOG_PROJECT_KEY` | — | The public project token the interface initialises PostHog with, one value per environment. Empty means no PostHog. |
+| `POSTHOG_HOST` | `https://eu.i.posthog.com` | PostHog EU ingestion host. |
+
 ## Used only by the history backfill script
 
 `lex/backfill_history_sql.py` is a standalone script that connects on its own
