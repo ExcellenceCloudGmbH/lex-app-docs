@@ -296,7 +296,7 @@ With this setting, the framework-generated serializer is additionally registered
 ## Value lists
 
 In the grid, most columns filter by a *value list*: the column's values, each with
-its row count, ready to tick — see
+its row count, ready to pick — see
 [[using-the-app/the-grid/filtering and sorting#Value Lists|Filtering & Sorting]].
 Whether a column gets one depends on its type, on your serializer, on the model and
 on the user. A column without one keeps its condition filter, exactly as before.

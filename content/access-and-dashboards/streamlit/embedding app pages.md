@@ -335,7 +335,7 @@ event = lex_view(
 
 | Argument | Default | What it does |
 |---|---|---|
-| `filters` | `None` | Ticks values in the table's value lists — [Setting the filters](#setting-the-filters) |
+| `filters` | `None` | Picks values in the table's value lists — [Setting the filters](#setting-the-filters) |
 | `on_filter` | `False` | Sends a `"filter"` event when the table's filters change — [Hearing filter changes](#hearing-filter-changes) |
 
 `filters` works on the table's value-list columns — the ones whose filter lists their
@@ -348,24 +348,24 @@ table's first load, also need one setting on the Lex App side: see
 
 ### Setting the filters
 
-`filters` maps a column name to the values to tick:
+`filters` maps a column name to the values to pick:
 
 | You pass | It means |
 |---|---|
-| A list — `["open", "overdue"]` | Tick these values |
-| One value — `3` | Tick just this one |
-| `None`, or an empty list | Untick all of the column's values |
+| A list — `["open", "overdue"]` | Pick these values |
+| One value — `3` | Pick just this one |
+| `None`, or an empty list | Clear all of the column's values |
 
 Pass stored values, not the labels the grid shows: a related record's id, `True` or
 `False`, a date as a `date` or as `"2026-03-31"`, a choice's stored value. `None`
-inside a list ticks *(Blank)*. Strings, numbers, booleans, dates, `Decimal` and `UUID`
+inside a list picks *(Blank)*. Strings, numbers, booleans, dates, `Decimal` and `UUID`
 are accepted, alone or in a list, tuple or set; anything else raises `TypeError` at the
 call, and so does a `filters` that isn't a dict of column names.
 
 How the table takes them:
 
-- **On top of what it has.** The ticked values of the columns you name are replaced,
-  whatever the saved view or the user had ticked. A condition typed in a column's
+- **On top of what it has.** The picked values of the columns you name are replaced,
+  whatever the saved view or the user had picked. A condition typed in a column's
   filter stays, and so does every other column's filter.
 - **On the table showing.** The first filters go to the table the embed opened with,
   never to another table the user reaches inside the frame. A change you pass later
@@ -382,7 +382,7 @@ How the table takes them:
 > [!note] Keep passing a dict
 > Without an `on_*` flag, `filters` is what switches `lex_view` to the bidirectional
 > component. A call that alternates between a dict and `filters=None` swaps the
-> component for a plain iframe and back, reloading the table each time. To untick a
+> component for a plain iframe and back, reloading the table each time. To clear a
 > column's values, keep the dict and give that column `None`: `filters={"region": None}`.
 
 The first filters travel in the frame's address. A long list — a few hundred ids — is
@@ -399,7 +399,7 @@ them:
 | Payload key | What it holds |
 |---|---|
 | `resource` | The table's model, e.g. `"invoice"` |
-| `filters` | The value-list selections: column name to the ticked keys, e.g. `{"status": ["open", "overdue"]}` |
+| `filters` | The value-list selections: column name to the picked keys, e.g. `{"status": ["open", "overdue"]}` |
 | `filter_model` | The table's whole filter state, conditions included, in AG Grid's filter-model format |
 | `row_count` | How many rows the table has with these filters, or `None` if it couldn't tell |
 
@@ -414,13 +414,13 @@ if event and event["type"] == "filter":
 ```
 
 The event arrives about 300 ms after the table has reloaded; a reload that fails sends
-none. A value list applies on every tick, so with `on_filter=True` the script reruns
-once per tick, not once per Apply.
+none. A value list applies on every pick, so with `on_filter=True` the script reruns
+once per pick, not once per Apply.
 
 Pass a table's filters on to a *different* table — see
 [Linking two tables](#linking-two-tables) below. Don't echo them back into the same
-table's `filters=`: the frame already keeps its own ticks across re-runs, and an echo
-that reaches Python one re-run late can land after the user's next tick and undo it.
+table's `filters=`: the frame already keeps its own picks across re-runs, and an echo
+that reaches Python one re-run late can land after the user's next pick and undo it.
 
 ### Linking two tables
 

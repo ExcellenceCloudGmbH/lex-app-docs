@@ -61,7 +61,7 @@ them. The body:
 | `filterModel` | no | The grid's filter model, in AG Grid's format. Every entry applies except `field`'s own, so the answer is what the *other* filters leave |
 | `selected` | no | The keys ticked now. Each appears in the answer even when no row has it any more. The first 1,000 are read |
 | `search` | no | Keeps the values whose label contains this text, ignoring case — `"no"` keeps *North* |
-| `limit` | no | How many values to return. Default `200`, at most `1000` — the grid's own column filters always ask for `1000` |
+| `limit` | no | How many values to return. Default `200`, at most `1000` — the grid's own column filters ask for `200`, and reach further values with `search` rather than a higher `limit` |
 
 The answer:
 
