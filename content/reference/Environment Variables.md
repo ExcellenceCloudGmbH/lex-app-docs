@@ -118,6 +118,16 @@ than constructing the list by hand.
 > log in. If a deployment is unexpectedly open, check all four before anything
 > else.
 
+## Sign-in sessions
+
+Keycloak decides how long a sign-in lasts: the realm's SSO session idle and
+maximum lifetimes (app realms on the platform: 30 days idle, 90 days at most).
+The app must not end a sign-in earlier than Keycloak does.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LEX_SESSION_COOKIE_AGE_DAYS` | `31` | Lifetime of the app's session cookie, in days. The cookie is renewed while the user is active, so this is how long a sign-in survives *without activity* in this app. Keep it above the realm's idle timeout. A value below `2`, or one that is not a whole number, stops the app at startup. |
+
 ## Mail
 
 | Variable            | Purpose                                                              |
@@ -290,8 +300,8 @@ What each flag does:
 - `EDIT` — `permission_edit`, `permission_delete` and `permission_create` run on
   PATCH, PUT, bulk and `run_step`. A refusal is a 400 with
   `{code, detail, error}` (`EDIT_NOT_ALLOWED`, `DELETE_NOT_ALLOWED`,
-  `CREATE_NOT_ALLOWED`), never a 403: the bundled frontend signs the user out on
-  403.
+  `CREATE_NOT_ALLOWED`), never a 403: bundled frontends released before the
+  sign-out fix signed the user out on any 403.
 - `FILTERS` — list filters and ordering only on fields the caller can see; the
   primary key is always allowed. Otherwise 400 `FILTER_NOT_ALLOWED`.
 - `TRACEBACKS` — no server traceback in error responses unless `DEBUG` or
