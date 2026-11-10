@@ -181,8 +181,35 @@ LexLogger output is rendered in the frontend in real-time:
 - **Calculation Log Panel** — a slide-out drawer during calculation showing live Markdown-rendered output as the calculation progresses, including background calculations after an initial HTTP `202` response
 - **Execution tree** — the left pane lists every node — model instances *and* the string sections above — so you can click straight to the part of the log you care about
 - **Collapsible sections** — in the consolidated log, any section can be folded away; collapsing a heading hides its whole sub-tree, so you can focus on one phase of a long run at a time
-- **PDF Export** — the calculation log for any record can be exported as a PDF that renders just like the on-screen view: headings, tables, fenced code blocks and even strikethrough survive the export, which makes it usable as compliance evidence
-- **Complete subtree export** — download a log together with all of its nested child logs as one PDF by adding `include_descendants=true` to the download request
+- **PDF Export** — the calculation log can be exported as a PDF that renders just like the on-screen view: headings, tables, fenced code blocks and even strikethrough survive the export, which makes it usable as compliance evidence. You choose how much goes into it — one step, a step and everything under it, or the whole calculation (see [[#Downloading the log as PDF]] below)
 - **Rich Rendering** — headings, tables, DataFrames, and code blocks are all rendered with proper formatting and syntax highlighting
+
+### Downloading the log as PDF
+
+The download icon in the log tree's header and the **Download PDF** button on the
+**Details** tab open the same menu, with three choices:
+
+| Menu entry | What the PDF contains | File name |
+|---|---|---|
+| **This step** | The log of the selected node only | `document_<pk>.pdf` |
+| **This step and everything under it** | The selected log followed by all of its nested child logs and sections | `document_<pk>_full.pdf` |
+| **Whole calculation** | Every log of the calculation the selected log belongs to — the whole execution tree, whichever node you started from | `document_<pk>_calculation.pdf` |
+
+Behind the menu is one endpoint, `GET api/download-pdf/<pk>/`, where `<pk>` is the
+log you start from. The `scope` query parameter picks how much it exports:
+
+- `?scope=node` — the default; the one log, exactly as before.
+- `?scope=subtree` — the log and everything under it. `?include_descendants=true`
+  is the older spelling of the same thing and still works.
+- `?scope=calculation` — the whole calculation. When a calculation has several
+  top-level logs, each one gets its own title in the document.
+
+Any other value for `scope` is rejected with `400 Bad Request` rather than quietly
+falling back to a single log.
+
+> [!note]
+> A combined PDF stops at **500 sections**. A calculation larger than that is still
+> exported, and the document ends with a visible note saying it was cut short — open
+> the log tree in the app to read the rest.
 
 See the [[using-the-app/record-detail/index|Record Detail]] page for how logs appear in context.
