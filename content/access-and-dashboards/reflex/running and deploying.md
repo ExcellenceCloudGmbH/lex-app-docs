@@ -55,7 +55,7 @@ Production mode builds an optimised frontend and serves it and the backend on **
 |---|---|
 | **A paid Reflex tier** — Pro, Team or Enterprise — and `REFLEX_ACCESS_TOKEN` | Reflex Enterprise refuses `--env prod` (and `reflex export`) on the free tier |
 | **HTTPS** | the sign-in cookies are `Secure`; over plain HTTP a user is sent back to `/login` after every sign-in |
-| **`REFLEX_API_URL`** and **`REFLEX_DEPLOY_URL`**, both the dashboards' public URL | the browser connects back to the backend on `REFLEX_API_URL`; it is built into the frontend, so set it before the run |
+| **`REFLEX_API_URL`** and **`REFLEX_DEPLOY_URL`**, both the dashboards' public URL | the browser connects back to the backend on `REFLEX_API_URL`; it is built into the frontend, so set it before the run. **Leave `REFLEX_API_URL` unset when the dashboards answer on more than one hostname** — a hosted instance with a customer-owned domain attached does. Unset, Reflex's frontend rewrites its localhost default to `window.location` and one build serves every hostname; pinned, every hostname but that one opens a cross-origin websocket carrying no cookies. List the hostnames in `REFLEX_CORS_ALLOWED_ORIGINS` (Lex App fills it from `LEX_REFLEX_HOSTS`) |
 | **The public callback in Keycloak** | `https://<dashboards>/callback` and `https://<dashboards>/*` — see [[access-and-dashboards/reflex/sessions and authentication#Keycloak: two lists of URLs\|Keycloak: two lists of URLs]] |
 | **`IS_REFLEX_ENABLED=true`** and **`REFLEX_URL`** on the Lex App backend | the sidebar entry, and the address it frames |
 
