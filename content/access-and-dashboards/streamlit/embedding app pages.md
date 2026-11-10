@@ -352,10 +352,21 @@ lex_view("investor", extra_params={"my_flag": "true"})
 ### Where the frame points
 
 The frame's address starts from `base_url` when you pass one, and otherwise from
-the `REACT_APP_URL` environment variable, then `LEX_FRONTEND_URL`, and finally
-`http://localhost:8000`. On a deployed dashboard, set one of them. Give a full
-origin with its scheme — `https://app.example.com` — because a bare host ends up
-as a relative address.
+the `REACT_APP_URL` environment variable, then `LEX_FRONTEND_URL`, then the
+application's own hostname, and finally `http://localhost:8000`.
+
+That third step is what a deployed dashboard normally uses, and it is not simply
+`DOMAIN_HOSTED`: it is the application hostname on the **same registrable domain
+as the dashboard you are in**. A dashboard served at
+`streamlit.app.customer.com` frames `app.customer.com`, not the platform
+hostname — a frame whose origin is on a different registrable domain from the
+page around it is a third-party context, and the browser withholds its cookies,
+so the framed page cannot stay signed in. See
+[[ship-and-operate/custom domains|Custom domains]].
+
+Set `REACT_APP_URL` or `LEX_FRONTEND_URL` only when the shell is on neither
+host. Give a full origin with its scheme — `https://app.example.com` — because a
+bare host ends up as a relative address.
 
 With an `on_*` flag, that same origin is the only one whose messages are let
 through. If the frame is actually served from another — `http` against
