@@ -6,22 +6,22 @@ A hosted instance is reachable at `<subdomain>.lit.<platform domain>` from the m
 
 The platform hostname never goes away. It keeps resolving through the platform's own DNS and certificate, which is what operator access and uptime probing use, precisely so that neither depends on your DNS.
 
-| Page section | Answers |
-|---|---|
-| [What gets attached](#what-gets-attached) | The application, and a hostname per dashboard |
-| [What happens to the platform address](#what-happens-to-the-platform-address) | Attached, promoted, and the way back |
+| Page section                                                                              | Answers                                                                |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [What gets attached](#what-gets-attached)                                                 | The application, and a hostname per dashboard                          |
+| [What happens to the platform address](#what-happens-to-the-platform-address)             | Attached, promoted, and the way back                                   |
 | [Why the dashboards get their own hostnames](#why-the-dashboards-get-their-own-hostnames) | The browser rule that makes a shared domain necessary, not merely tidy |
-| [What the instance has to know](#what-the-instance-has-to-know) | The variables, and what reads each one |
+| [What the instance has to know](#what-the-instance-has-to-know)                           | The variables, and what reads each one                                 |
 
 ## What gets attached
 
 A custom domain is attached in the Instance Controller, under an instance's **Domains** tab. You give the application hostname — `app.customer.com`, or the root `customer.com` — and tick which of the instance's dashboards should move with it. Each dashboard becomes a label in front of the application hostname:
 
-| Role | Hostname |
-|---|---|
-| The application | `app.customer.com` |
+| Role                 | Hostname                     |
+| -------------------- | ---------------------------- |
+| The application      | `app.customer.com`           |
 | Streamlit dashboards | `streamlit.app.customer.com` |
-| Reflex dashboards | `reflex.app.customer.com` |
+| Reflex dashboards    | `reflex.app.customer.com`    |
 
 Each one is a separate hostname at the edge, with its own DNS record for you to create, its own ownership check and its own certificate, so they can be in different states at the same time. The Domains tab shows the records and the state of each.
 
@@ -37,7 +37,7 @@ Attaching and promoting are deliberately two steps.
 
 **Promoted.** The custom hostname becomes the address the instance presents itself as. It is what generated links use, what the running application sees as its own host, and where sign-in comes back to. The platform hostname stops serving and permanently redirects there, apart from `/api/health`, which keeps answering directly so that platform probing does not depend on your DNS.
 
-Promotion happens on its own once the certificate is live, unless you clear *"Make this the instance's address as soon as it is verified"* when attaching. It is retried on each check until it succeeds, so a promotion that could not run at that moment is not lost.
+Promotion happens on its own once the certificate is live, unless you clear _"Make this the instance's address as soon as it is verified"_ when attaching. It is retried on each check until it succeeds, so a promotion that could not run at that moment is not lost.
 
 **Switching back** is one click. The role returns to its platform hostname, which starts serving again, and the custom hostname redirects there instead — the way out when a DNS change breaks a domain. A hostname you switch back by hand stays switched back; it is not re-promoted by the next check.
 
@@ -46,7 +46,7 @@ Promotion happens on its own once the certificate is live, unless you clear *"Ma
 
 ## Why the dashboards get their own hostnames
 
-A Streamlit or Reflex dashboard is shown inside an `<iframe>` in the application. When the frame's origin is on a different *registrable domain* from the page around it — `customer.com` versus `excellence-cloud.de` — the browser treats it as a third-party context. Safari blocks such a frame's cookies outright and Chrome is removing them, so the dashboard inside cannot hold the session it just signed in with: it loads, is refused, and reloads.
+A Streamlit or Reflex dashboard is shown inside an `<iframe>` in the application. When the frame's origin is on a different _registrable domain_ from the page around it — `customer.com` versus `excellence-cloud.de` — the browser treats it as a third-party context. Safari blocks such a frame's cookies outright and Chrome is removing them, so the dashboard inside cannot hold the session it just signed in with: it loads, is refused, and reloads.
 
 That is why the dashboards are offered alongside the application domain rather than left on the platform host. With `streamlit.app.customer.com` attached, a user on `app.customer.com` is framed a dashboard on their own registrable domain, and the frame is first-party again. The application picks the dashboard hostname per request, from the host the page itself was served on, so the platform hostname and the custom one both work while a domain is only attached.
 
@@ -56,11 +56,11 @@ If no dashboard hostname shares a domain with the page, the canonical one is fra
 
 The hosting platform writes three variables into the instance when, and only when, a custom domain is attached. Each lists every hostname that role answers on, comma separated, canonical first:
 
-| Variable | Read by |
-|---|---|
-| `LEX_APP_HOSTS` | `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`, so Django accepts the hostname instead of answering `400 Bad Request`; and the dashboard proxy, so a shell on any of them may renew a dashboard's token |
-| `LEX_STREAMLIT_HOSTS` | The dashboard proxy, which builds its sign-in callback from the hostname the request arrived on — an allow-list, so a forged `Host` header cannot steer the redirect |
-| `LEX_REFLEX_HOSTS` | Reflex's websocket CORS, and the frame's choice of dashboard hostname |
+| Variable              | Read by                                                                                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LEX_APP_HOSTS`       | `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`, so Django accepts the hostname instead of answering `400 Bad Request`; and the dashboard proxy, so a shell on any of them may renew a dashboard's token |
+| `LEX_STREAMLIT_HOSTS` | The dashboard proxy, which builds its sign-in callback from the hostname the request arrived on — an allow-list, so a forged `Host` header cannot steer the redirect                                |
+| `LEX_REFLEX_HOSTS`    | Reflex's websocket CORS, and the frame's choice of dashboard hostname                                                                                                                               |
 
 Without them an instance only knows its canonical hostname, which is exactly the behaviour of an instance that has no custom domain. That is also why an instance has to run a recent enough infrastructure module before a domain can be attached to it: an older one routes the hostname without telling the processes behind it, and they reject what they have never heard of. The Instance Controller refuses the attach and says which version is needed.
 
