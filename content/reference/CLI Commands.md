@@ -211,6 +211,14 @@ lex rebase_incident_datetimes --cutoff 2026-07-10T00:00:00+00:00 --apply
 > [!note]
 > If you use worker recovery, two standalone console scripts live outside the `lex` command tree: `lex-recovery-supervisor` (the always-on sweep loop) and `lex-recovery-beat` (the admin-scheduled recovery worker). See [[calculations/celery and async calculations|Celery & async calculations]].
 
+## Scheduling Commands
+
+| Command | What It Does |
+|---|---|
+| `lex run_scheduler` | Run the [[calculations/scheduled jobs\|scheduled-jobs]] clock in the foreground until stopped (SIGTERM or Ctrl-C). `--once` syncs the `@lex_job` schedules, starts what is due, waits for those runs and exits — the form for cron. `--interval N` sets the seconds between ticks (default `LEX_SCHEDULER_TICK_SECONDS`). `--no-sync` skips creating and updating the schedules declared with `@lex_job(schedule=...)`. |
+
+The backend runs this clock by itself, so most instances never need the command. Running it next to the backend is safe: each slot still runs once.
+
 ## AI Commands
 
 | Command               | What It Does                                                                                                                                |

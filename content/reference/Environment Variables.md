@@ -32,6 +32,16 @@ These control the thread pools that keep long-running calculations from blocking
 | `LEX_CALCULATION_THREADS` | Size of the dedicated pool that runs in-process calculations off the request thread, so calculations never starve API calls, WebSocket auth, or health checks. Default `10`. |
 | `ASGI_THREADS`            | Size of the ASGI sync executor used for regular sync work. Raising it gives the server more headroom for concurrent sync operations. Default `3`.                            |
 
+## Scheduled jobs
+
+The clock that runs [[calculations/scheduled jobs|scheduled jobs]]. It is a thread in the backend that `lex start` serves the app from.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LEX_SCHEDULER_ENABLED` | `true` | Whether the backend starts the clock. Only `true` (any case) turns it on; any other value, `1` and `yes` included, turns it off, and the backend logs a WARNING that no scheduled job will run. `lex run_scheduler` does not read it. |
+| `LEX_SCHEDULER_TICK_SECONDS` | `30` | Seconds between checks for due jobs; a run starts up to this long after its slot. Whole number, minimum 1. Also the default `--interval` of `lex run_scheduler`. |
+| `LEX_SCHEDULER_MISFIRE_GRACE_SECONDS` | `3600` | How late a slot may be and still run, after downtime or a restart. Missed slots within it collapse into one run; a slot later than this is recorded as missed and does not run. Whole number. |
+
 ## Worker recovery & shutdown
 
 These govern how the framework recovers tasks from dead workers and how idle workers shut themselves down. Defaults are production-ready; the idle-shutdown knobs only take effect in a non-local `DEPLOYMENT_TARGET`. See [[calculations/celery and async calculations]] for the full picture.
