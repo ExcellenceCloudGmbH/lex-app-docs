@@ -264,7 +264,7 @@ than a gap:
 > CI checks that it stays complete — a new management command with no entry here
 > fails the build.
 
-## Where lex looks for the project
+## Where the CLI looks for the project
 
 The CLI takes the nearest folder at or above the current directory that holds `lex_config.py` as the project root, before falling back to the git top level. A Lex project in a subfolder of a larger repository (a monorepo) therefore runs with plain `lex <command>` from that subfolder — no `PROJECT_ROOT` or `GIT_CEILING_DIRECTORIES` needed.
 
