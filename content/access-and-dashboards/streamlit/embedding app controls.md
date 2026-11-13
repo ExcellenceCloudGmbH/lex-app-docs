@@ -185,6 +185,12 @@ record that already succeeded returns `SUCCESS` before anyone has clicked. To
 react only to a run that finishes on this page, compare with the status you saw
 last, for instance in `st.session_state`.
 
+Opening the log takes the status's place. A click on the log button travels back
+through the same channel, so from the rerun it causes, the call returns `None`
+until the status next changes — the last status is not sent again. Code that
+needs the status on every rerun should keep the last one it received, in
+`st.session_state`, rather than read it from the call each time.
+
 ## Blocks in a loop
 
 A block's key comes from the line it is written on, so blocks on different lines
