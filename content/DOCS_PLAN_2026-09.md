@@ -170,8 +170,10 @@ images that nobody had reported.
       worth deleting there, but that is housekeeping, not disclosure.
 - [x] `ignorePatterns` — `workshop`, `quartz_style_docs`, `DOCS_AUDIT_*` and `PFE - *`
       were already there; added `DOCS_PLAN_*.md` (`d8098d45`)
-- [ ] Root-level duplicate tree (`features/`, `interface/`, `migration/`,
-      `reference/`, `index.md`, …) — strays outside `content/`, delete
+- [x] Root-level duplicate tree (`features/`, `interface/`, `migration/`,
+      `reference/`, `index.md`, …) — strays outside `content/`, delete. Gone by
+      November 2026: no tracked file is left outside `content/` (checked in
+      [[DOCS_AUDIT_2026-11|the November audit]]).
 - [x] Stray binaries under `content/images/record-detail/` — removed with the rest
       of the customer material (`d8098d45`)
 - [x] Broken wikilinks — **263 internal links checked, none broken**. The first

@@ -44,7 +44,7 @@ The first two are downward, the next two are upward, and the last applies to all
 
 **[ExcellenceCloudGmbH/DemoNorthwindAnalytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics)** is a complete, public Lex App project written for exactly this section. Five funds, their positions and one calculation that values a fund — enough data for every page to show something real, and small enough to read in a sitting.
 
-Its `_streamlit_structure.py` is a ten-page dashboard, and its sidebar is organised the same way this section is — by which way round the embedding goes. Every page on this site has a page there that runs it:
+Its `_streamlit_structure.py` is a dashboard of several pages, and its sidebar is organised the same way this section is — by which way round the embedding goes. Every page on this site has a page there that runs it:
 
 | Its page | What it calls | Documented in |
 |---|---|---|
