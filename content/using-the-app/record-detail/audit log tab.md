@@ -78,6 +78,10 @@ The Audit Log tab uses the same [[using-the-app/the-grid/index|AG Grid]] as ever
 - **Spot failed operations** — their **Status** reads `failure`
 - **Sort by date** — latest first, or trace from the beginning
 
+> [!warning]
+> In Lex App 2.5.0 the **Export** button above this grid downloads rows from the record's
+> own table, not these log entries.
+
 ## Relationship to Other Tabs
 
 | Question | Answer With |

@@ -428,7 +428,7 @@ class InvestorCashflowDetailSerializer(serializers.ModelSerializer):
         return float(obj.amount_eur) / 1000 if obj.amount_eur is not None else None
 ```
 
-The type names are the ones the fields endpoint uses: `string`, `int`, `float`, `boolean`, `date`, `date_time`, `foreign_key` and `json`.
+Use the type names the fields endpoint reports. For a field with no model field behind it, the framework itself derives one of `string`, `int`, `float`, `boolean`, `date`, `date_time`, `foreign_key` and `json`; model fields can also report `file`, `pdf_file`, `xlsx_file` and `image_file`.
 
 ## Where to Put Serializers
 

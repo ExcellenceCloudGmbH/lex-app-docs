@@ -45,7 +45,8 @@ In order, it:
 5. adds the models Keycloak has no resource for, and syncs resources, scopes and
    permissions.
 
-`makemigrations` runs for **your project's app only**. lex-app and the other
+`makemigrations` runs for **your project's app only** — when the settings install one,
+as they do for a project with models; with none, it runs for every app. lex-app and the other
 installed packages ship their own migrations, and one generated for them inside
 site-packages would clash with the next one the package ships. An app label in
 `--makemigrations-args` replaces your project's app; name both if you need both.
@@ -92,9 +93,11 @@ run in a process that has Django set up and with the sign-in proxy in front of
 it: every argument after `streamlit` goes to Streamlit unchanged. With none, it
 is `streamlit run` on lex-app's own `streamlit_app.py`, which serves the
 project's dashboards — see [[access-and-dashboards/streamlit/index|Streamlit Dashboards]].
-A relative path that contains `streamlit_app.py` always means that file in the
-lex-app package; that is how the generated **Streamlit** run configuration,
-`lex streamlit run streamlit_app.py`, works in any project.
+The first argument that contains `streamlit_app.py`, when it is a relative path, is
+resolved against the lex-app package's folder — `apps/streamlit_app.py` becomes
+`<package>/apps/streamlit_app.py`. That is how the generated **Streamlit** run
+configuration, `lex streamlit run streamlit_app.py`, runs the package's own app in any
+project.
 
 | Listener | Default | Moved by |
 | --- | --- | --- |

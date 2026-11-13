@@ -11,7 +11,7 @@ The [[migrating-from-v1/refactoring/index|refactoring series]] moves a V1 projec
 
 - The V2 code is in place: the refactored models in the project folder, `lex-app` installed.
 - Nothing else has to be run first. The workflow takes the table snapshot and builds the freeze manifest itself.
-- Each step runs as `python -m lex <command>` in the project's root, with the interpreter of the project's `.venv` or `venv` when there is one, otherwise with the one running the workflow. For every step it sets `PROJECT_ROOT` to the project and `DATABASE_DEPLOYMENT_TARGET` to the connection profile.
+- Each `lex` step runs as `python -m lex <command>` — steps 3 and 6 run lex's own scripts with `python` — in the project's root, with the interpreter of the project's `.venv` or `venv` when there is one, otherwise with the one running the workflow. For every step it sets `PROJECT_ROOT` to the project and `DATABASE_DEPLOYMENT_TARGET` to the connection profile.
 - The steps work on the database the settings select: the profile in `DATABASE_DEPLOYMENT_TARGET` and, for the deployed profiles, `DATABASE_NAME`. Check those before you start — `--db-name` does not change it.
 
 ```bash
@@ -30,7 +30,7 @@ The steps run in this order. The files they write go to the project's root.
 | 3 | `fix_v1_migration.py` | Rewrites the V1 imports in those files — `generic_app…` becomes `lex…` |
 | 4 | `lex generate_legacy_freeze_manifest --before .lex_tables_before.json` | Only with `--enable-sanitization`: the list step 8 makes — tables nothing in V2 owns — taken before migrating, in `.lex_legacy_freeze_manifest.pre_migrate.json` |
 | 5 | `lex makemigrations <app>` | Generates the migrations from V1's state to your V2 models. `<app>` is the name of the project's folder |
-| 6 | `sanitize_v2_migrations.py` | Only with `--enable-sanitization`: removes from the migration files step 5 wrote every operation on a table in the step 4 list, so `migrate` leaves V1-only tables as they are |
+| 6 | `sanitize_v2_migrations.py` | Only with `--enable-sanitization`: removes from the migration files step 5 wrote the top-level operations on the project's own `<app>_…` tables in the step 4 list — those that name the model — so `migrate` leaves those V1-only tables as they are. Tables in the list without the project's prefix, `generic_app_…` ones say, are not protected |
 | 7 | `lex migrate` | Applies the migrations |
 | 8 | `lex generate_legacy_freeze_manifest --before .lex_tables_before.json` | Lists the tables that existed before, still exist, have a primary key, and that no V2 model and no system table owns — the legacy archive — in `.lex_legacy_freeze_manifest.json` |
 | 9.1 | `lex normalize_is_calculated` | Turns V1's boolean `is_calculated` values into `SUCCESS` and `NOT_CALCULATED` |

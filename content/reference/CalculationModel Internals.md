@@ -61,7 +61,7 @@ class BudgetSummary(CalculationModel):
 | Concern | Handled By |
 |---|---|
 | `self.save()` | Framework saves the record after `calculate()` returns (without bumping `edited_by` / `edited_at`) — except a `@lex_shared_task` `calculate()` on Celery. See [[#Saving the Result]] |
-| Error handling | Framework catches exceptions, sets `ERROR`, and writes the error to the record's `calculation_error_message` (or `error_message`) field if it has one |
+| Error handling | Framework catches exceptions, sets `ERROR`, and writes the error to the record's `calculation_error_message` or `error_message` field if it declares one — with both, in-process runs fill `calculation_error_message`, Celery runs and the recovery sweep `error_message` |
 | State transitions | Lifecycle hooks manage the `IN_PROGRESS → terminal state` flow |
 | Logging context | [[reference/LexLogger API|LexLogger]] automatically links to the current calculation |
 | Transactions | In-process, `calculate()` runs inside `transaction.atomic()` unless `is_atomic = False`; on Celery it runs without one. See [[#Atomic vs Non-Atomic]] |
@@ -72,7 +72,7 @@ class BudgetSummary(CalculationModel):
 
 ## Saving the Result
 
-Who saves the record after `calculate()` returns depends on where the run executes: [[#Celery Integration|on Celery]] when `CELERY_ACTIVE` is on and the broker answers, in-process otherwise.
+Who saves the record after `calculate()` returns depends on where the run executes: [[#Celery Integration|on Celery]] when `CELERY_ACTIVE` is on, in-process otherwise.
 
 | Route | The record is saved by | Lifecycle hooks on that save |
 |---|---|---|
@@ -124,7 +124,7 @@ An edit of an open record through the app (a `PATCH` without `calculate`) resets
 In production, calculations can be dispatched to [Celery](https://docs.celeryq.dev/) workers for background/parallel processing. The framework checks two things automatically:
 
 1. Is the `CELERY_ACTIVE` environment variable set to `true`?
-2. Is Celery available and the broker reachable?
+2. Can the `celery` package be imported? (lex-app does not check that the broker answers: with the broker down, the run is still sent to Celery and fails there.)
 
 If both are true, the calculation is dispatched to a Celery worker — decorated methods are dispatched directly, undecorated methods are wrapped automatically. Otherwise, it runs in-process on the app server. Either way, the record is first saved in `IN_PROGRESS` and then updated again when the calculation finishes.
 
@@ -148,7 +148,7 @@ See [[calculations/celery and async calculations]] for the full setup guide — 
 
 ## Cancelling a Running Calculation
 
-Use `CalculationModel.cancel(instance, recursive=True, reason="")` to stop an in-progress calculation that is currently running on Celery. The framework revokes the worker task, persists `CANCELLED` — writing `reason` (default "Calculation cancelled by user") to the record's error message field if it has one — and cancels active descendants in the same calculation tree as well. The interface has no cancel control: call `cancel()` from code, or send the cancel request over REST (see [[#Calculating and Cancelling over REST]]).
+Use `CalculationModel.cancel(instance, *, recursive=True, reason="")` — `recursive` and `reason` are keyword-only — to stop an in-progress calculation that is currently running on Celery. The framework revokes the worker task, persists `CANCELLED` — writing `reason` (default "Calculation cancelled by user") to the record's error message field if it has one — and cancels active descendants in the same calculation tree as well. The interface has no cancel control: call `cancel()` from code, or send the cancel request over REST (see [[#Calculating and Cancelling over REST]]).
 
 For batch fan-outs whose tasks are spread across multiple worker pods, `cancel()` also consults a **Redis cluster cancel index**: each task registers its ID under the calculation's tree, so `cancel()` discovers and revokes descendant tasks it didn't directly dispatch. It additionally writes a cooperative cancel marker that an unstarted or between-models task checks and self-aborts on. This cascade is gated by `LEX_CLUSTER_CANCEL_ENABLED` and is inert without a reachable Redis.
 

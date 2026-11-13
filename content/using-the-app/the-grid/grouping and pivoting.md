@@ -8,7 +8,7 @@ Sometimes you don't want a flat list — you want a structure. Grouping lets you
 
 ## Row Grouping
 
-Drag any column header to the grouping area above the grid (or right-click a column → **Group by this column**). The area is hidden while nothing is grouped and appears as soon as you start dragging a header. The grid instantly reorganizes into expandable groups.
+Drag any column header to the grouping area above the grid (or right-click a column header and choose **Group by** followed by the column's name). The area is hidden while nothing is grouped and appears as soon as you start dragging a header. The grid instantly reorganizes into expandable groups.
 
 ![Funds grouped by currency, with one group open](images/the-grid/row-grouping.svg)
 

@@ -205,8 +205,9 @@ class ExpenseReport(LexModel):
 ```
 
 `deny()` is what hides a row: the list leaves it out, and asking for it by id answers `404`.
-`allow_fields(set())` looks similar and is not — it admits the row with no fields, so the row is still counted in the
-table's row count, its pages and its value lists, and its detail answers `200 {}`.
+`allow_fields(set())` looks similar and is not — it admits the row with no fields. The row is still counted in the
+table's row count, while its empty entry is dropped from the page (so a page can come up a row short), and its detail
+answers `200 {}`. Only the value lists leave it out.
 
 ## Keycloak Integration
 

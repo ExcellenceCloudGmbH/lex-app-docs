@@ -426,8 +426,9 @@ two.
 
 `as_of` takes an ISO 8601 date-time: `2026-02-01T09:00:00Z`, or with an offset. A value
 without an offset is read as UTC, and a date alone — `2026-02-01` — as midnight UTC of that
-day. A value that cannot be read is ignored: the list answers its current rows, the history
-every version. On the list, `as_of` works only for a model that keeps history; on any other
+day. A value that cannot be read as a date at all is ignored: the list answers its current rows,
+the history every version. A value shaped like a date that does not exist — `2026-13-45` —
+answers `500`. On the list, `as_of` works only for a model that keeps history; on any other
 the request fails with `500`.
 
 | Status | Body | When |
@@ -686,7 +687,7 @@ no socket in. Under `LEX_WS_AUTH=enforce` such a socket is accepted and then clo
 | `ws/model_data_update` | `record_mutation` after each create, change and delete through the REST API |
 | `ws/calculation_logs/<model>_<pk>-<calculationId>` | `calculation_log_real_time`, as log lines are written |
 | `ws/calculations` | `calculation_id` when a run starts |
-| `ws/logs` | Nothing: lex-app 2.5 sends no messages on it |
+| `ws/logs` | Nothing pushed: lex-app 2.5 sends no messages on it. Anything you send gets a fixed `{"STATUS": …}` reply |
 | `ws/health` | Public. Answers any message with `{"status": "Healthy :)"}` |
 
 ### Calculation status
@@ -780,10 +781,10 @@ The routes' own answers:
 | `400` | `{"code": "FILTER_NOT_ALLOWED", "detail": "…", "error": "…"}` | A filter or ordering on a field the caller may not filter by |
 | `400` | `{"error": "Unknown serializer 'summary' for model 'invoice'", "available": ["default"]}` | An unknown `?serializer=`. The fields endpoint answers this with `500` |
 | `401` or `403` | `{"message": "You are not authorized to create a record in Invoice", "detail": "…", "code": "permission_denied"}` | A create or a single delete that the permission methods refuse: `403` for a signed-in user; `401`, with `"code": "not_authenticated"`, `error` and `login_url`, for a caller without a sign-in — an API key included |
-| `404` | `{"detail": "Not found."}` | A record, history or bulk request naming a row the caller may not read; a list whose model's `permission_list` refuses the caller; an unknown route |
+| `404` | `{"detail": "Not found."}` — on an unknown route also `"error": "Not found."` | A record, history or bulk request naming a row the caller may not read; a list whose model's `permission_list` refuses the caller; an unknown route under `api/` |
 | `409` | `{"detail": "…", "code": "calculation_closed"}` | `calculate` on a closed record |
 | `409` | The cancel report | `cancel` with nothing to cancel |
-| `500` | `{"error": "…"}` | Anything else that fails in a create, change or delete. A `traceback` is added only where tracebacks may be shown — see `LEX_API_TRACEBACKS` in [[reference/Environment Variables#Security\|Environment Variables]] |
+| `500` | `{"error": "…"}`; a failing calculation on a change answers `{"message": "…", "traceback": …}` instead | Anything else that fails in a create, change or delete. A `traceback` is added only where tracebacks may be shown — see `LEX_API_TRACEBACKS` in [[reference/Environment Variables#Security\|Environment Variables]] |
 
 ## See also
 
