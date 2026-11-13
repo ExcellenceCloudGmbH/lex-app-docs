@@ -6,7 +6,7 @@ aliases:
 
 A Streamlit dashboard can host the application's *own* controls. Not a screenshot of the Calculate button, and not a re-implementation of it — the real control, wired to the real record, with the same status pill, the same live log and the same permissions as the grid.
 
-**Four pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run everything below against real data:** *The three widgets*, *Shaping a control* — every argument rendered live — *Reacting to a run*, and *Layout and cost*.
+**Two pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run these controls against real data:** *Calculations*, with the three widgets in one `lex_widgets()` block, and *Overview*, where a single **Revalue** control sits beside Streamlit's own metrics and chart.
 
 Use this when a dashboard is where the work happens: a report page where the reader should be able to re-run the calculation they are looking at, without leaving for the grid and coming back.
 

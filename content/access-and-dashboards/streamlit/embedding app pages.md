@@ -7,7 +7,7 @@ aliases:
 
 `lex_view()` puts a real Lex App page — a table, a form, a record — inside a [Streamlit](https://docs.streamlit.io/) script.
 
-**Four pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run everything below against real data:** _A route, embedded_, _Narrowing with a serializer_, _Reacting to events_ — which prints the live envelope beside the table — and _Chaining forms with Flow_.
+**Three pages of [Northwind Analytics](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) run `lex_view` against real data:** _The table_, _A narrower view_ — `serializer=` with the toolbar and actions hidden — and _Reacting to the table_, which shows the event `lex_view` returns. Flows have no page there; the examples below show them.
 
 ![lex_view embedding the application's own table inside a Streamlit page](images/streamlit/lex-view.png)
 
