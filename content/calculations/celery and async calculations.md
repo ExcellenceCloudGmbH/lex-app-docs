@@ -29,7 +29,7 @@ flowchart LR
     H --> I
 ```
 
-The key design principle: **Celery is optional**. If the broker is down or Celery isn't configured, the framework falls back to synchronous processing automatically. Your calculations still run — just sequentially instead of in parallel.
+The key design principle: **Celery is optional**. With `CELERY_ACTIVE` off — or the `celery` package not importable — calculations run in-process: sequentially instead of in parallel, but they run. The variable is the whole switch: lex-app does not check the broker first, so with `CELERY_ACTIVE=true` and the broker down, a run is still sent to Celery and fails there instead of falling back.
 
 ## Prerequisites: Redis (or Memurai on Windows)
 
@@ -96,14 +96,14 @@ class HeavyReport(CalculationModel):
         self.save()
 ```
 
-Called synchronously — with `CELERY_ACTIVE` off, or outside a `WaitForTasks` / `FireAndForget` block — a decorated function returns a tuple `(result, args)`: its own return value and the positional arguments it was called with. Dispatched, it returns Celery's `AsyncResult`.
+Called synchronously — with `CELERY_ACTIVE` off, or outside a `WaitForTasks` / `FireAndForget` block — a decorated function returns a tuple `(result, args)`: its own return value and the positional arguments it was called with — for a decorated `calculate()`, the first of them is the record itself. Dispatched, it returns Celery's `AsyncResult`.
 
 ### The Dispatch Flow
 
 When a user clicks **Calculate ▶️**, the framework decides whether to use Celery or keep the work in-process:
 
 1. Is `CELERY_ACTIVE=true` set in the environment?
-2. Is Celery available and the broker reachable?
+2. Can the `celery` package be imported? (lex-app does not check that the broker answers.)
 
 If **both** are true, the calculation is dispatched to a Celery worker — decorated methods (`@lex_shared_task`) go directly, undecorated ones are wrapped for you. Otherwise, it runs in-process on the app server. In both cases, the record moves to `IN_PROGRESS` right away so the frontend can keep showing progress while the calculation finishes.
 
@@ -223,7 +223,7 @@ When a callback or recovery sweep moves a calculation to a terminal status, that
 
 #### Running the recovery driver
 
-In a multi-worker deployment the sweep runs in its own process alongside your normal workers. Run **one** of two standalone console scripts — either is enough (note: these are separate executables, not `lex` subcommands):
+In a multi-worker deployment the sweep runs in its own process alongside your normal workers. Run **one** of two standalone console scripts — either is enough (note: these are separate executables; the supervisor's loop also runs as `lex run_recovery_supervisor`):
 
 - `lex-recovery-supervisor` — runs the sweep in a dedicated always-on loop, every `LEX_TASK_SUPERVISOR_SCAN_INTERVAL` seconds. `--once` runs a single pass and exits.
 - `lex-recovery-beat` — runs a lightweight Celery worker with an embedded scheduler, so the sweep schedule is **visible in the Django admin** instead of baked into the process.

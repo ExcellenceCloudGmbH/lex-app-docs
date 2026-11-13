@@ -107,8 +107,10 @@ What it looks at:
 
 - **Whole words.** `invoice` finds *invoice*, but `invo` finds nothing.
 - **The records' own fields** — text, dates, decimal amounts and choices. It skips yes/no
-  fields, links to other records, files, and plain whole-number and floating-point
-  fields, so a record isn't found by the name of a record it links to.
+  fields, files, floating-point numbers, ordinary whole-number fields (big, small and
+  positive ones are searched) and foreign-key links. Other links, such as one-to-one
+  links, are matched on the linked record's id, so a record is never found by the name of
+  a record it links to.
 - **Only records you may read.**
 - **Not every table.** Users and calculation logs are never searched, nor are a few
   internal tables.
@@ -131,8 +133,10 @@ Right of the breadcrumbs, the header bar holds:
 
 **Logout** ends your sign-in for every Lex app that shares it, not just this one.
 
-The round speech-bubble button in the bottom-right corner sends feedback to Excellence
-Cloud. It already knows who you are, so there is nothing to sign in to.
+The feedback button sends feedback to Excellence Cloud. It sits a little above the
+bottom corner opposite the sidebar — bottom-right while the sidebar is on the left — and
+isn't shown when the app is embedded in another page. It already knows who you are, so
+there is nothing to sign in to.
 
 ### Deleting Unused SharePoint Files
 

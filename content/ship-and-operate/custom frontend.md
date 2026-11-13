@@ -145,7 +145,7 @@ A request body above about 100 MB never reaches the backend. Cloudflare, the Ing
 
 Cut the file into pieces of exactly `chunk_size` bytes; only the last may be shorter, and a piece of any other size is refused with `400`. Then send the create or update request as usual, with `token` (`lex-chunked-upload:<upload_id>`) as the file field's value in place of the file. The backend joins the pieces, and the record saves as with a direct upload. Delete the upload when the request has finished, whether it succeeded or not.
 
-An upload belongs to the user who started it; anyone else gets `404`. A file may be at most 5 GiB. An upload nobody deletes is removed after 24 hours. These numbers — 32 MiB pieces, 5 GiB, 24 hours — are fixed in 2.5.0: no environment variable or `lex_config.py` setting changes them.
+An upload belongs to the user who started it; anyone else gets `404`. A file may be at most 5 GiB. An upload nobody deletes expires after 24 hours, and is removed the next time anyone starts an upload. These numbers — 32 MiB pieces, 5 GiB, 24 hours — are fixed in 2.5.0: no environment variable or `lex_config.py` setting changes them.
 
 ### Framing a dashboard
 
@@ -156,7 +156,7 @@ To show one of the instance's dashboards inside your app, frame its address — 
 | `model`, `pk` | A model's name, and a record's primary key | Picks the dashboard: with both, the record's; with `model` alone, the model's; with neither, the project's own |
 | `lex_embed` | `true` | Leaves out its own header: the account bar with its sign-out, and on Streamlit the logo. A Streamlit dashboard also opens with its sidebar collapsed |
 | `is_logout_enabled` | `false` | Hides the sign-out control, on a dashboard that still draws its account bar |
-| `lex_app_origin` | `location.origin` | Streamlit only: the origin its `lex_view` tables are framed from, and where it sends its sign-in messages. Ignored unless the instance lists it as an application host, as it does your app's |
+| `lex_app_origin` | `location.origin` | Streamlit only: the origin its `lex_view` tables are framed from, and where it sends its sign-in messages. Ignored unless it is one of the instance's application hosts (as your app's is), its configured frontend (`REACT_APP_URL` / `LEX_FRONTEND_URL`), or — on an instance that is not deployed — a loopback origin |
 | `embed_options` | `light_theme` or `dark_theme` | Streamlit only: opens in that theme |
 
 ```

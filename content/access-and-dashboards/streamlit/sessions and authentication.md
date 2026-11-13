@@ -53,9 +53,9 @@ Lex App keeps the viewer in `st.session_state`, where any of your code can read 
 | Key | Holds |
 |---|---|
 | `user_info` | The viewer's claims, a dict: Keycloak's userinfo answer — `sub`, `email`, `preferred_username`, `name` and whatever else the realm returns — or only the first three until Keycloak has answered |
-| `user_id` | Keycloak's stable user ID, `sub` |
+| `user_id` | Keycloak's stable user ID, `sub` — or the email when the sign-in carries no `sub` |
 | `user_email` | The email |
-| `user_username` | `preferred_username` |
+| `user_username` | `preferred_username`, else `name` |
 | `permissions` | The viewer's Keycloak UMA permissions: a list with one `{"rsname": …, "scopes": […]}` entry per resource, asked for again with each new access token. Empty until Keycloak has answered, and when it grants nothing or cannot be asked |
 | `access_token` | The viewer's Keycloak access token, a string, renewed in the background; `""` when there is none |
 | `auth_method` | How the proxy signed the dashboard in: `"handoff"`, `"session"` or `"jwt"` |

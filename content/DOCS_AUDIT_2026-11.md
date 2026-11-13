@@ -12,7 +12,9 @@ draft: true
 **Status (2026-11-13).** All 115 items are fixed. The fixes were merged in
 [PR #271](https://github.com/ExcellenceCloudGmbH/lex-app-docs/pull/271), deployed, and
 checked on the published site after the deploy; a follow-up PR pointed the Streamlit pages at
-the Northwind demo pages that exist (see MEDIA-6 under [[#Found while fixing]]). The release
+the Northwind demo pages that exist (see MEDIA-6 under [[#Found while fixing]]). Seven
+reviewers then fact-checked every line those two PRs added, and a third PR corrected what they
+found wrong (see [[#Method]], item 6). The release
 notes are corrected on GitHub (OUT-1), the framework issues are filed as
 [LEX-1569](https://linear.app/lundgroup/issue/LEX-1569/framework-issues-found-while-auditing-the-docs-against-lex-app-250),
 and the stale PRs and branches are gone. Where a fix found the source saying something other
@@ -53,8 +55,9 @@ relative to `content/`. Line numbers are for those tags and for `b4d0e655`.
 | **Total** | **25** | **49** | **41** | **115** |
 
 Outside this repository: the published 2.5.0 release notes contradict the source three times
-(OUT-1), and ten framework issues turned up along the way (FW-2 to FW-11). OPS-3 and FW-1
-(Sentry) were withdrawn after review.
+(OUT-1), and 28 framework issues turned up along the way (FW-2 to FW-29): ten in the audit,
+seventeen while fixing, one in the fact-check after the merge. OPS-3 and FW-1 (Sentry) were
+withdrawn after review.
 
 What the mechanical gates say: lex-app's own CI checks pass against this tree. Every
 environment variable the framework reads (146) and every shipped `lex` command (37) is
@@ -910,7 +913,8 @@ parameters, contracts and interface, which the gates cannot see.
 ## Found while fixing
 
 Places where the source, read again while fixing, said something other than this list. The
-docs follow the source; the entries above are left as they were written.
+docs follow the source; the entries above are left as they were written. Each entry below was
+re-read in the source by hand on 2026-11-13.
 
 - **REL-1.** The public `/health` answer carries no version; it is only in the encrypted
   `runtime` field, and only when `LEX_API_KEY` is set. The docs say `lex --version` prints
@@ -1003,43 +1007,77 @@ depend on each are named.
   interface sends, and answers the bare string `"No match found"` when nothing matches
   (`lex/api/views/global_search_for_models/Search.py:11-49`). UI-4.
 
-Found while fixing, and added to LEX-1569. ✓ marks the ones re-read in the source; the rest
-rest on one editor's reading of the code and need a look before anyone acts on them.
+Found while fixing, and added to LEX-1569. Each was re-read in the source by hand on
+2026-11-13; what that check showed is in the entry.
 
 - [x] **FW-12** ✓ — `WaitForTasks` / `FireAndForget` scopes leak between threads:
   `tasks_context` and `unblock_tasks_context` are `ContextVar`s whose default is one mutable
   dict, and `tasks_context.set()` is never called, so every thread pushes onto the same
   stack (`lex/lex_app/celery_tasks.py:536-544`, `:452`).
-- [x] **FW-13** — On a Celery failure the dispatching process saves its stale pre-run copy as
-  `ERROR` and can overwrite the error text the worker wrote
-  (`lex/core/models/CalculationModel.py:1613-1614`). CORE-1.
-- [x] **FW-14** — `lex setup-with-ai --mcp-mode` has no effect: the setup page's choice wins,
-  and without the page the mode is `forward`. OPS-12.
-- [x] **FW-15** — `lex sync_keycloak` exits 0 when it fails, like FW-4. OPS-20.
-- [x] **FW-16** — `lex bootstrap_keycloak` prints "✗ … timed out" after a successful setup.
-- [x] **FW-17** — A bulk `PATCH` on `…/many` never changes a row: the list serializer has no
-  update, so a list body answers 500 and an object body 400; the interface's `updateMany`
-  would fail. API-1.
-- [x] **FW-18** — Not fully traced: `api/model_entries/calculationlog/list` may list
-  calculation logs that the log tree hides under `LEX_SEC_INTERNAL`.
-- [x] **FW-19** — Streamlit: a Keycloak outage while permissions are fetched empties
-  `st.session_state.permissions`, though the code comment says the old list is kept. DASH-1.
-- [x] **FW-20** — A finished `lex_view` flow stays finished for the whole browser-tab session,
-  reloads included; the code comment intends the life of the frame.
-- [x] **FW-21** — The `lex_view` docstring still says `hide_actions` hides the toolbar.
-- [x] **FW-22** — Nothing sends on `ws/logs` in 2.5.0.
-- [x] **FW-23** — `lex full_migration_workflow --db-name` sets only `DB_NAME`, which the
-  settings never read; the steps run against the database the settings select. OPS-13.
-- [x] **FW-24** — The sidebar's Streamlit entry is registered whether or not
-  `IS_STREAMLIT_ENABLED` is set (traced in code, not run).
-- [x] **FW-25** — Record search: the 2.5.0 backend sends none of the title, snippet or
-  per-model counts the 2.3.0 search dialog expects. UI-4.
-- [x] **FW-26** — Export from the History and Audit Log tabs sends no record filter, so with
-  nothing ticked it likely exports the whole table. UI-6.
-- [x] **FW-27** — Calculation-finished toasts reach every signed-in user, not only the person
-  who started the run. UI-1.
-- [x] **FW-28** — To check in a running app: superusers may edit history rows, `Valid From`
-  included, and nothing stops inline edits in Full history. UI-7, UI-9.
+- [x] **FW-13** ✓ (in part) — On a Celery failure the dispatching process always saves its own
+  pre-run copy as `ERROR`: the guard that should skip it reads an in-memory marker the worker
+  never sets (`lex/core/models/CalculationModel.py:430-434`, `:1608-1614`). Whether that
+  overwrites the error text the worker wrote depends on which save lands last. CORE-1.
+- [x] **FW-14** ✓ — `lex setup-with-ai --mcp-mode` has no effect: the flag is used only when
+  the credentials carry no mode, and their mode defaults to `forward`
+  (`lex/bin/lex.py:1442`, `lex/tools/setup_with_ai.py:369`). OPS-12.
+- [x] **FW-15** ✓ — `lex sync_keycloak` exits 0 when it fails: every failure writes to stderr
+  and returns (`lex/lex_app/management/commands/sync_keycloak.py:71-146`). Like FW-4. OPS-20.
+- [x] **FW-16** ✓ — `lex bootstrap_keycloak` prints "✗ … aborted or timed out" after a
+  successful setup: `wait_for_keycloak_setup` returns `None` on success
+  (`lex/lex_app/management/commands/init.py:247-256`), which the command reads as failure
+  (`bootstrap_keycloak.py:106-117`).
+- [x] **FW-17** ✓ — A bulk `PATCH` on `…/many` never changes a row: `perform_bulk_update` calls
+  `save()` on a `ListSerializer` that has no `update()`, so Django REST framework raises
+  `NotImplementedError` (`lex/audit_logging/mixins/BulkAuditLogMixin.py:72-91`,
+  `lex/api/serializers/base_serializers.py:196`). API-1.
+- [x] **FW-18** ✓ — `api/model_entries/calculationlog/list` lists every calculation log: the
+  list's read filter returns all `CalculationLog` rows (`filter_backends.py:56-57`), while
+  the log tree shows only logs of records the caller may read under `LEX_SEC_INTERNAL`
+  (`CalculationLogTreeView.py:17-55`).
+- [x] **FW-19** ✓ — Streamlit: a Keycloak outage while permissions are fetched empties
+  `st.session_state.permissions`: `get_uma_permissions` returns `None` instead of raising
+  (`KeycloakManager.py:668-670`), so the keep-the-old-list `except` never runs
+  (`lex/streamlit_app.py:521-533`). DASH-1.
+- [x] **FW-20** ✓ (behaviour; intent to decide) — A finished `lex_view` flow stays finished for
+  the whole browser-tab session, reloads included: positions live in `sessionStorage` keyed
+  by the flow (`src/utils/flowState.ts:1-20, 85-93`). A design question, not a defect.
+- [x] **FW-21** ✓ — The `lex_view` docstring says `hide_actions` hides "the top actions bar
+  (Create button, Refresh, Export)" (`embed.py:694-697`); interface 2.3.0 hides each row's
+  Actions column (`CustomDatagrid.tsx:2591-2596`).
+- [x] **FW-22** ✓ — Nothing sends on `ws/logs` in 2.5.0: no code sends to `log_group`, and a
+  message to the socket gets a fixed `STATUS` reply (`lex/api/consumers/LogConsumer.py`).
+- [x] **FW-23** ✓ — `lex full_migration_workflow --db-name` only sets `DB_NAME`
+  (`lex/full_migration_workflow.py:393`); the settings never read it, and the one script that
+  does, `backfill_history_sql.py`, is not a step. OPS-13.
+- [x] **FW-24** ✓ — The Streamlit report is registered whether or not `IS_STREAMLIT_ENABLED`
+  is set (`generic_app_config.py:208-212`); only its place in the sidebar structure is gated
+  (`model_structure_builder.py:207`).
+- [x] **FW-25** ✓ — Record search: the 2.5.0 backend sends none of the `title`, `snippet`,
+  `rank`, `matched_field`, `model_label` or `meta.per_model` the 2.3.0 dialog types expect
+  (`src/api/global-search.ts:14-36`; `Search.py:38-49`). UI-4.
+- [x] **FW-26** ✓ (traced) — Export from the History and Audit Log tabs exports the record's
+  live table. The export posts to the page's resource (`useAgGridExport.ts:290, 362`), and on a
+  record page that is the live model: each tab's toolbar sits outside the tab's `ListBase`
+  (`CustomShow.tsx:684-695, 757-761`), and the `resource` it is handed never reaches the button
+  (`GridViewToolbar.tsx:129`). Nothing ticked exports the model's current rows; ticked rows send
+  their own ids — a version's `history_id` (`process-admin-data-provider.ts:125-141`) or a log
+  entry's id — which the export matches against the live model's primary key
+  (`ModelExport.py:749-751`). No record filter is sent either: only ticked ids, `serializer` and
+  `as_of` (`useAgGridExport.ts:347-366`), not the tab's `listFilter` (`CustomShow.tsx:769`). The
+  missing filter was found while fixing, the wrong table in the fact-check after the merge; the
+  History and Audit Log tab pages now warn about it. UI-6.
+- [x] **FW-27** ✓ — Calculation-finished toasts reach every signed-in user: all sockets join one
+  `update_calculation_status` group (`UpdateCalculationStatusConsumer.py:23`), and the
+  interface toasts on every success (`CalculationStatusUpdate.tsx:150-158`). UI-1.
+- [x] **FW-28** — Still to check in a running app: the grid allows inline edits wherever the
+  backend's `lex_reserved_scopes.edit` allows them (`CustomDatagrid.tsx:2683-2700`), so
+  superusers may be able to edit history rows, `Valid From` included, in Full history.
+  UI-7, UI-9.
+- [x] **FW-29** ✓ — The Celery route never detects a dead broker: `should_use_celery` checks
+  `CELERY_ACTIVE` and constructs `inspect()`, which opens no connection
+  (`CalculationModel.py:1119-1127`), so the intended in-process fallback never happens.
+  Found by the fact-check after the merge.
 
 ## Housekeeping
 
@@ -1159,3 +1197,10 @@ run-id row fields (CORE-19); 2.2.1 the frontend package (REL-2).
    One candidate was dropped on re-check: the upload and value-list limits are documented
    (`ship-and-operate/custom frontend.md:137`, `reference/Grid Filter API.md:84`); only the
    "your team sets" wording survives, as API-15.
+6. **Fact-check after the merge.** Seven reviewers that had not written the pages checked every
+   line #271 and #272 added — over 1,100 claims — against the 2.5.0 and 2.3.0 source and the
+   Northwind demo's `main`. Each statement they found wrong or loose was re-read in the source
+   by hand and corrected in a follow-up PR; two were framework issues: FW-29 is new, and FW-26
+   turned out wider than first written. Claims
+   that rest on the platform, on Reflex Enterprise or on older releases could not be checked
+   against these sources.

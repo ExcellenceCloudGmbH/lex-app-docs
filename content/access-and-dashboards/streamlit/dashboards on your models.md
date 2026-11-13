@@ -98,7 +98,7 @@ See [[using-the-app/record-detail/analytics tab|Analytics Tab]] for what the rea
 | `?model=…` for a plain Django model | *❌ This model doesn't support class-level visualization* |
 | `streamlit_main` or `streamlit_class_main` raises | *❌ Error:* and the exception's message, on one line — no traceback |
 
-`model` is matched case-insensitively against the names of the project's own models. The Reflex dashboards show the same messages — see [[access-and-dashboards/reflex/dashboards on your models#What the reader sees|What the reader sees]].
+`model` is matched case-insensitively against the names of the project's own models. The Reflex dashboards show similar messages for a missing model, record or dashboard method, without the ❌ and without an error row of this kind — see [[access-and-dashboards/reflex/dashboards on your models#What the reader sees|What the reader sees]].
 
 The project's own dashboard — `main()` in `_streamlit_structure.py` — is not wrapped like this. An exception from it is raised to Streamlit, which shows it on the page, unless `DEPLOYMENT_ENVIRONMENT` is exactly `PROD`: then the page shows *An error occurred while trying to load the app.*, which opens to the traceback. A `_streamlit_structure.py` that fails to import shows nothing at all: your part of the page stays blank, and nothing is logged.
 

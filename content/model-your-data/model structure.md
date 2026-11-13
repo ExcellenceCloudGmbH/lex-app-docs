@@ -127,7 +127,7 @@ def get_model_styling():
 |---|---|
 | `get_model_structure()` | The sidebar tree, in the shape of `model_structure`. It replaces the whole tree, built-in groups included: list `auditlog`, `calculationlog`, `scheduledjob`, `streamlit` or `reflex` yourself to keep them. |
 | `get_model_styling()` | Display names, in the shape of `model_styling`. |
-| `get_widget_structure()` | What the `api/widget_structure` endpoint returns — an empty list when nothing provides it. |
+| `get_widget_structure()` | What the `api/widget_structure` endpoint returns, as `{"widget_structure": …}` — `{"widget_structure": []}` when nothing provides it. |
 
 Each function is optional. A structure module is never scanned for models: a model or HTML report defined in it is not registered. `untracked_models`, `tracked_models` and `history_tracking_enabled` exist only in the YAML file. If one of the functions raises, a warning is logged and that setting stays as it was; a module that fails to import stops the startup.
 

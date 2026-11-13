@@ -46,13 +46,13 @@ The **Timeline** tab draws the same two versions as bars on a time axis. Click o
 who changed it and, with **Diff**, what changed.
 
 > [!tip]
-> Both values are preserved. The original €450 entry is never deleted — it's superseded. This is what auditors need: a complete trail. Even the correction you're about to make to *when* a value applied is recorded, in a system-time history that can't be edited.
+> Both values are preserved. The original €450 entry is never deleted — it's superseded. This is what auditors need: a complete trail. Even the correction you're about to make to *when* a value applied is recorded, in a system-time history that no one can edit, not even a superuser.
 
 ## Backdating the Correction
 
 Now suppose Anna realizes the correct amount (€380) was actually valid **since January 20** (when the flight happened), not since today. She needs to backdate the correction.
 
-The interface can't do that. The Timeline tab shows each version's **Valid From** but has
+Anna can't do that in the interface. The Timeline tab shows each version's **Valid From** but has
 no way to change it, and only a superuser may change a history row. A backdated
 correction is made in code instead: set `_history_date` on the record before you save
 it, and the version that save creates is valid from that moment rather than from now.

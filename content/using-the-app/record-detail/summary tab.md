@@ -68,7 +68,7 @@ This is especially useful for:
 
 ## Editing
 
-Click the **Edit** button in the toolbar to switch to the edit form. All editable fields become input fields — text boxes, dropdowns, date pickers — pre-populated with the current values. Fields you don't have [[access-and-dashboards/permissions|permission]] to modify appear as read-only. Fields that can never be edited are not on the form at all.
+Click the **Edit** button in the toolbar to switch to the edit form. All editable fields become input fields — text boxes, dropdowns, date pickers — pre-populated with the current values. Fields you don't have [[access-and-dashboards/permissions|permission]] to modify, and fields that can never be edited, are not on the form at all.
 
 The full-page form has the same 1 · 2 · 3 column toggle at the top, beside **List** and
 **Show**; the create form has it too. **Save** and **Delete** are at the bottom.

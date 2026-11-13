@@ -40,7 +40,7 @@ An embedded [Streamlit](https://docs.streamlit.io/) dashboard scoped to this spe
 Every version of this record as a bar on a time axis. Click one to see who changed what, and how it differs from the version before. The **As Of** control time-travels: it shows the timeline as the system knew it at any moment in the past.
 
 ### [[using-the-app/record-detail/history tab|History]]
-The full history of all versions of this record, displayed in a grid you can filter, sort and export.
+The full history of all versions of this record, displayed in a grid you can filter and sort.
 
 ### [[using-the-app/record-detail/audit log tab|Audit Log]]
 All operations (create, update, delete) that have been performed on this record, with the author, timestamp, and full payload for each event.

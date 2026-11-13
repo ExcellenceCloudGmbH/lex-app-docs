@@ -54,7 +54,7 @@ The backend joins the pieces into one temporary file before it saves the record,
 
 ## Everyone is signed out after a redeploy
 
-The sign-ins rest on `DJANGO_SECRET_KEY`: Django signs its sessions with it, the dashboard proxy derives its cookie key from it, and — unless `OIDC_TOKEN_ENCRYPTION_KEYS` is set — the stored sign-in tokens are encrypted with a key derived from it. A key that changed between two deploys invalidates all of them, and everyone has to sign in again.
+The sign-ins rest on `DJANGO_SECRET_KEY`: Django keys each session's authentication hash to it, the dashboard proxy derives its cookie key from it, and — unless `OIDC_TOKEN_ENCRYPTION_KEYS` is set — the stored sign-in tokens are encrypted with a key derived from it. A key that changed between two deploys invalidates all of them, and everyone has to sign in again.
 
 Set `DJANGO_SECRET_KEY` to a stable, per-installation value. See [[ship-and-operate/configuration|Configuration]].
 

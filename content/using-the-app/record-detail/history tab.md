@@ -37,9 +37,14 @@ Above the grid:
 | **Discard unsaved changes** (the curved arrow) | Goes back to the saved view. Greyed out when there is nothing to discard |
 | **Save changes to current view** (the disk) | Saves the grid's filters, sorting and columns into the open view |
 | **View selector** | Switches between saved views of the history grid, or creates one when you type a name and press Enter — see [[using-the-app/the-grid/saved views\|Saved Views]] |
-| **Export** | Downloads an Excel file. Tick the versions you want first to export just those |
+| **Export** | Downloads an Excel file — but not of these versions; see the warning below |
 | **Auto-fit columns** | Sizes every column to its content |
 | **Settings** (the gear) | Row density: **Compact**, **Standard** or **Comfortable** |
+
+> [!warning] Export doesn't export the versions
+> In Lex App 2.5.0 the **Export** button on this tab asks for the model's live table, not
+> its history. With nothing ticked you get the model's current records; ticking versions
+> doesn't narrow it to those versions.
 
 There is no time-travel control on this tab. To see the record as the system knew it at
 a moment in the past, use **As Of** on the
@@ -59,7 +64,7 @@ You don't need to do anything to create history — it's automatic. Every `LexMo
 
 This means:
 - Every save adds a version rather than overwriting the last one
-- Only a superuser may change a history row, and the interface has no editor for a version's Valid From or Valid To. A correction that applies from an earlier date is made in code, as a backdated save — [[start-here/tutorial/Part 6 — History in Action|Part 6 of the tutorial]] shows how. Any such correction is itself recorded in the system-time history, which can't be edited
+- Only a superuser may change a history row, and the interface has no editor for a version's Valid From or Valid To. A correction that applies from an earlier date is made in code, as a backdated save — [[start-here/tutorial/Part 6 — History in Action|Part 6 of the tutorial]] shows how. Any such correction is itself recorded in the system-time history, which no one can edit, not even a superuser
 - No data is ever lost — even deleted records are preserved in history
 - You can always answer "what did this look like on date X?"
 
