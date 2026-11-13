@@ -64,7 +64,7 @@ You don't need to do anything to create history — it's automatic. Every `LexMo
 
 This means:
 - Every save adds a version rather than overwriting the last one
-- Only a superuser may change a history row, and the interface has no editor for a version's Valid From or Valid To. A correction that applies from an earlier date is made in code, as a backdated save — [[start-here/tutorial/Part 6 — History in Action|Part 6 of the tutorial]] shows how. Any such correction is itself recorded in the system-time history, which no one can edit, not even a superuser
+- Only a superuser may change a history row, and the interface has no editor for a version's Valid From or Valid To. A correction that applies from an earlier date is made in code, as a backdated save — [[start-here/tutorial/Part 6 — History in Action|Part 6 of the tutorial]] shows how. Any such correction is itself recorded in the system-time history, whose rows no one can edit (a superuser can only delete them, through the REST API)
 - No data is ever lost — even deleted records are preserved in history
 - You can always answer "what did this look like on date X?"
 
