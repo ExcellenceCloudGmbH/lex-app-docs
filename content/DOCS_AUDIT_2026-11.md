@@ -9,9 +9,12 @@ draft: true
 > Quartz's `ignorePatterns`, and `scripts/check_links.py` skips it. Companion to
 > [[DOCS_AUDIT_2026-05|the May audit]] and [[DOCS_PLAN_2026-09|the September plan]].
 
-**Status (2026-11-13).** All 115 items are fixed, on branch `docs/lex-app-2.5-gap-fixes`.
-The release notes are corrected on GitHub (OUT-1), the framework issues are filed as
-[LEX-1569](https://linear.app/lundgroup/issue/LEX-1569/ten-framework-issues-found-while-auditing-the-docs-against-lex-app-250),
+**Status (2026-11-13).** All 115 items are fixed. The fixes were merged in
+[PR #271](https://github.com/ExcellenceCloudGmbH/lex-app-docs/pull/271), deployed, and
+checked on the published site after the deploy; a follow-up PR pointed the Streamlit pages at
+the Northwind demo pages that exist (see MEDIA-6 under [[#Found while fixing]]). The release
+notes are corrected on GitHub (OUT-1), the framework issues are filed as
+[LEX-1569](https://linear.app/lundgroup/issue/LEX-1569/framework-issues-found-while-auditing-the-docs-against-lex-app-250),
 and the stale PRs and branches are gone. Where a fix found the source saying something other
 than this list, the fix follows the source; [[#Found while fixing]] lists those places.
 
@@ -949,10 +952,12 @@ docs follow the source; the entries above are left as they were written.
 - **DASH-7.** lex-app never reads `REFLEX_USE_SINGLE_PORT`; Reflex Enterprise does.
 - **MEDIA-2.** `filter-applied.svg` and `saved-views.svg` already show the 2.3.0 toolbar and
   were kept; only `first-look.svg` and `tabs.svg` needed new annotations.
-- **MEDIA-6.** The Northwind demo's `main` branch has five dashboard pages; the ten that
-  `streamlit/index.md` names live on its unmerged branch `docs/streamlit-showcase` (its
-  PR #1). The pages now give no number; merge that PR, or point the page table at what
-  `main` has.
+- **MEDIA-6.** The Northwind demo's `main` branch has five dashboard pages — *Overview*,
+  *The table*, *A narrower view*, *Reacting to the table*, *Calculations* — and only
+  `Fund.streamlit_main`, no `streamlit_class_main`. The ten pages the Streamlit pages named
+  live on its unmerged branch `docs/streamlit-showcase` (its PR #1). The Streamlit index's
+  table, the embedding pages and the other mentions now describe the five on `main`; if that
+  PR merges, they can grow with it.
 
 ---
 
@@ -1047,10 +1052,11 @@ rest on one editor's reading of the code and need a look before anyone acts on t
   2.5.0 nor frontend 2.3.0 reads a PostHog variable.
 - [x] Delete branches whose content landed reworded: `docs/audit-fixes-1`, `docs/audit-fixes-2`,
   `docs/audit-fixes-3`, `docs/activation-applier`, and the 35 `copilot/*` docs-update branches.
-- [ ] Optional, local: remove worktrees (left as they are, by choice) of merged branches (`cd-docs`,
+- [x] Optional, local: remove worktrees of merged branches (`cd-docs`,
   `lex-app-docs-hardening`, `lex-app-docs-lex1554`, `.claude/worktrees/auth-long-sessions`,
   `.claude/worktrees/session-cookie-age`, `.worktrees/lex-898`, `.worktrees/generic-frontend`).
-  Keep `lex-app-docs-ext` — it holds 3.0 work.
+  Keep `lex-app-docs-ext` — it holds 3.0 work. Decided on 2026-11-13: keep them all; nothing
+  was removed.
 - [x] In `DOCS_PLAN_2026-09.md` Phase 4, tick "Root-level duplicate tree": no tracked file is
   left outside `content/`.
 
