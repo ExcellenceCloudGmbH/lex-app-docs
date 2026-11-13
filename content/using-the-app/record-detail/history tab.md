@@ -22,8 +22,9 @@ The columns include both history-tracking fields and all of the model's own fiel
 
 You can [[using-the-app/the-grid/filtering and sorting|filter and sort]] this grid like any other — for example, filter by `Edited By` to see all changes made by a specific person, or sort by date to trace the evolution of the record.
 
-The rows are past versions, so their **Edit** and **Delete** are greyed out. The eye icon
-opens a version — see [[#Jumping to Live Data]].
+The rows are past versions, so their **Edit** and **Delete** are greyed out. By default
+only a superuser can change one, by double-clicking its cells — **Valid From** and
+**Valid To** included. The eye icon opens a version — see [[#Jumping to Live Data]].
 
 ![One row per version, with the record's fields as they stood in that version; Edit and Delete are greyed out](images/record-detail/history-tab.svg)
 
@@ -64,7 +65,7 @@ You don't need to do anything to create history — it's automatic. Every `LexMo
 
 This means:
 - Every save adds a version rather than overwriting the last one
-- Only a superuser may change a history row, and the interface has no editor for a version's Valid From or Valid To. A correction that applies from an earlier date is made in code, as a backdated save — [[start-here/tutorial/Part 6 — History in Action|Part 6 of the tutorial]] shows how. Any such correction is itself recorded in the system-time history, whose rows no one can edit (a superuser can only delete them, through the REST API)
+- Only a superuser may change a history row: in this grid or in **Full history**, a superuser can edit a version's cells in place, Valid From and Valid To included. Without that right, a correction that applies from an earlier date is made in code, as a backdated save — [[start-here/tutorial/Part 6 — History in Action|Part 6 of the tutorial]] shows how. Any correction is itself recorded in the system-time history, whose rows no one can edit (a superuser can only delete them, through the REST API)
 - No data is ever lost — even deleted records are preserved in history
 - You can always answer "what did this look like on date X?"
 

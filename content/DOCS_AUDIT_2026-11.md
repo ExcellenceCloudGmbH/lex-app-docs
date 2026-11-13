@@ -16,7 +16,8 @@ the Northwind demo pages that exist (see MEDIA-6 under [[#Found while fixing]]).
 reviewers then fact-checked every line those two PRs added, and a third PR corrected what they
 found wrong (see [[#Method]], item 6). A second, independent check of that PR's changes found
 one wrong and six loose statements, corrected in a fourth PR, and three more framework issues
-(FW-30 to FW-32). The release
+(FW-30 to FW-32). FW-28 was then traced to the end: a superuser can edit history rows in place,
+and a fifth PR says so on the pages that said otherwise. The release
 notes are corrected on GitHub (OUT-1), the framework issues are filed as
 [LEX-1569](https://linear.app/lundgroup/issue/LEX-1569/framework-issues-found-while-auditing-the-docs-against-lex-app-250),
 and the stale PRs and branches are gone. Where a fix found the source saying something other
@@ -799,7 +800,8 @@ parameters, contracts and interface, which the gates cannot see.
 
 - [x] **UI-7** ✓ · P1 · Stale — **Tutorial Part 6 cannot be followed.** There is no History
   icon (a row has Show, Edit and Delete); history rows can be changed only by superusers by
-  default (`HISTORY_WRITE`); the interface has no Valid From editor. *Source*
+  default (`HISTORY_WRITE`); the interface has no Valid From editor *(corrected 2026-11-13: a
+  superuser can edit Valid From in place in the History tab and Full history — FW-28)*. *Source*
   `src/components/model-components/list/RecordActionButtons.tsx:143-188`,
   `lex/api/security.py:272-280`, `lex/core/security_flags.py:26` · *Docs*
   `start-here/tutorial/Part 6 — History in Action.md:27, 45-49`,
@@ -814,7 +816,8 @@ parameters, contracts and interface, which the gates cannot see.
   `using-the-app/the-grid/saved views.md:67` ("Each person saves their own presets"),
   `using-the-app/the-grid/table settings.md:14-16, 73` ("Per user, per table").
 - [x] **UI-9** · P2 · Missing — **Current / As of / Full history on a table.** Full history is
-  read-only, and a historical record opens with a *Live Data* tab. *Source*
+  read-only *(corrected 2026-11-13: except that a superuser can edit cells in place — FW-28)*,
+  and a historical record opens with a *Live Data* tab. *Source*
   `src/components/model-components/list/HistoryModeSwitch.tsx:70-78, 160-176`,
   `CustomList.tsx:1610`, `src/components/CustomShow/CustomShow.tsx:733-752` · *Docs* only "As
   Of" at `using-the-app/the-grid/index.md:58`.
@@ -1072,10 +1075,21 @@ Found while fixing, and added to LEX-1569. Each was re-read in the source by han
 - [x] **FW-27** ✓ — Calculation-finished toasts reach every signed-in user: all sockets join one
   `update_calculation_status` group (`UpdateCalculationStatusConsumer.py:23`), and the
   interface toasts on every success (`CalculationStatusUpdate.tsx:150-158`). UI-1.
-- [x] **FW-28** — Still to check in a running app: the grid allows inline edits wherever the
-  backend's `lex_reserved_scopes.edit` allows them (`CustomDatagrid.tsx:2683-2700`), so
-  superusers may be able to edit history rows, `Valid From` included, in Full history.
-  UI-7, UI-9.
+- [x] **FW-28** ✓ (traced) — Superusers can edit history rows in place, `Valid From` and
+  `Valid To` included, in Full history and on the record's History tab, while the rows' Edit
+  and Delete buttons stay greyed out for everyone. The backend adds `valid_from`/`valid_to` to a
+  history row's edit scope (`base_serializers.py:599-603`) and empties the scope only for
+  non-superusers (`:506-516`); both grids show `historical<model>`, which is not read-only
+  (`resourceMutability.ts:1-12`; `CustomList.tsx:196`, `CustomShow.tsx:704-707`), and a cell is
+  editable whenever the row's scope names it (`CustomDatagrid.tsx:3019-3027`), whatever
+  `isHistoryView` says — only the buttons check it (`RecordActionButtons.tsx:73-78`). The PATCH
+  passes for a superuser (`security.py:277-278`; `edit_violations` skips history rows, which have
+  no `permission_edit`, `:219-220`), and the save re-chains Valid To, writes a system-time entry
+  and syncs the live record (`signal_registry.py:110-121`). lex-app's own tests cover the backend
+  half: 4.107 (a superuser's PATCH answers 200), 4.109, 12.65 (the scope includes
+  `valid_from`). Decide whether in-place correction is meant; either way the buttons and the
+  cells should agree. Traced to the end on 2026-11-13, not run; the pages now describe it. UI-7,
+  UI-9.
 - [x] **FW-29** ✓ — The Celery route never detects a dead broker: `should_use_celery` checks
   `CELERY_ACTIVE` and constructs `inspect()`, which opens no connection
   (`CalculationModel.py:1119-1127`), so the intended in-process fallback never happens.

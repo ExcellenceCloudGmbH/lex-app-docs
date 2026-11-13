@@ -53,7 +53,8 @@ who changed it and, with **Diff**, what changed.
 Now suppose Anna realizes the correct amount (€380) was actually valid **since January 20** (when the flight happened), not since today. She needs to backdate the correction.
 
 Anna can't do that in the interface. The Timeline tab shows each version's **Valid From** but has
-no way to change it, and only a superuser may change a history row. A backdated
+no way to change it, and only a superuser may change a history row, which they do in the
+History tab's grid. A backdated
 correction is made in code instead: set `_history_date` on the record before you save
 it, and the version that save creates is valid from that moment rather than from now.
 
