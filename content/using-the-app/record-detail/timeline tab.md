@@ -72,7 +72,8 @@ Click any bar to open the version's details in a panel on the right. You'll see:
 
 The panel shows the version; it has no way to change its dates or values. By default only
 a superuser also sees a **Delete** button there, which removes the version from the
-history; for everyone else history is read-only.
+history; for everyone else history is read-only. A superuser changes a version's dates or
+values in the [[using-the-app/record-detail/history tab|History tab]]'s grid instead.
 
 This is invaluable for investigations: "Why does this number look wrong? When did it change? Who changed it?"
 

@@ -90,7 +90,9 @@ a glance that you are not looking at today's data. **Export** exports what is sh
 past dates included.
 
 Full history is for reading. In it, a row's **Edit** and **Delete** are greyed out,
-and so are ▶ and **+**; only a superuser can change a past version. A version's record
+and so are ▶ and **+**. By default only a superuser can change a past version, by editing
+its cells in place — **Valid From** and **Valid To** included — as in [[#Inline Editing]].
+A version's record
 page — **Open full view** in the eye icon's panel, or ⌘/Ctrl-click the eye icon — has a
 **Live Data** tab, whose **Go to Live Data** takes you to the record as it is now.
 
