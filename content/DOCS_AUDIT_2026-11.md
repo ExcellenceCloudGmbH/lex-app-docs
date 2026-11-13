@@ -14,7 +14,9 @@ draft: true
 checked on the published site after the deploy; a follow-up PR pointed the Streamlit pages at
 the Northwind demo pages that exist (see MEDIA-6 under [[#Found while fixing]]). Seven
 reviewers then fact-checked every line those two PRs added, and a third PR corrected what they
-found wrong (see [[#Method]], item 6). The release
+found wrong (see [[#Method]], item 6). A second, independent check of that PR's changes found
+one wrong and six loose statements, corrected in a fourth PR, and three more framework issues
+(FW-30 to FW-32). The release
 notes are corrected on GitHub (OUT-1), the framework issues are filed as
 [LEX-1569](https://linear.app/lundgroup/issue/LEX-1569/framework-issues-found-while-auditing-the-docs-against-lex-app-250),
 and the stale PRs and branches are gone. Where a fix found the source saying something other
@@ -55,9 +57,9 @@ relative to `content/`. Line numbers are for those tags and for `b4d0e655`.
 | **Total** | **25** | **49** | **41** | **115** |
 
 Outside this repository: the published 2.5.0 release notes contradict the source three times
-(OUT-1), and 28 framework issues turned up along the way (FW-2 to FW-29): ten in the audit,
-seventeen while fixing, one in the fact-check after the merge. OPS-3 and FW-1 (Sentry) were
-withdrawn after review.
+(OUT-1), and 31 framework issues turned up along the way (FW-2 to FW-32): ten in the audit,
+seventeen while fixing, one in the fact-check after the merge and three in the re-check of its
+corrections. OPS-3 and FW-1 (Sentry) were withdrawn after review.
 
 What the mechanical gates say: lex-app's own CI checks pass against this tree. Every
 environment variable the framework reads (146) and every shipped `lex` command (37) is
@@ -1078,6 +1080,23 @@ Found while fixing, and added to LEX-1569. Each was re-read in the source by han
   `CELERY_ACTIVE` and constructs `inspect()`, which opens no connection
   (`CalculationModel.py:1119-1127`), so the intended in-process fallback never happens.
   Found by the fact-check after the merge.
+- [x] **FW-30** ✓ — An `as_of` date-time that does not exist answers `500`:
+  `parse_as_of_datetime` lets Django's `ValueError` through (`temporal.py:28-30`), and no caller
+  catches it (`ModelEntryProviderMixin.py:84`; `History.py:94`, whose `try` at 98-102 wraps only
+  the query; `ModelExport.py:1802`). A date alone that does not exist (`2026-13-45`) is silently
+  ignored instead. Answer `400` for both. Found by the re-check of the fact-check's corrections.
+  API-2.
+- [x] **FW-31** ✓ — An empty `DEPLOYMENT_ENVIRONMENT` is read two ways: the settings test
+  `is not None` (`settings.py:410, 1089, 1152, 1275` among others;
+  `authentication/dashboards/sites.py:41`), while `lex start`, `lex init`, the calculation-log
+  cache, the platform-API call and the MQ worker test truthiness (`bin/lex.py:1307`,
+  `init.py:99`, `CacheManager.py:52`, `LexAPI.py:34`, `apps.py:281`). Use one rule. Found by
+  the re-check.
+- [x] **FW-32** ✓ — Migration step 6 keeps some operations on the tables it protects: it
+  matches `model_name=` on any operation but `name=` only on six operation types
+  (`sanitize_v2_migrations.py:8-16, 57-74`), and `RenameModel` names its model with
+  `old_name`/`new_name`. An `AlterUniqueTogether`, `AlterOrderWithRespectTo` or `RenameModel` on
+  a V1-only table still runs in `migrate`. Found by the re-check.
 
 ## Housekeeping
 
@@ -1201,6 +1220,9 @@ run-id row fields (CORE-19); 2.2.1 the frontend package (REL-2).
    line #271 and #272 added — over 1,100 claims — against the 2.5.0 and 2.3.0 source and the
    Northwind demo's `main`. Each statement they found wrong or loose was re-read in the source
    by hand and corrected in a follow-up PR; two were framework issues: FW-29 is new, and FW-26
-   turned out wider than first written. Claims
-   that rest on the platform, on Reflex Enterprise or on older releases could not be checked
-   against these sources.
+   turned out wider than first written. Claims that rest on the platform, on Reflex
+   Enterprise or on older releases could not be checked against these sources. A second
+   reviewer then re-checked that PR's own changes the same way: one statement was wrong (an
+   impossible `as_of` date alone is ignored, not answered with `500`) and six were loose. Each
+   was confirmed in the source by hand and corrected in a fourth PR, and three framework issues
+   came out of it (FW-30 to FW-32).

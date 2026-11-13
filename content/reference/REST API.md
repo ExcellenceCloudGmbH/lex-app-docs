@@ -426,8 +426,9 @@ two.
 
 `as_of` takes an ISO 8601 date-time: `2026-02-01T09:00:00Z`, or with an offset. A value
 without an offset is read as UTC, and a date alone — `2026-02-01` — as midnight UTC of that
-day. A value that cannot be read as a date at all is ignored: the list answers its current rows,
-the history every version. A value shaped like a date that does not exist — `2026-13-45` —
+day. A value that cannot be read is ignored — a date alone that does not exist, such as
+`2026-13-45`, among them: the list answers its current rows, the history every version. A
+date-time whose date or time does not exist — `2026-13-45T10:00`, `2026-02-01T25:00` —
 answers `500`. On the list, `as_of` works only for a model that keeps history; on any other
 the request fails with `500`.
 
@@ -687,7 +688,7 @@ no socket in. Under `LEX_WS_AUTH=enforce` such a socket is accepted and then clo
 | `ws/model_data_update` | `record_mutation` after each create, change and delete through the REST API |
 | `ws/calculation_logs/<model>_<pk>-<calculationId>` | `calculation_log_real_time`, as log lines are written |
 | `ws/calculations` | `calculation_id` when a run starts |
-| `ws/logs` | Nothing pushed: lex-app 2.5 sends no messages on it. Anything you send gets a fixed `{"STATUS": …}` reply |
+| `ws/logs` | Nothing pushed: lex-app 2.5 sends no messages on it. A text message you send gets a fixed `{"STATUS": …}` reply |
 | `ws/health` | Public. Answers any message with `{"status": "Healthy :)"}` |
 
 ### Calculation status

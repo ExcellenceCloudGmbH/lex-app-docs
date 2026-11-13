@@ -45,8 +45,9 @@ In order, it:
 5. adds the models Keycloak has no resource for, and syncs resources, scopes and
    permissions.
 
-`makemigrations` runs for **your project's app only** — when the settings install one,
-as they do for a project with models; with none, it runs for every app. lex-app and the other
+`makemigrations` runs for **your project's app only** — the project folder, which the
+settings install as an app unless its name starts with `lex`; when they don't, it runs for
+every app. lex-app and the other
 installed packages ship their own migrations, and one generated for them inside
 site-packages would clash with the next one the package ships. An app label in
 `--makemigrations-args` replaces your project's app; name both if you need both.

@@ -46,7 +46,7 @@ The **Timeline** tab draws the same two versions as bars on a time axis. Click o
 who changed it and, with **Diff**, what changed.
 
 > [!tip]
-> Both values are preserved. The original €450 entry is never deleted — it's superseded. This is what auditors need: a complete trail. Even the correction you're about to make to *when* a value applied is recorded, in a system-time history that no one can edit, not even a superuser.
+> Both values are preserved. The original €450 entry is never deleted — it's superseded. This is what auditors need: a complete trail. Even the correction you're about to make to *when* a value applied is recorded, in a system-time history whose rows no one can edit (a superuser can only delete them, through the REST API).
 
 ## Backdating the Correction
 
