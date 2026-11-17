@@ -45,9 +45,14 @@ const explorerOptions = {
       // inside access-and-dashboards/streamlit: a reading order. The two
       // "downward" pages (lex-app shows your dashboard), then the two
       // "upward" ones (your dashboard shows lex-app), then the ops page.
+      // access-and-dashboards/reflex shares those names and slots its own
+      // pages between them: the design system, its data and the ORM after
+      // the two downward pages, the tooling and deployment after sign-in.
       "dashboards-on-your-models", "standalone-dashboards",
+      "design-system", "tables-and-records", "the-django-orm",
       "embedding-app-pages", "embedding-app-controls",
       "sessions-and-authentication",
+      "consultant-tooling", "running-and-deploying",
     ]
     const ia = ORDER.indexOf(a.slugSegment)
     const ib = ORDER.indexOf(b.slugSegment)

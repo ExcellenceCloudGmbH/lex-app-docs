@@ -70,7 +70,7 @@ The callback is built from the address in the browser, so every origin people ac
 
 The sign-in is Reflex Enterprise's `AuthPlugin`, built by `lex_auth_plugin()` from `lex.lex_app.reflex.config`; `lex_config()` puts it in the app's plugin list. `lex_auth_plugin(**options)` passes on any option `AuthPlugin` takes — `auth=` for an app-wide authorization check, `extra_scopes` for more claims, builders for the plugin's own pages, an audit hook; Reflex Enterprise's [authentication documentation](https://reflex.dev/docs/enterprise/auth/overview/) lists them. Two are set for you: `auth_providers`, Lex App's Keycloak provider, and `login_page`, the `/login` described above. Pass either only to replace it.
 
-The options go where `rxconfig.py` builds the plugin list, and a list you pass replaces lex-app's whole one. Keep `lex_auth_plugin()` in it — without it the dashboards stop requiring sign-in — and `rx.plugins.RadixThemesPlugin()` beside it; the example is under [[access-and-dashboards/reflex/running and deploying#What the first run does|Running & Deploying]].
+The options go where `rxconfig.py` builds the plugin list, and a list you pass replaces lex-app's whole one. Keep `lex_auth_plugin()` in it — without it the dashboards stop requiring sign-in — and RFDS's two plugins after it, `theme_plugin()` then `rfds_plugin()`; the example is under [[access-and-dashboards/reflex/running and deploying#What the first run does|Running & Deploying]].
 
 ## Staying signed in
 
@@ -193,7 +193,11 @@ class FundActions(rx.State):
 
 A page's own `auth=` is on or off, not a check. For a page only some users may open, put the check on the vars and handlers that carry its data.
 
+What a user **sees** follows the same grants. `permission(Fund, "edit")` spells a grant as the string RFDS checks, and RFDS's `can(...)` shows a part of a page only to users who hold it; `lex_page(requires=...)` does the same for a whole page and its navigation entry. That decides what is drawn, not what is allowed — keep the `auth=` check on the handler. See [[access-and-dashboards/reflex/design system#What a user may see|What a user may see]].
+
 ## Calling the Lex App API as the user
+
+For a model's records, `lex_api(self)` does all of this for you — the token, the address, the errors — and `lex_table`, `lex_grid` and `LexRecordState` build on it: see [[access-and-dashboards/reflex/tables and records|Tables & Records]]. For any other endpoint, call the API yourself.
 
 `current_access_token(self)` returns the signed-in user's Keycloak access token. Sent as a bearer token, it calls the Lex App API as that user, so their permissions apply exactly as they do in the grid:
 
@@ -226,5 +230,7 @@ The list is paged only when the request sends `perPage`: then it answers `{"coun
 ## Related
 
 - [[access-and-dashboards/permissions|Permissions]] — the scopes and resources `has_permission` checks
+- [[access-and-dashboards/reflex/design system|Design System]] — `permission`, `can` and `lex_page(requires=...)`
+- [[access-and-dashboards/reflex/tables and records|Tables & Records]] — `lex_api`, and a model's rows as the user may see them
 - [[access-and-dashboards/reflex/running and deploying|Running & Deploying]] — HTTPS, public URLs and the rest of production
 - [[reference/Environment Variables|Environment Variables]] — every setting named on this page

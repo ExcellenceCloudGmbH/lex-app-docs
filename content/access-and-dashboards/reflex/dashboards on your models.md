@@ -89,6 +89,8 @@ def fund_table() -> rx.Component:
 
 `current_record(self)` returns the record `?model=&pk=` names, fetched through the ORM — the Reflex counterpart of the `self` a `streamlit_main` receives — or `None` when there is no `pk`, or no such record. Pass the class as well, `current_record(self, Fund)`, when one component serves several models' pages.
 
+The ORM reads as the dashboard, not as the user: `current_record` hands any record to anyone who can open the URL. For a record the user should only see when the grid would show it to them, use `LexRecordState`, below.
+
 > [!warning] Keep Reflex states out of Django's model discovery
 > Django imports every module of the project in **every** process it starts —
 > `lex start`, each Celery worker, `lex init` — to find the models. A state
@@ -97,6 +99,49 @@ def fund_table() -> rx.Component:
 > put a model's states in one — `Input/_fund_dashboard.py` above — and import it
 > inside the method, never at the top of the model's file. Import it by its path
 > in the project, as you import the models, so it is loaded once, under one name.
+
+## The record, as the user may see it
+
+`LexRecordState` reads the same record, but asks Lex App's API first, as the signed-in user: only if the API shows them the record does the dashboard get it. Beside it, `lex_view` can show Lex App's own record page — its fields, actions and history, as that user may see them:
+
+```python title="Input/_fund_dashboard.py"
+import reflex as rx
+import rfds
+
+from Input.Fund import Fund
+from lex.lex_app.reflex import LexRecordState, lex_view
+
+
+class FundRecord(LexRecordState):
+    model = Fund
+    budget: str = ""
+
+    @rx.event
+    async def load(self):
+        fund = await self.record()
+        self.budget = f"{fund.budget:,.2f}" if fund else ""
+
+
+def fund_record() -> rx.Component:
+    return rx.box(
+        rx.match(
+            FundRecord.record_state,
+            ("ok", rx.vstack(
+                rx.heading(FundRecord.record_title),
+                rx.text("Budget: ", FundRecord.budget),
+                lex_view(f"fund/{FundRecord.pk}/show", height=600),
+            )),
+            ("denied", rfds.inline_message("You may not see this record.", tone="warning")),
+            ("missing", rfds.inline_message("This record does not exist.", tone="neutral")),
+            rfds.spinner(label="Loading"),
+        ),
+        on_mount=FundRecord.load,
+    )
+```
+
+`record()` returns the instance, or `None`, and sets `record_state` to `"ok"`, `"denied"` or `"missing"` for the page to show. `FundRecord.pk` is the primary key from the URL, as a var, so `lex_view`'s address is put together in the browser for whichever record is open. [[access-and-dashboards/reflex/tables and records#LexRecordState: the record, as the user may see it|Tables & Records]] has the details, and [[access-and-dashboards/reflex/embedding app pages|Embedding App Pages]] everything `lex_view` takes.
+
+`lex reflex add object_page --model Fund` writes a dashboard of this shape for you — see [[access-and-dashboards/reflex/consultant tooling|Consultant Tooling]].
 
 ## What the reader sees
 
@@ -122,7 +167,25 @@ Each model's own methods run once, when `lex reflex` compiles the app, so a brok
 
 ## Where they show up
 
-A record or table dashboard is a URL on the Reflex app: `http://localhost:8502/?model=fund&pk=42` locally. Link to one from the project's own dashboard, from another dashboard as the table above does, or from anywhere else a user will click. Lex App's [[using-the-app/record-detail/analytics tab|Analytics tab]] and the grid's dashboard toggle open Streamlit dashboards.
+A record or table dashboard is a URL on the Reflex app: `http://localhost:8502/?model=fund&pk=42` locally. Link to one from the project's own dashboard, from another dashboard as the table above does, or from anywhere else a user will click.
+
+Lex App opens them too. The record page's [[using-the-app/record-detail/analytics tab|Analytics tab]] frames the model's record dashboard, and the table's Analytics toggle its table dashboard. Which framework draws each is decided per model, and separately for the record and the table. It is Reflex when all three hold:
+
+- `IS_REFLEX_ENABLED=true`;
+- `LEX_DASHBOARD_SURFACE` is not `streamlit`;
+- the model defines its own `reflex_main` — for the Analytics tab — or `reflex_class_main` — for the table's toggle.
+
+In every other case it is Streamlit, as it always was. So a model with both kinds of dashboard opens its Reflex one while Reflex is on, and its Streamlit one when Reflex is off. `LEX_DASHBOARD_SURFACE=streamlit` keeps every model on Streamlit whatever it defines — for a project moving its dashboards over one at a time; its default is `auto`.
+
+Lex App's interface learns the answer from `GET /api/project-info`, which reports `reflex_enabled`, `reflex_home` — whether Reflex is on and the project has a `_reflex_structure.py` to show as its home page — and `dashboards`, one entry per model with a dashboard of either kind:
+
+```json
+{"dashboards": {"fund": {"record": "reflex", "table": "streamlit"}}}
+```
+
+The Django process decides this without importing Reflex: a model's methods are compared with `LexModel`'s defaults, and `_reflex_structure.py` is looked for, not imported. An interface that does not read these fields keeps opening Streamlit dashboards, as it always has.
+
+Framed by Lex App, the dashboard is opened with `?lex_embed=1`, so its own header and navigation stay hidden — see [[access-and-dashboards/reflex/design system#Inside Lex App's frame|Inside Lex App's frame]].
 
 ## Tips
 
@@ -134,5 +197,6 @@ A record or table dashboard is a URL on the Reflex app: `http://localhost:8502/?
 ## Related
 
 - [[access-and-dashboards/reflex/standalone dashboards|Standalone Dashboards]] — a dashboard that is not about one model
+- [[access-and-dashboards/reflex/tables and records|Tables & Records]] — the record and the model's rows, as the user may see them
 - [[access-and-dashboards/reflex/the django orm|The Django ORM]] — reading and writing models from a handler
 - [[access-and-dashboards/reflex/sessions and authentication|Sessions & Authentication]] — narrowing a dashboard to the users allowed to see it
