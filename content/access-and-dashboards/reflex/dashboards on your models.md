@@ -28,17 +28,19 @@ class Fund(LexModel):
     @classmethod
     def reflex_main(cls):
         """Record-level: ?model=fund&pk=<id>."""
-        from Input._fund_dashboard import fund_record
+        from your_repo.Input._fund_dashboard import fund_record
 
         return fund_record()
 
     @classmethod
     def reflex_class_main(cls):
         """Table-level: ?model=fund."""
-        from Input._fund_dashboard import fund_table
+        from your_repo.Input._fund_dashboard import fund_table
 
         return fund_table()
 ```
+
+`your_repo` is the project's own package — the name of its folder.
 
 ```python title="Input/_fund_dashboard.py"
 import reflex as rx
@@ -97,8 +99,11 @@ The ORM reads as the dashboard, not as the user: `current_record` hands any reco
 > class defined in one of those modules is created in all of them, and with it
 > Reflex itself. Modules whose names start with an underscore are skipped, so
 > put a model's states in one — `Input/_fund_dashboard.py` above — and import it
-> inside the method, never at the top of the model's file. Import it by its path
-> in the project, as you import the models, so it is loaded once, under one name.
+> inside the method, never at the top of the model's file. Import it under the
+> project's package, `from your_repo.Input._fund_dashboard import …`, so it is
+> loaded once, under one name. Not with a relative import: from a model in a
+> subfolder, `Input/Fund.py`, `from ._dashboards…` looks for `Input/_dashboards`,
+> not the project's `_dashboards/`.
 
 ## The record, as the user may see it
 
@@ -133,13 +138,14 @@ def fund_record() -> rx.Component:
             )),
             ("denied", rfds.inline_message("You may not see this record.", tone="warning")),
             ("missing", rfds.inline_message("This record does not exist.", tone="neutral")),
+            ("unavailable", rfds.inline_message("Lex App cannot be reached. Try again shortly.", tone="warning")),
             rfds.spinner(label="Loading"),
         ),
         on_mount=FundRecord.load,
     )
 ```
 
-`record()` returns the instance, or `None`, and sets `record_state` to `"ok"`, `"denied"` or `"missing"` for the page to show. `FundRecord.pk` is the primary key from the URL, as a var, so `lex_view`'s address is put together in the browser for whichever record is open. [[access-and-dashboards/reflex/tables and records#LexRecordState: the record, as the user may see it|Tables & Records]] has the details, and [[access-and-dashboards/reflex/embedding app pages|Embedding App Pages]] everything `lex_view` takes.
+`record()` returns the instance, or `None`, and sets `record_state` to `"ok"`, `"denied"`, `"missing"` or — when Lex App could not answer at all — `"unavailable"`, for the page to show. `FundRecord.pk` is the primary key from the URL, as a var, so `lex_view`'s address is put together in the browser for whichever record is open. [[access-and-dashboards/reflex/tables and records#LexRecordState: the record, as the user may see it|Tables & Records]] has the details, and [[access-and-dashboards/reflex/embedding app pages|Embedding App Pages]] everything `lex_view` takes.
 
 `lex reflex add object_page --model Fund` writes a dashboard of this shape for you — see [[access-and-dashboards/reflex/consultant tooling|Consultant Tooling]].
 

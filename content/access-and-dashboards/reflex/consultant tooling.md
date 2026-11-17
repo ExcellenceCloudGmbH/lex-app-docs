@@ -62,7 +62,7 @@ The modules find the model through Django — `apps.get_model(...)` — rather t
 
 ### Wiring an `object_page`
 
-`lex reflex add object_page --model Fund` writes `_dashboards/fund_object_page.py`, holding a `LexRecordState` for the record and `fund_record_page()`, the component. Return it from the model's `reflex_main`, and import it inside the method, by its path in the project:
+`lex reflex add object_page --model Fund` writes `_dashboards/fund_object_page.py`, holding a `LexRecordState` for the record and `fund_record_page()`, the component. Return it from the model's `reflex_main`, and import it inside the method, under the project's own package — `your_repo` here stands for its folder's name:
 
 ```python title="Input/Fund.py"
 from lex.core.models.LexModel import LexModel
@@ -73,12 +73,14 @@ class Fund(LexModel):
 
     @classmethod
     def reflex_main(cls):
-        from _dashboards.fund_object_page import fund_record_page
+        from your_repo._dashboards.fund_object_page import fund_record_page
 
         return fund_record_page()
 ```
 
-The record page then opens for `?model=fund&pk=42`, and in the record's [[using-the-app/record-detail/analytics tab|Analytics tab]]. It shows the record only if Lex App's API shows it to this user; otherwise it says the record is not theirs to see, or does not exist.
+The generated module's docstring holds these lines, with your package's name already filled in from the project folder's. Keep the package in the import, and never make it relative: from a model in a subfolder, such as `Input/Fund.py`, `from ._dashboards…` looks inside that subfolder.
+
+The record page then opens for `?model=fund&pk=42`, and in the record's [[using-the-app/record-detail/analytics tab|Analytics tab]]. It shows the record only if Lex App's API shows it to this user; otherwise it says the record is not theirs to see, or does not exist. When Lex App cannot answer at all, the generated page keeps showing its spinner: add an `"unavailable"` case to its `rx.match` to say so — see [[access-and-dashboards/reflex/tables and records#LexRecordState: the record, as the user may see it|Tables & Records]].
 
 ## `lex reflex check`
 
@@ -111,7 +113,7 @@ The command fails when either does. With neither file in the project, only the d
 
 The pages are listed in the navigation under **Example**. The `/` page shows a **Change a record** link only to users Keycloak lets edit the featured model — what they see, not access control: the API refuses the write itself for anyone else.
 
-The example's record dashboard, `RecordState` and `record_dashboard()`, sits in `_reflex_structure.py` itself, which a model cannot import by a short path. To use it, move both into a module of `_dashboards/`, and return `record_dashboard()` from a model's `reflex_main` as [above](#wiring-an-object_page).
+The example's record dashboard, `RecordState` and `record_dashboard()`, sits in `_reflex_structure.py` itself. To use it, return `record_dashboard()` from a model's `reflex_main`, imported under the project's package as [above](#wiring-an-object_page): `from your_repo._reflex_structure import record_dashboard`.
 
 ## Related
 

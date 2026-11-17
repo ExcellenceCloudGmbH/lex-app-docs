@@ -112,7 +112,7 @@ RFDS's `data_table` over the model, asking the API for exactly the page on scree
 | `columns` | — | RFDS column specs, replacing `fields` entirely — see [Columns](#columns) |
 | `caption` | the model's plural name | The table's accessible caption |
 | `search_field` | the first plain text field | The field the quick search matches, ignoring case. `""` turns the search off |
-| `page_size` | `25` | A page size the user can pick, beside 25, 50 and 100. At most 200. The table opens at RFDS's default, 50 rows |
+| `page_size` | `25` | The rows the table opens at, also offered as a choice beside 25, 50 and 100. At most 200 |
 | anything else | | Passed on to `rfds.data_table`: `row_href`, `on_row_click`, `toolbar`, `density` and the rest |
 
 **Fixed filters** narrow the table before the user filters it, and the user cannot remove them. A value can be a state var — the record the page is about, say — and is read when the table appears:
@@ -125,8 +125,7 @@ A list value matches any of its values; `None` or `""` leaves the field unfilter
 
 The default search field is the first text field without choices. A model with none has no quick search unless you name a field.
 
-> [!warning] One table's state per model and column set
-> Every `lex_table` with the same model, the same columns, the same search field and the same `page_size` shares one state — fixed filters included. Two such tables on one page show the same rows: whichever mounted last decides the filters. Give the second different `fields`, or put it on another page.
+Each table keeps its own state: two tables of one model on a page, filtered differently, show their own rows. A fixed filter's var counts by its name, so `{"fund": FundRecord.pk}` and `{"fund": OtherRecord.pk}` are two tables. Only tables alike in model, columns, search field, page size and fixed filters share one state, and page and sort together.
 
 ## `lex_grid`: AG Grid over up to 2,000 rows
 
@@ -146,15 +145,16 @@ RFDS's AG Grid, with the model's rows read **once**, through the API, when the g
 | `height` | `"60vh"` | The grid's height |
 | anything else | | Passed on to `rfds.data_grid`: `status_bar`, `selection`, `density` and the rest |
 
-A user the API refuses sees an empty grid. To read the rows again — after a write, or from a button — send the grid's `refresh` event:
+A user the API refuses sees an empty grid. To read the rows again — after a write, or from a button — send the grid's `refresh` event. `grid_state` finds the grid's state from the same model, `fields` and `filters` the grid was given:
 
 ```python
 from lex.lex_app.reflex.data import grid_state
 
-rfds.button("Reload", on_click=grid_state(Fund).refresh)
+lex_grid(Fund, fields=["name", "budget"])
+rfds.button("Reload", on_click=grid_state(Fund, fields=["name", "budget"]).refresh)
 ```
 
-Every `lex_grid` of one model shares that one state, whatever its fields or filters — two grids of the same model on one page show the same rows.
+Each grid keeps its own state too: grids of one model with different fields or fixed filters each show their own rows. A grid given `columns` instead of `fields` is told apart by those columns.
 
 ## Columns
 
@@ -217,6 +217,7 @@ def fund_record() -> rx.Component:
             ("ok", rx.vstack(rx.heading(FundRecord.record_title), rx.text("Budget: ", FundRecord.budget))),
             ("denied", rfds.inline_message("You may not see this record.", tone="warning")),
             ("missing", rfds.inline_message("This record does not exist.", tone="neutral")),
+            ("unavailable", rfds.inline_message("Lex App cannot be reached. Try again shortly.", tone="warning")),
             rfds.spinner(label="Loading"),
         ),
         on_mount=FundRecord.load,
@@ -227,7 +228,7 @@ def fund_record() -> rx.Component:
 
 | Var | Holds |
 |---|---|
-| `record_state` | `"ok"`; `"denied"` when the API refused (`401`, `403`); `"missing"` when there is no such record, the API hides it from this user (`404`), or the URL names none. `""` until `record()` has run |
+| `record_state` | `"ok"`; `"denied"` when the API refused (`401`, `403`); `"missing"` when there is no such record, the API hides it from this user (`404`), or the URL names none; `"unavailable"` when Lex App could not answer — unreachable, or failing with any other status, a `5xx` say. `""` until `record()` has run |
 | `record_data` | The record as the API serialises it, ready for the browser |
 | `record_title` | The record's name: `str()` of the instance |
 | `pk` | The primary key from the URL |

@@ -14,7 +14,7 @@ Lex App installs RFDS together with Reflex, at the version it supports. There is
 | The plugins in `rxconfig.py`: sign-in, Radix with RFDS's theme, RFDS | Components from `rfds`: `rfds.page`, `rfds.page_header`, `rfds.card`, `rfds.kpi_tile`, the charts |
 | The brand: Lex App's teal, its navy chrome, its font | States, and the event handlers that fill them |
 | How numbers, money and dates are written | Which parts of a page each user sees: `can(permission(...))` |
-| The chrome around a page: header, user menu, side navigation | |
+| The chrome around a page: header, user menu, side navigation, and the calculation-log dialog | |
 | Who may frame a dashboard: Lex App, and nobody else | |
 | Light or dark, following Lex App | |
 
@@ -137,7 +137,7 @@ Every `lex_page` requires sign-in, like every page of the app. The decorator ret
 > [!warning] `requires` decides what a user sees, not what they can reach
 > It hides the page's content and its entry from users without the grant. The data the page loads is protected by whatever loads it: `lex_table`, `lex_grid` and `LexRecordState` read through Lex App's API as the user — see [[access-and-dashboards/reflex/tables and records|Tables & Records]] — and a handler of your own needs its own `auth=` check.
 
-A page declared with `@rxe.page` still works, outside the chrome. To put any component in the chrome yourself, wrap it: `lex_chrome(component)`.
+A page declared with `@rxe.page` still works, outside the chrome. To put any component in the chrome yourself, wrap it: `lex_chrome(component)`. The chrome also draws the page's one calculation-log dialog, which Lex App's controls open — see [[access-and-dashboards/reflex/embedding app controls#The log dialog|The log dialog]].
 
 ### Inside Lex App's frame
 
@@ -175,9 +175,9 @@ The rules are those of `has_permission`, described under [[access-and-dashboards
 
 - **Only model-wide grants count.** A grant scoped to single records does not open the whole model.
 - **The grants are loaded with the page.** `LexAccessState.load` asks Keycloak for them; every `lex_page` and `/` run it before anything else. On a page of your own declared with `@rxe.page`, add it — `on_load=LexAccessState.load` — or `can` shows nothing.
-- **They count for five minutes.** Lex App remembers each user's grants, by Keycloak issuer and user ID, for five minutes after the page loaded them; after that it answers with nothing until the next page load fetches them again. A user Keycloak never answered for holds nothing.
+- **They are kept fresh while the page is open.** Lex App remembers each user's grants, by Keycloak issuer and user ID. Before each event, grants older than a minute are fetched again first, so a page left open, however long, answers from current grants. A refresh that fails never stops the event: the grants stay as they were, and once five minutes pass without one succeeding — Keycloak not answering, say — they count for nothing until they are fetched again. A user Keycloak never answered for holds nothing.
 
-`can` is what a user **sees**, read once when the page loads. Check a handler with `auth=has_permission(...)`: it checks the grants of the user's current access token, however long the page has been open. RFDS's own `rfds.auth.requires(...)` check answers from the remembered grants instead, so on a page open longer than five minutes it refuses until the page is loaded again.
+`can` is what a user **sees**, read once when the page loads. Check a handler with `auth=has_permission(...)`: it checks the grants of the user's current access token. RFDS's own `rfds.auth.requires(...)` check works too, against the remembered grants — at most a minute old when an event runs.
 
 ## Conformance
 
@@ -214,7 +214,7 @@ Opened on its own, a dashboard follows `?lex_theme=` when the URL carries it.
 
 ## Signing in inside the frame
 
-When a dashboard inside Lex App's frame cannot sign the user in without a click, its `/login` page tells Lex App's interface so; once the user is signed in again, the dashboard tells it that too. Lex App can then offer the way back around the frame instead of showing a frame that waits. The messages carry no secret, and there is nothing to configure. What the click is for is under [[access-and-dashboards/reflex/sessions and authentication#Inside Lex App's frame|Inside Lex App's frame]].
+When a dashboard inside Lex App's frame cannot sign the user in without a click, its `/login` page tells Lex App's interface so; once the user is signed in again, the dashboard tells it that too. Lex App can then offer the way back around the frame instead of showing a frame that waits. The messages carry no secret, and go to the framing page's origin — the one the browser names, or in Firefox, which names none, the referrer's; with neither, to whichever page frames it. There is nothing to configure. What the click is for is under [[access-and-dashboards/reflex/sessions and authentication#Inside Lex App's frame|Inside Lex App's frame]].
 
 ## Related
 

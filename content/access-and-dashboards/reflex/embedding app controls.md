@@ -55,7 +55,7 @@ lex_widgets(
 |---|---|---|
 | the widgets | — | One or more `calculation(...)` and `calculation_log(...)`. None at all raises `WidgetSpecError` |
 | `on_status` | none | The handler that gets each status change — see [Reacting to a result](#reacting-to-a-result) |
-| `on_open_log` | the log dialog | The handler that gets a log button's click — see [The log dialog](#the-log-dialog) |
+| `on_open_log` | the page's log dialog | The handler that gets a log button's click — see [The log dialog](#the-log-dialog) |
 | `min_height` | `48` | The least the frame shrinks to, in pixels — a floor, not a size |
 | `base_url` | as for `lex_view` | Lex App's address — see [[access-and-dashboards/reflex/embedding app pages#Where the frame points\|Where the frame points]] |
 | `title` | `"lex-app controls"` | The frame's accessible title |
@@ -115,16 +115,33 @@ The handler gets the payload:
 | `pk` | The record's primary key |
 | `status` | The calculation's state — `SUCCESS`, `ERROR`, `IN_PROGRESS`, and the rest of the [[calculations/calculation models#The State Machine\|state machine]] |
 
-The control reports the record's current status as soon as it loads, so a record that already succeeded reports `SUCCESS` before anyone has clicked.
-
-> [!warning] Each status reaches the handler once per frame
-> The frame passes on each status of a control once, until the page is loaded again: a later report of a status it has already passed on is dropped. A record that last succeeded reports `SUCCESS` on load; re-run it, and the handler hears `IN_PROGRESS` — and not the `SUCCESS` that ends the run. Treat `IN_PROGRESS` as "the figures are changing", and reload the data you show when the user asks, rather than waiting on a second `SUCCESS`.
+The control reports the record's current status as soon as it loads, so a record that already succeeded reports `SUCCESS` before anyone has clicked. Re-run it, and the handler hears `IN_PROGRESS`, then the status the run ends with — `SUCCESS` again included. Only a report that repeats the one just before it is dropped, as in Streamlit, so a handler can reload the figures it shows each time it hears `SUCCESS`.
 
 ## The log dialog
 
 The log button opens the run's log in a dialog over the **page**, not inside the frame — a frame is a small box, and a log is long. The dialog is RFDS's, wide, and holds the live log 760 pixels tall, titled with the model and the record.
 
-To do something else with the click, pass `on_open_log`: your handler then gets `{widget_id, model, pk, calculationId}`, and no dialog is drawn.
+A page has one such dialog, whatever number of `lex_widgets` frames it holds, and every frame on the page opens it. `lex_chrome` draws it — so every `@lex_page`, and `/` with every model's dashboard, has it already. The log opens on the same Lex App as the frame whose button was clicked: a log request carries that frame's origin.
+
+A page outside Lex App's chrome — one declared with `@rxe.page` — has no dialog until it draws one. Put `log_dialog()` on the page, once:
+
+```python
+import reflex as rx
+import reflex_enterprise as rxe
+
+from lex.lex_app.reflex import lex_calculation
+from lex.lex_app.reflex.embed import log_dialog
+
+
+@rxe.page(route="/revalue")
+def revalue_page() -> rx.Component:
+    return rx.fragment(
+        lex_calculation("navcalc", 1),
+        log_dialog(),
+    )
+```
+
+To do something else with the click, pass `on_open_log`: your handler then gets `{widget_id, model, pk, calculationId, base}` — `base` is the origin of the Lex App the frame was opened on — and the dialog stays shut.
 
 ## Widget ids
 
@@ -158,7 +175,7 @@ The controls are Lex App pages in a frame. When the deployment sets `LEX_EMBED_A
 | `on_status` on one control | `lex_calculation(..., on_status=True)` returns it | `lex_calculation(..., on_status=handler)` |
 | The record | a value, per rerun | a value, or a state var |
 | `key`, blocks in a loop | needed | none — nothing reruns |
-| The log button | a Streamlit dialog | an RFDS dialog, or your `on_open_log` |
+| The log button | a Streamlit dialog | the page's one RFDS dialog, or your `on_open_log` |
 | `base_url` | none | on `lex_widgets` |
 
 ## Related

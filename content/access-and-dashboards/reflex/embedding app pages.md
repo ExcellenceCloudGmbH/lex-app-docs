@@ -78,7 +78,7 @@ sequenceDiagram
     Note over Handler: runs on the Reflex backend,<br/>its vars update the page
 ```
 
-There is no rerun and no polling. The frame passes each event to its handler once: an envelope it has already passed on, by its `id`, is dropped. And it believes only the page it framed: a message from any other window, from any origin but Lex App's, or of a newer protocol version than it knows, is ignored.
+There is no rerun and no polling. The frame passes each event to its handler once: an envelope with the same `id` as the one just before it is a repeat, and is dropped. And it believes only the page it framed: a message from any other window, from any origin but Lex App's, or of a newer protocol version than it knows, is ignored.
 
 Because nothing reruns, there is no `key` to keep stable, as there is in Streamlit.
 
@@ -112,14 +112,15 @@ The mapping form, the sequence form, `STAY`, `ref`, what `Flow` rejects with `Fl
 
 An embedded table can open already filtered, follow filters your state holds, and tell a handler when its filters change.
 
-`filters` is one of two things:
+`filters` is one of three things:
 
 | You pass | It means |
 |---|---|
 | A dict — `{"status": ["open", "overdue"], "region": 3}` | Fixed filters, checked when the page is built |
+| A dict naming state vars — `{"fund": FundRecord.pk}` | Filters read in the browser, from the vars' current values, and sent again whenever they change |
 | A state var holding such a dict — `Orders.line_filters` | Filters that follow the var: each time it changes, they are sent into the frame, and the table refilters in place, without a reload |
 
-Not a dict with vars inside it: `{"order": Orders.picked}` raises `TypeError` when the page is built. Keep the whole dict in one var.
+A dict naming a var behaves as a var does: its filters are sent into the frame after it loads, not checked when the page is built.
 
 Values are the stored ones, as for Streamlit: a list picks those values, one value picks just it, `None` or an empty list clears the column. [[access-and-dashboards/streamlit/embedding app pages#Setting the filters|Setting the filters]] has the rules — what a column accepts, how the filters combine with the user's own, and why sending the same filters again changes nothing.
 
@@ -162,7 +163,7 @@ Filters sent into the frame after it loads, and the `filter` event, only work fo
 LEX_EMBED_ALLOWED_ORIGINS=https://dashboards.example.com,http://localhost:8502
 ```
 
-With a dict, the first filters travel in the frame's address, so a table opens filtered even without it — unless the encoded filters pass 2,000 characters. With a var, **every** filter is sent into the frame, the first included, so a var-driven table needs the setting from the start. What else the setting changes is under [[access-and-dashboards/streamlit/embedding app pages#Allowed sites|Allowed sites]].
+With a plain dict, the first filters travel in the frame's address, so a table opens filtered even without it — unless the encoded filters pass 2,000 characters. With a var, or a dict naming one, **every** filter is sent into the frame, the first included, so such a table needs the setting from the start. What else the setting changes is under [[access-and-dashboards/streamlit/embedding app pages#Allowed sites|Allowed sites]].
 
 ## Other options
 
@@ -187,7 +188,7 @@ The frame's address starts from `base_url` when you pass one. Otherwise, from th
 2. The application hostname on the **same registrable domain** as the dashboards' own canonical hostname — the one `REFLEX_URL` or `LEX_REFLEX_HOSTS` names. A frame on another registrable domain is a third-party context, and the browser withholds its cookies, so the framed page could not stay signed in.
 3. `http://localhost:8000`, a local `lex start`.
 
-Then, in the browser, one more rule: when Lex App itself frames the dashboard, from one of [[access-and-dashboards/reflex/design system#Who may frame a dashboard|its origins]], the page is opened on the origin Lex App was reached on instead — a customer's own domain attached to the instance included — so it carries the session the user has there. That takes a browser that tells a frame who frames it; one that does not, Firefox among them, keeps the address above.
+Then, in the browser, one more rule: when Lex App itself frames the dashboard, from one of [[access-and-dashboards/reflex/design system#Who may frame a dashboard|its origins]], the page is opened on the origin Lex App was reached on instead — a customer's own domain attached to the instance included — so it carries the session the user has there. The framing origin is the one the browser names to the dashboard; Firefox names none, so there it is taken from the dashboard's referrer, the page that framed it. With neither, the frame keeps the address above.
 
 Events are believed only from the origin the frame was opened on. A frame actually served from somewhere else — `http` against `https`, another port, `localhost` against `127.0.0.1` — loads and works, and no handler ever runs.
 
@@ -203,7 +204,7 @@ There is no `theme` argument, and nothing to pass. An embedded page follows Lex 
 | Asking for an event | `on_select=True` | `on_select=State.handler` |
 | Every event | one flag per kind | `on_event` |
 | The record to show | computed in the rerun | a state var in `path` |
-| Changing filters | a different dict on a rerun | a state var holding the dict |
+| Changing filters | a different dict on a rerun | a state var holding the dict, or a dict naming state vars |
 | `key` | keeps the return value across reruns | none — nothing reruns |
 | `width`, `scrolling` | in a plain embed | none — the frame is always full width |
 | `theme` | accepted, never read | none |
