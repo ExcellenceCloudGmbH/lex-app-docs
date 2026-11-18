@@ -163,7 +163,7 @@ To show one of the instance's dashboards inside your app, frame its address — 
 https://<dashboard host>/?model=fund&pk=42&lex_embed=true&is_logout_enabled=false&lex_app_origin=https%3A%2F%2Fapp.customer.com
 ```
 
-The frame carries no credential when dashboards sign in with `LEX_STREAMLIT_AUTH=handoff` or `dual` — `GET api/auth/session` then lists `"streamlit"` in `capabilities.dashboard_handoff` — and a Streamlit dashboard signs itself in through the application; a Reflex dashboard keeps its own Keycloak sign-in. On an instance with a custom domain, frame the dashboard hostname on your page's own domain: see [[ship-and-operate/custom domains#Why the dashboards get their own hostnames|Custom domains]].
+The frame carries no credential when dashboards sign in with `LEX_STREAMLIT_AUTH=handoff` or `dual` — `GET api/auth/session` then lists `"streamlit"` in `capabilities.dashboard_handoff` — and a Streamlit dashboard signs itself in through the application. A Reflex dashboard always does, and `capabilities.dashboard_handoff` lists `"reflex"` while `IS_REFLEX_ENABLED` is on. On an instance with a custom domain, frame the dashboard hostname on your page's own domain: see [[ship-and-operate/custom domains#Why the dashboards get their own hostnames|Custom domains]].
 
 ## Releases
 

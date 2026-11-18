@@ -123,17 +123,16 @@ The log button opens the run's log in a dialog over the **page**, not inside the
 
 A page has one such dialog, whatever number of `lex_widgets` frames it holds, and every frame on the page opens it. `lex_chrome` draws it — so every `@lex_page`, and `/` with every model's dashboard, has it already. The log opens on the same Lex App as the frame whose button was clicked: a log request carries that frame's origin.
 
-A page outside Lex App's chrome — one declared with `@rxe.page` — has no dialog until it draws one. Put `log_dialog()` on the page, once:
+A page outside Lex App's chrome — one declared with `@rx.page` — has no dialog until it draws one. Put `log_dialog()` on the page, once:
 
 ```python
 import reflex as rx
-import reflex_enterprise as rxe
 
 from lex.lex_app.reflex import lex_calculation
 from lex.lex_app.reflex.embed import log_dialog
 
 
-@rxe.page(route="/revalue")
+@rx.page(route="/revalue")
 def revalue_page() -> rx.Component:
     return rx.fragment(
         lex_calculation("navcalc", 1),
