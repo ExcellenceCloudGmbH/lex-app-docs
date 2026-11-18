@@ -41,12 +41,17 @@ Interactive [Streamlit](https://docs.streamlit.io/) dashboards, in both directio
 There is a [complete project](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) you can clone and run that shows the first four at work.
 
 ### [[access-and-dashboards/reflex/index|Reflex Dashboards]]
-Dashboards written in [Reflex](https://reflex.dev/docs/) — Python compiled to a React app — beside or instead of Streamlit, with the same place in Lex App: the same `?model=&pk=` links, the Django ORM, and sign-in against the same Keycloak through [Reflex Enterprise](https://reflex.dev/docs/enterprise/auth/overview/), with no proxy in front. A section of its own, in reading order:
+Dashboards written in [Reflex](https://reflex.dev/docs/) — Python compiled to a React app — beside or instead of Streamlit, drawn with the RFDS design system, with the same place in Lex App: the same `?model=&pk=` links and Analytics tab, Lex App's own pages and controls inside, a model's rows read through Lex App's API as the user, and sign-in against the same Keycloak through [Reflex Enterprise](https://reflex.dev/docs/enterprise/auth/overview/), with no proxy in front. A section of its own, in reading order:
 
 | | |
 |---|---|
 | [[access-and-dashboards/reflex/dashboards on your models\|Dashboards on Your Models]] | `reflex_main` and `reflex_class_main` — a record's dashboard and a table's |
 | [[access-and-dashboards/reflex/standalone dashboards\|Standalone Dashboards]] | `_reflex_structure.py` — the project's own dashboard, and pages of its own |
+| [[access-and-dashboards/reflex/design system\|Design System]] | RFDS: what Lex App configures, what you write, `lex_page` and permissions |
+| [[access-and-dashboards/reflex/tables and records\|Tables & Records]] | `lex_table`, `lex_grid`, `LexRecordState` — a model's data, as the user may see it |
 | [[access-and-dashboards/reflex/the django orm\|The Django ORM]] | Reading and writing models from an event handler |
+| [[access-and-dashboards/reflex/embedding app pages\|Embedding App Pages]] | `lex_view()` — a real table or form inside your dashboard, with events to your handlers |
+| [[access-and-dashboards/reflex/embedding app controls\|Embedding App Controls]] | `lex_widgets()` — the real Calculate button, its status and its live log |
 | [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] | Signing in, the user's permissions, and what Keycloak needs |
+| [[access-and-dashboards/reflex/consultant tooling\|Consultant Tooling]] | `lex reflex add` and `lex reflex check`, and the reference example |
 | [[access-and-dashboards/reflex/running and deploying\|Running & Deploying]] | `lex reflex`, locally and in production |

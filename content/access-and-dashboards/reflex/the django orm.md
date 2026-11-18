@@ -116,8 +116,13 @@ A Django request retires a database connection that outlived `CONN_MAX_AGE`, or 
 
 Django's escape hatch: with `DJANGO_ALLOW_ASYNC_UNSAFE=true`, synchronous queries are allowed on the event loop. Every query then blocks every other user's events while it waits, which is the stall Django's refusal exists to prevent. Keep it for a quick experiment; a dashboard that needs it is one `run_orm` away from not needing it. When it is set, Lex App retires the event loop's own stale connections after each event too.
 
+## Reading as the user instead
+
+The ORM reads as the dashboard, not as the user: a query returns whatever it asks for, whoever is looking. To show a model's rows or one record exactly as the grid would show them to this user, read them through Lex App's API instead — `lex_table`, `lex_grid`, `LexRecordState` and `lex_api`, on [[access-and-dashboards/reflex/tables and records|Tables & Records]]. Keep the ORM for what the API has no endpoint for — an aggregate, a chart's columns, a calculation's inputs — behind an `auth=has_permission(...)` check on the handler.
+
 ## Related
 
+- [[access-and-dashboards/reflex/tables and records|Tables & Records]] — a model's rows and one record, through Lex App's API as the user
 - [[access-and-dashboards/reflex/dashboards on your models|Dashboards on Your Models]] — `current_record`, which reads a record through the ORM for you
 - [[access-and-dashboards/reflex/sessions and authentication|Sessions & Authentication]] — queries run as the Reflex process, not as the user; what to check before showing data
 - [[model-your-data/index|Model Your Data]] — the models themselves

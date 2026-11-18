@@ -22,29 +22,31 @@ Set `IS_REFLEX_ENABLED=true` in `.env` and restart `lex start`, and Lex App's si
 
 ### What the first run does
 
-- **Writes `rxconfig.py`** at the project root — the file Reflex reads its configuration from — and says so. It holds one call, `config = lex_config()`; commit it. Later runs leave it alone, so it is yours to edit: `lex_config()` takes any `rx.Config` or `rxe.Config` option and it replaces lex-app's default of the same name, e.g. `lex_config(show_built_with_reflex=False)`; a `REFLEX_<OPTION>` environment variable overrides both. Settings that differ between environments — the public URLs below — belong in environment variables instead.
+- **Writes `rxconfig.py`** at the project root — the file Reflex reads its configuration from — and says so. It holds one call, `config = lex_config()`; commit it. Later runs leave it alone, so it is yours to edit: `lex_config()` takes any `rx.Config` or `rxe.Config` option and it replaces lex-app's default of the same name, e.g. `lex_config(telemetry_enabled=True)`; a `REFLEX_<OPTION>` environment variable overrides both. Settings that differ between environments — the public URLs below — belong in environment variables instead.
 - **Prepares the project for Reflex**, which is Reflex's own start-up rather than Lex App's: it downloads Reflex's JavaScript toolchain and packages — so the first run needs network access — builds the frontend into `.web/`, creates `.states/` and `assets/external/`, and adds those to `.gitignore`. Commit the `.gitignore` change; `.web/` is rebuilt whenever it is missing.
 - **Appends `reflex==<version>` to `requirements.txt`**, when the file does not name Reflex. Lex App already requires the Reflex version it supports, and a second pin will conflict with it on the next upgrade. Replace the line with a bare `reflex`: Reflex only checks that the file names it.
 
 > [!warning] `plugins` replaces the whole list
-> Sign-in is a plugin. `lex_config()` puts two in the list — `lex_auth_plugin()`, the Keycloak sign-in, and
-> `rx.plugins.RadixThemesPlugin()`, the theme Reflex's components are drawn with — and a `plugins=` you pass
-> replaces that list rather than adding to it. Leave `lex_auth_plugin()` out and the dashboards stop requiring
-> sign-in. To add a plugin, list lex-app's two first — in the generated `rxconfig.py`, below its
-> `prepare_environment()` call, which loads the project's `.env`:
+> Sign-in and the design system are plugins. `lex_config()` puts three in the list, in this order:
+> `lex_auth_plugin()`, the Keycloak sign-in; `theme_plugin()`, Reflex's Radix themes with RFDS's
+> root theme; and `rfds_plugin()`, RFDS itself — see [[access-and-dashboards/reflex/design system#The plugins|The plugins]].
+> A `plugins=` you pass replaces that list rather than adding to it. Leave `lex_auth_plugin()` out and
+> the dashboards stop requiring sign-in; put RFDS before Radix, or leave either out, and the app
+> refuses to start. Keep all three, in this order, and add yours after them — in the generated
+> `rxconfig.py`, below its `prepare_environment()` call, which loads the project's `.env`:
 >
 > ```python
-> import reflex as rx
->
 > from lex.lex_app.reflex.config import lex_auth_plugin, lex_config
+> from lex.lex_app.reflex.design import rfds_plugin, theme_plugin
 >
 > config = lex_config(
->     plugins=[lex_auth_plugin(), rx.plugins.RadixThemesPlugin(), rx.plugins.TailwindV4Plugin()],
+>     plugins=[lex_auth_plugin(), theme_plugin(), rfds_plugin(base_currency="USD")],
 > )
 > ```
 >
 > `lex_auth_plugin()` takes the sign-in's own options — see
-> [[access-and-dashboards/reflex/sessions and authentication#Options of the sign-in|Options of the sign-in]].
+> [[access-and-dashboards/reflex/sessions and authentication#Options of the sign-in|Options of the sign-in]] —
+> and `rfds_plugin()` any of RFDS's.
 
 ### Hot reload
 
@@ -78,6 +80,9 @@ Production mode builds an optimised frontend and serves it and the backend on **
 | **`REFLEX_API_URL`** and **`REFLEX_DEPLOY_URL`**, both the dashboards' public URL | the browser connects back to the backend on `REFLEX_API_URL`; it is built into the frontend, so set it before the run. **Leave `REFLEX_API_URL` unset when the dashboards answer on more than one hostname** — a hosted instance with a customer-owned domain attached does. Unset, Reflex's frontend rewrites its localhost default to `window.location` and one build serves every hostname; pinned, every hostname but that one opens a cross-origin websocket carrying no cookies. List the hostnames in `REFLEX_CORS_ALLOWED_ORIGINS` (Lex App fills it from `LEX_REFLEX_HOSTS`) |
 | **The public callback in Keycloak**                                               | `https://<dashboards>/callback` and `https://<dashboards>/*` — see [[access-and-dashboards/reflex/sessions and authentication#Keycloak: two lists of URLs\|Keycloak: two lists of URLs]]                                                                                                                                                                                                                                                                                                                                                                                              |
 | **`IS_REFLEX_ENABLED=true`** and **`REFLEX_URL`** on the Lex App backend          | the sidebar entry, and the address it frames                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **`DOMAIN_HOSTED`**, and `LEX_APP_HOSTS` when it is set, on the dashboards too | who may frame the dashboards: Lex App's hosts. Without them only `localhost` may, and the Analytics tab stays blank — see [[access-and-dashboards/reflex/design system#Who may frame a dashboard\|Who may frame a dashboard]]. `DOMAIN_HOSTED` is also where the dashboards reach Lex App's API |
+| **`LEX_API_URL`**, when the public address is not reachable from the dashboards' backend | where `lex_api`, `lex_table`, `lex_grid` and `LexRecordState` call Lex App's API — inside a cluster, the application's internal service address. See [[access-and-dashboards/reflex/tables and records#Where it reaches the API\|Where it reaches the API]] |
+| **The dashboards' origin in `LEX_EMBED_ALLOWED_ORIGINS`**, on the Lex App backend, when it is set | `lex_view`'s filters and filter events, and — once the variable is set — Lex App's pages and controls in a frame at all. See [[access-and-dashboards/reflex/embedding app pages#Allowed sites\|Allowed sites]] |
 
 Behind a reverse proxy, forward the public scheme and host — the sign-in builds its callback from them — and let WebSocket upgrades through on `/_event`, the channel every event travels on.
 
@@ -91,7 +96,7 @@ The sign-in uses a Redis of its own: the instance's, the one Celery uses — `RE
 
 Reflex Enterprise reads the variable, not lex-app. Lex App's part is in `lex_auth_plugin()`, which `lex_config()` calls: it mounts Reflex Enterprise's proxy on the Reflex backend itself, where requests reach it. An `rxconfig.py` that calls neither leaves the proxy where Reflex Enterprise puts it, and in single-port mode every page answers `404`.
 
-The _Built with Reflex_ badge Reflex adds in production can be switched off (`lex_config(show_built_with_reflex=False)`) on the Team and Enterprise tiers.
+`lex_config()` switches off the _Built with Reflex_ badge Reflex adds in production. On a tier that may not hide it, Reflex Enterprise shows it anyway; the Team and Enterprise tiers may.
 
 ## Related
 

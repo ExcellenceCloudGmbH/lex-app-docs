@@ -140,7 +140,7 @@ are listed under [[reference/Environment Variables#Streamlit|Streamlit]].
 
 ### `lex reflex`
 
-`lex reflex` is [Reflex](https://reflex.dev/docs/)'s own command line, run for the project: every argument after `reflex` goes to it unchanged — `--help` included, which prints Reflex's help — and `lex reflex` with nothing after it is `lex reflex run`.
+`lex reflex` is [Reflex](https://reflex.dev/docs/)'s own command line, run for the project: every argument after `reflex` goes to it unchanged — `--help` included, which prints Reflex's help — and `lex reflex` with nothing after it is `lex reflex run`. Two subcommands are Lex App's own, `add` and `check`.
 
 | Command                         | What It Does                                                                                      |
 | ------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -149,6 +149,8 @@ are listed under [[reference/Environment Variables#Streamlit|Streamlit]].
 | `lex reflex run --backend-only` | Only the backend, on `8503`                                                                       |
 | `lex reflex login`              | Sign this machine in to Reflex — Reflex Enterprise refuses to start without it                    |
 | `lex reflex --help`             | Reflex's own help, for every other subcommand and flag                                            |
+| `lex reflex add list_report --model Fund` | Lex App's own: write a dashboard page bound to a model — `list_report`, `object_page` or `overview` — into `_dashboards/`. Options `--route`, `--title`, `--nav`, `--force`, `--no-register` |
+| `lex reflex check`              | Lex App's own: RFDS's strict lint over `_reflex_structure.py` and `_dashboards/`, then RFDS's doctor over the project — as CI runs them |
 
 What it adds to running `reflex` yourself:
 
@@ -157,7 +159,7 @@ What it adds to running `reflex` yourself:
 - it gives each run mode the **ports** it accepts, and nothing when you chose one — see [[access-and-dashboards/reflex/running and deploying#Ports|Ports]];
 - it makes **hot reload** watch the project's own files rather than the installed `lex` package.
 
-It does not set Django up in its own process: Reflex's workers import the app, and set Django up there. See [[access-and-dashboards/reflex/index|Reflex Dashboards]].
+It does not set Django up in its own process: Reflex's workers import the app, and set Django up there. See [[access-and-dashboards/reflex/index|Reflex Dashboards]]; `add` and `check` are on [[access-and-dashboards/reflex/consultant tooling|Consultant Tooling]].
 
 ## Testing Commands
 
