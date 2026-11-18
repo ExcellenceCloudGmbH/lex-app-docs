@@ -33,7 +33,7 @@ flowchart LR
 | The project's own | `_streamlit_structure.py` | `_reflex_structure.py` |
 | More pages | Streamlit's own | `@lex_page`, in Lex App's chrome |
 | The look | Streamlit's theme | RFDS, in Lex App's colours |
-| Signing in | a proxy in front | inside the app |
+| Signing in | a proxy in front | Lex App's sign-in, handed to the dashboard |
 | A model's rows | the ORM | `lex_table`, `lex_grid`, `lex_api` — Lex App's API, as the user |
 | The ORM | call it | async, or `run_orm` |
 | Permissions | `st.session_state` | `current_permissions`, `has_permission`, `permission` |
@@ -41,7 +41,7 @@ flowchart LR
 | Lex App's controls inside | `with lex_widgets() as page:` | `lex_widgets(calculation(...))` |
 | Starting a page | — | `lex reflex add`, and `lex reflex check` |
 
-A record's Reflex dashboard is a component, not code that runs with the record: its state reads the record with `LexRecordState` or `current_record`. Signing in is [Reflex Enterprise](https://reflex.dev/docs/enterprise/auth/overview/)'s `AuthPlugin`, with no proxy in front, and `has_permission` turns a permission into an `auth=` check.
+A record's Reflex dashboard is a component, not code that runs with the record: its state reads the record with `LexRecordState` or `current_record`. Signing in is Lex App's own — the dashboard borrows the user's Lex App sign-in, with no proxy in front — and `has_permission` turns a permission into an `auth=` check for `lex_event`.
 
 ## Two imports
 
@@ -75,10 +75,10 @@ from lex.lex_app.reflex import lex_page, lex_table, permission
 | `run_orm` / `orm` | Synchronous Django code, run from an async event handler | [[access-and-dashboards/reflex/the django orm\|The Django ORM]] |
 | `current_permissions` | The signed-in user's Keycloak UMA permissions | [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] |
 | `has_permission` | An `auth=` check built from one of them | [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] |
+| `lex_event` | `rx.event` with an `auth=` check, run before the handler | [[access-and-dashboards/reflex/sessions and authentication#What they may see\|Sessions & Authentication]] |
 | `current_access_token` | The user's Keycloak access token | [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] |
 | `LexUser` | The signed-in user's names, as vars a component can show | [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] |
-| `LexKeycloakAuthState` | The sign-in itself: Reflex Enterprise's provider, pointed at Keycloak | [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] |
-| `lex_config`, `lex_auth_plugin` | The configuration a project's `rxconfig.py` returns, and its sign-in plugin | [[access-and-dashboards/reflex/running and deploying\|Running & Deploying]] |
+| `lex_config` | The configuration a project's `rxconfig.py` returns | [[access-and-dashboards/reflex/running and deploying\|Running & Deploying]] |
 
 ## What to read, in order
 
@@ -95,8 +95,8 @@ from lex.lex_app.reflex import lex_page, lex_table, permission
 | [[access-and-dashboards/reflex/consultant tooling\|Consultant Tooling]] | How do I start a page from a template, and check it the way CI does? |
 | [[access-and-dashboards/reflex/running and deploying\|Running & Deploying]] | How do I run it locally, and what does production need? |
 
-> [!important] Reflex Enterprise
-> Signing in comes from [Reflex Enterprise](https://reflex.dev/docs/enterprise/overview/), which lex-app installs together with Reflex. It is free during development once the machine is signed in to Reflex — `lex reflex login`, once — and running in production mode needs a paid Reflex tier. [[access-and-dashboards/reflex/running and deploying|Running & Deploying]] has the details.
+> [!note] Plain Reflex
+> Lex App runs its dashboards on plain Reflex and RFDS: no Reflex Enterprise, no Reflex account and no paid tier, in development or in production.
 
 ## Which one runs
 
@@ -106,7 +106,7 @@ One Reflex app serves every kind of dashboard, and the query string decides whic
 flowchart TB
     A["lex reflex"] --> B["lex.reflex_app<br/><i>Django set up first</i>"]
     B --> C{"Signed in?"}
-    C -- "no" --> D["/login → Keycloak → /callback<br/><i>and back to the page asked for</i>"]
+    C -- "no" --> D["the hand-off through Lex App<br/><i>and back to the page asked for</i>"]
     C -- "yes" --> E{"Query parameters"}
     E -- "model and pk" --> F["Fund.reflex_main()"]
     E -- "model only" --> G["Fund.reflex_class_main()"]

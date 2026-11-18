@@ -147,7 +147,6 @@ are listed under [[reference/Environment Variables#Streamlit|Streamlit]].
 | `lex reflex`                    | The development server, with hot reload: dashboards at `http://localhost:8502`, backend on `8503` |
 | `lex reflex run --env prod`     | Production mode: an optimised build, frontend and backend on one port, `8502`                     |
 | `lex reflex run --backend-only` | Only the backend, on `8503`                                                                       |
-| `lex reflex login`              | Sign this machine in to Reflex — Reflex Enterprise refuses to start without it                    |
 | `lex reflex --help`             | Reflex's own help, for every other subcommand and flag                                            |
 | `lex reflex add list_report --model Fund` | Lex App's own: write a dashboard page bound to a model — `list_report`, `object_page` or `overview` — into `_dashboards/`. Options `--route`, `--title`, `--nav`, `--force`, `--no-register` |
 | `lex reflex check`              | Lex App's own: RFDS's strict lint over `_reflex_structure.py` and `_dashboards/`, then RFDS's doctor over the project — as CI runs them |

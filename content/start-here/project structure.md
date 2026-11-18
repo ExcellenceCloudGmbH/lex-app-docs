@@ -106,7 +106,7 @@ Lex App brings along a specific set of dependencies, pinned to exact versions. Y
 | pandas | 3.0.6 (it brings numpy with it) |
 | openpyxl | 3.1.5 |
 | Streamlit | 1.66.1 |
-| Reflex | 0.9.13, with reflex-enterprise 0.9.7 |
+| Reflex | 0.9.13 and RFDS 1.0.0, no Reflex Enterprise |
 | Celery | 5.6.3 |
 | The web interface, `lex-app-frontend` | 2.3.x |
 

@@ -41,7 +41,7 @@ Interactive [Streamlit](https://docs.streamlit.io/) dashboards, in both directio
 There is a [complete project](https://github.com/ExcellenceCloudGmbH/DemoNorthwindAnalytics) you can clone and run that shows the first four at work.
 
 ### [[access-and-dashboards/reflex/index|Reflex Dashboards]]
-Dashboards written in [Reflex](https://reflex.dev/docs/) — Python compiled to a React app — beside or instead of Streamlit, drawn with the RFDS design system, with the same place in Lex App: the same `?model=&pk=` links and Analytics tab, Lex App's own pages and controls inside, a model's rows read through Lex App's API as the user, and sign-in against the same Keycloak through [Reflex Enterprise](https://reflex.dev/docs/enterprise/auth/overview/), with no proxy in front. A section of its own, in reading order:
+Dashboards written in [Reflex](https://reflex.dev/docs/) — Python compiled to a React app — beside or instead of Streamlit, drawn with the RFDS design system, with the same place in Lex App: the same `?model=&pk=` links and Analytics tab, Lex App's own pages and controls inside, a model's rows read through Lex App's API as the user, and the user's Lex App sign-in handed to the dashboard, with no proxy in front. A section of its own, in reading order:
 
 | | |
 |---|---|

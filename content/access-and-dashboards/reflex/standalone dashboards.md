@@ -84,7 +84,7 @@ def report() -> rx.Component:
     return rfds.page(rfds.page_header(title="Monthly report", path="/report"))
 ```
 
-A `lex_page` is drawn in Lex App's chrome, listed in the side navigation under its `nav=` heading, and can be shown only to users holding a permission — see [[access-and-dashboards/reflex/design system#Pages in Lex App's chrome: lex_page|Pages in Lex App's chrome]]. Every page requires sign-in, whether or not it says so. A page declared with Reflex Enterprise's `@rxe.page` still works, outside the chrome; [[access-and-dashboards/reflex/sessions and authentication|Sessions & Authentication]] covers what it can narrow.
+A `lex_page` is drawn in Lex App's chrome, listed in the side navigation under its `nav=` heading, and can be shown only to users holding a permission — see [[access-and-dashboards/reflex/design system#Pages in Lex App's chrome: lex_page|Pages in Lex App's chrome]]. Every page requires sign-in, whether or not it says so. A page declared with Reflex's own `@rx.page` still works, outside the chrome, and its handlers run only for a signed-in user like every other; [[access-and-dashboards/reflex/sessions and authentication|Sessions & Authentication]] covers how they check permissions.
 
 ## Framed by Lex App
 
@@ -118,7 +118,7 @@ def main() -> rx.Component:
     )
 ```
 
-`embedded` and `logout_enabled` only restate the URL, and are public. `view`, `model` and `pk` are set once the viewer has signed in, like any other state.
+`embedded` and `logout_enabled` only restate the URL. `view`, `model` and `pk` are set once the viewer has signed in: an event resolves them, and events run only for a signed-in user.
 
 ## Start from one that works
 

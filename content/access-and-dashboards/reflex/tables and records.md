@@ -243,11 +243,10 @@ A chart usually wants a few columns of many rows, or an aggregate: things the AP
 
 ```python title="_reflex_structure.py"
 import reflex as rx
-import reflex_enterprise as rxe
 import rfds
 
 from Input.Fund import Fund
-from lex.lex_app.reflex import has_permission, lex_rows, run_orm
+from lex.lex_app.reflex import has_permission, lex_event, lex_rows, run_orm
 
 
 def _budgets() -> list[dict]:
@@ -257,7 +256,7 @@ def _budgets() -> list[dict]:
 class Budgets(rx.State):
     rows: list[dict] = []
 
-    @rxe.event(auth=has_permission(Fund, "read"))
+    @lex_event(auth=has_permission(Fund, "read"))
     async def load(self):
         self.rows = await run_orm(_budgets)
 
@@ -282,7 +281,7 @@ def main() -> rx.Component:
 
 `lex_rows(rows, fields=None)` takes a queryset — read with `values(*fields)`, so a related field's path such as `fund__name` works — or any list of model instances or dicts. Each value is made safe for the browser and exact: a `Decimal` becomes a string, so no amount is rounded through a float; a date or a time its ISO string; a related record its key; `NaN` nothing.
 
-The ORM reads as the dashboard, not as the user, so **check the handler**: `auth=has_permission(...)`, as above. See [[access-and-dashboards/reflex/sessions and authentication#What they may see|What they may see]].
+The ORM reads as the dashboard, not as the user, so **check the handler**: `lex_event(auth=has_permission(...))`, as above. See [[access-and-dashboards/reflex/sessions and authentication#What they may see|What they may see]].
 
 ## Related
 

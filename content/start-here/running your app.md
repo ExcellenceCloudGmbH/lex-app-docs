@@ -91,7 +91,7 @@ If the project has [[access-and-dashboards/reflex/index|Reflex dashboards]], sta
 lex reflex
 ```
 
-The dashboards are at `http://localhost:8502`. The first run writes `rxconfig.py` at the project root and builds Reflex's frontend, so it takes longer than the runs after it, which also reload when you change a file. Reflex Enterprise, which signs users in, needs the machine signed in to Reflex once: `lex reflex login`. [[access-and-dashboards/reflex/running and deploying|Running & Deploying]] has the rest.
+The dashboards are at `http://localhost:8502`. The first run writes `rxconfig.py` at the project root and builds Reflex's frontend, so it takes longer than the runs after it, which also reload when you change a file. It signs users in through the app, so keep `lex start` running beside it. [[access-and-dashboards/reflex/running and deploying|Running & Deploying]] has the rest.
 
 ## What's Next?
 

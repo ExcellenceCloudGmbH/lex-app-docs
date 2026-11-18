@@ -117,8 +117,8 @@ The dashboards and the live channels follow the same sign-in.
 - **Streamlit dashboards** sign in through the app with `LEX_STREAMLIT_AUTH=handoff`: they hold no token of their own
   and stay signed in exactly as long as the app. The default, `legacy`, keeps the pre-2.5 behaviour. See
   [[access-and-dashboards/streamlit/sessions and authentication|Streamlit: Sessions & Authentication]].
-- **Reflex dashboards** keep their own Keycloak sign-in, which now ends only when Keycloak ends the session; an outage
-  or several open tabs no longer sign anyone out. See
+- **Reflex dashboards** always sign in through the app, the same way: they hold no token of their own and stay signed
+  in exactly as long as the app. See
   [[access-and-dashboards/reflex/sessions and authentication|Reflex: Sessions & Authentication]].
 - **WebSockets** (live calculation status, logs, record updates) can be limited to signed-in users with
   `LEX_WS_AUTH=enforce`. A socket without a sign-in is then accepted and closed with `4401`; `4403` means not allowed and
@@ -140,7 +140,7 @@ Run these with the app's environment, as any other `lex` command:
 | `lex oidc_check` | After changing anything about Keycloak, the realm or `KEYCLOAK_INTERNAL_URL`: checks discovery, that the issuer is the public one, the signing keys and the token endpoint. Exits non-zero on a problem. |
 | `lex oidc_cleanup` | Daily, with `lex clearsessions`: ends sign-ins whose refresh token expired or whose session is gone, and deletes ended ones after 7 days. |
 | `lex oidc_rotate_keys` | After putting a new key first in `OIDC_TOKEN_ENCRYPTION_KEYS`, before removing the old one: re-encrypts every stored token. |
-| `lex prune_dashboard_sessions` | Daily, with the two above: deletes expired hand-off codes and the dashboard sign-ins that can no longer be used — those of Streamlit dashboards signed in through the app, and of pages embedded by an MCP client (see [Dashboards and live updates](#dashboards-and-live-updates)). |
+| `lex prune_dashboard_sessions` | Daily, with the two above: deletes expired hand-off codes and the dashboard sign-ins that can no longer be used — those of Streamlit and Reflex dashboards signed in through the app, and of pages embedded by an MCP client (see [Dashboards and live updates](#dashboards-and-live-updates)). |
 
 On the platform, a daily maintenance job runs `lex oidc_cleanup`, `lex clearsessions` and `lex prune_dashboard_sessions`
 for every instance.

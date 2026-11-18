@@ -47,15 +47,14 @@ Plain `reflex` components still work beside RFDS's. RFDS's [conformance checks](
 
 ### The plugins
 
-`lex_config()` — the one call in the project's `rxconfig.py` — lists three plugins, in this order:
+`lex_config()` — the one call in the project's `rxconfig.py` — lists two plugins, in this order:
 
 | Plugin | Built by | What it does |
 |---|---|---|
-| Sign-in | `lex_auth_plugin()` | Reflex Enterprise's `AuthPlugin`, against the project's Keycloak — see [[access-and-dashboards/reflex/sessions and authentication\|Sessions & Authentication]] |
 | Radix | `theme_plugin()` | Reflex's Radix themes, carrying RFDS's root theme |
 | RFDS | `rfds_plugin()` | RFDS's stylesheets and fonts, the brand's contrast check and the page conformance checks, at compile time |
 
-The order matters: RFDS must come after Radix, or its stylesheets lose and `rfds.install()` refuses to start. A `plugins=` you pass to `lex_config()` replaces the whole list, so keep all three, in this order.
+The order matters: RFDS must come after Radix, or its stylesheets lose and `rfds.install()` refuses to start. A `plugins=` you pass to `lex_config()` replaces the whole list, so keep both, in this order. Sign-in is not a plugin: Lex App adds it to the app itself — see [[access-and-dashboards/reflex/sessions and authentication|Sessions & Authentication]].
 
 `rfds_plugin()` takes any of `RFDSPlugin`'s fields, and a field you pass wins over Lex App's value — a project whose figures are in US dollars, say:
 
@@ -64,11 +63,11 @@ from lex.tools.django_bootstrap import prepare_environment
 
 prepare_environment()
 
-from lex.lex_app.reflex.config import lex_auth_plugin, lex_config  # noqa: E402
+from lex.lex_app.reflex.config import lex_config  # noqa: E402
 from lex.lex_app.reflex.design import rfds_plugin, theme_plugin  # noqa: E402
 
 config = lex_config(
-    plugins=[lex_auth_plugin(), theme_plugin(), rfds_plugin(base_currency="USD")],
+    plugins=[theme_plugin(), rfds_plugin(base_currency="USD")],
 )
 ```
 
@@ -130,14 +129,14 @@ def funds() -> rx.Component:
 | `icon` | An RFDS icon for the navigation entry |
 | `requires` | A permission string — see [below](#what-a-user-may-see). A user without it sees RFDS's *access denied* message instead of the page, and no navigation entry |
 | `on_load` | The page's own load events, one or a list. They run after the user's grants are loaded |
-| anything else | Passed on to `rxe.page`: `meta`, `image` and the rest |
+| anything else | Passed on to `rx.page`: `meta`, `image` and the rest |
 
 Every `lex_page` requires sign-in, like every page of the app. The decorator returns your function unchanged, so it can still be called — from a test, say. When the development server reloads, a page registered again keeps its place in the navigation.
 
 > [!warning] `requires` decides what a user sees, not what they can reach
 > It hides the page's content and its entry from users without the grant. The data the page loads is protected by whatever loads it: `lex_table`, `lex_grid` and `LexRecordState` read through Lex App's API as the user — see [[access-and-dashboards/reflex/tables and records|Tables & Records]] — and a handler of your own needs its own `auth=` check.
 
-A page declared with `@rxe.page` still works, outside the chrome. To put any component in the chrome yourself, wrap it: `lex_chrome(component)`. The chrome also draws the page's one calculation-log dialog, which Lex App's controls open — see [[access-and-dashboards/reflex/embedding app controls#The log dialog|The log dialog]].
+A page declared with `@rx.page` still works, outside the chrome. To put any component in the chrome yourself, wrap it: `lex_chrome(component)`. The chrome also draws the page's one calculation-log dialog, which Lex App's controls open — see [[access-and-dashboards/reflex/embedding app controls#The log dialog|The log dialog]].
 
 ### Inside Lex App's frame
 
@@ -174,7 +173,7 @@ revalue = can(
 The rules are those of `has_permission`, described under [[access-and-dashboards/reflex/sessions and authentication#What they may see|What they may see]]:
 
 - **Only model-wide grants count.** A grant scoped to single records does not open the whole model.
-- **The grants are loaded with the page.** `LexAccessState.load` asks Keycloak for them; every `lex_page` and `/` run it before anything else. On a page of your own declared with `@rxe.page`, add it — `on_load=LexAccessState.load` — or `can` shows nothing.
+- **The grants are loaded with the page.** `LexAccessState.load` asks Keycloak for them; every `lex_page` and `/` run it before anything else. On a page of your own declared with `@rx.page`, add it — `on_load=LexAccessState.load` — or `can` shows nothing.
 - **They are kept fresh while the page is open.** Lex App remembers each user's grants, by Keycloak issuer and user ID. Before each event, grants older than a minute are fetched again first, so a page left open, however long, answers from current grants. A refresh that fails never stops the event: the grants stay as they were, and once five minutes pass without one succeeding — Keycloak not answering, say — they count for nothing until they are fetched again. A user Keycloak never answered for holds nothing.
 
 `can` is what a user **sees**, read once when the page loads. Check a handler with `auth=has_permission(...)`: it checks the grants of the user's current access token. RFDS's own `rfds.auth.requires(...)` check works too, against the remembered grants — at most a minute old when an event runs.
@@ -214,7 +213,7 @@ Opened on its own, a dashboard follows `?lex_theme=` when the URL carries it.
 
 ## Signing in inside the frame
 
-When a dashboard inside Lex App's frame cannot sign the user in without a click, its `/login` page tells Lex App's interface so; once the user is signed in again, the dashboard tells it that too. Lex App can then offer the way back around the frame instead of showing a frame that waits. The messages carry no secret, and go to the framing page's origin — the one the browser names, or in Firefox, which names none, the referrer's; with neither, to whichever page frames it. There is nothing to configure. What the click is for is under [[access-and-dashboards/reflex/sessions and authentication#Inside Lex App's frame|Inside Lex App's frame]].
+When a dashboard inside Lex App's frame cannot sign the user in — they have no Lex App sign-in left to hand over — it tells Lex App's interface so (`required`); once the user is signed in again, the dashboard tells it that too (`restored`). Lex App can then sign the user in again around the frame instead of showing a frame that waits. The messages carry no secret. `required` goes to Lex App's hosts as the instance lists them — `LEX_INSTANCE_HOSTS`, or `DOMAIN_HOSTED`, and `http://localhost:8000` in development; `restored` to the framing page's origin — the one the browser names, or in Firefox, which names none, the referrer's; with neither, to whichever page frames it. There is nothing to configure. The sign-in itself is under [[access-and-dashboards/reflex/sessions and authentication#Every page requires sign-in|Every page requires sign-in]].
 
 ## Related
 
