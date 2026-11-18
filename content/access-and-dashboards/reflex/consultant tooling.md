@@ -80,7 +80,7 @@ class Fund(LexModel):
 
 The generated module's docstring holds these lines, with your package's name already filled in from the project folder's. Keep the package in the import, and never make it relative: from a model in a subfolder, such as `Input/Fund.py`, `from ._dashboards…` looks inside that subfolder.
 
-The record page then opens for `?model=fund&pk=42`, and in the record's [[using-the-app/record-detail/analytics tab|Analytics tab]]. It shows the record only if Lex App's API shows it to this user; otherwise it says the record is not theirs to see, or does not exist. When Lex App cannot answer at all, the generated page keeps showing its spinner: add an `"unavailable"` case to its `rx.match` to say so — see [[access-and-dashboards/reflex/tables and records#LexRecordState: the record, as the user may see it|Tables & Records]].
+The record page then opens for `?model=fund&pk=42`, and in the record's [[using-the-app/record-detail/analytics tab|Analytics tab]]. It shows the record only if Lex App's API shows it to this user; otherwise it says the record is not theirs to see, or does not exist. When Lex App cannot answer at all, it says Lex App cannot be reached and to try again shortly; it shows its spinner only while the record is loading — see [[access-and-dashboards/reflex/tables and records#LexRecordState: the record, as the user may see it|Tables & Records]].
 
 ## `lex reflex check`
 
