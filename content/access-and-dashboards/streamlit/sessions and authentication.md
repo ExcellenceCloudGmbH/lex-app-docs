@@ -103,6 +103,29 @@ def main():
 
 The token never reaches the browser. While Keycloak cannot be reached under `handoff` there may be no usable one: a dashboard opened during the outage has `""`, and one opened before it keeps its last token, which the API refuses once it has expired. Read a refusal then as "try again later", not as signed out.
 
+## Calling the Lex API
+
+To call the Lex App API as the viewer, use `lex_api()`. It is a `requests` session that sends the viewer's access token with every request:
+
+```python
+from lex.lex_app.streamlit import lex_api
+
+response = lex_api().patch(
+    f"model_entries/provision/{serializer}/one/{pk}",
+    files={"attached_documents": (file_name, content)},
+)
+response.raise_for_status()
+```
+
+Paths are relative to the instance's API (see `LEX_API_URL` in [[reference/Environment Variables|Environment Variables]]). The token is read when each request is sent and renewed first if it has less than a minute left. If the API still answers `401`, `lex_api()` renews the token once and sends the request again, as long as the body can be sent twice: bytes and `(name, bytes)` file tuples can, an open file object cannot. With no usable token at all it raises `LexAuthRequired` instead of sending the request. It sends the token only to the instance's own API: an absolute URL on any other host raises `ValueError`.
+
+> [!warning] Don't build the `Authorization` header yourself
+> A header built from the token and kept for later — in `st.session_state`, a module variable or a closure — stops working a few minutes after it was built, because the token it holds expires. Full page runs hide this, since they usually rebuild the header. A request sent from inside `st.dialog` or `st.fragment` uses the old copy, because their reruns run only the dialog or fragment, and the API answers `401`. A form that takes longer to fill in than the token lasts then fails on submit. If you need the token itself, call `current_access_token()` at the moment you use it.
+
+Dashboards that already keep `{"Authorization": f"Bearer {token}"}` in `st.session_state.headers` keep working: Lex App updates that dictionary in place whenever it renews the token, and logs a warning pointing to `lex_api()`. Only a header with exactly the session's own token is changed.
+
+Writing a file through the ORM from a dashboard is not a replacement for the API call. With local file storage (`STORAGE_TYPE` `LEGACY`) on a deployed instance, uploads live on a volume mounted only into the backend; a file saved from the Streamlit process ends up in the Streamlit container and is gone after a restart.
+
 ## Before you deploy
 
 None of this needs attention in development.
